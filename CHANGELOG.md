@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/amalv/bukie/compare/v1.1.0...v1.2.0) (2023-10-12)
+
+
+### Features
+
+* add MIT License to project ([a0f18d9](https://github.com/amalv/bukie/commit/a0f18d9ad8a467bdf82053ea8781d95f855fa2af))
+
 # [1.1.0](https://github.com/amalv/bukie/compare/v1.0.0...v1.1.0) (2023-10-12)
 
 
