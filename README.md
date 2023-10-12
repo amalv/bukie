@@ -1,27 +1,41 @@
-# React + TypeScript + Vite
+# Bukie
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a showcasing project built with TypeScript and React, styled with Emotion and the Material UI design system. It will include search engine support and filters by year, author, and genre. The project uses Semantic Release for automated versioning and releases, and ESLint for code linting.
 
-Currently, two official plugins are available:
+The project is a work in progress and will soon include Apollo Client and Apollo Server to showcase GraphQL integration. The goal of this project is to demonstrate the use of different technologies in a real-world application.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features (WIP)
 
-## Expanding the ESLint configuration
+📚 Curated list of fiction books
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+🎛️ Filters by year, author, and genre
 
-- Configure the top-level `parserOptions` property like this:
+🚀 Built with TypeScript, React, Emotion, Material UI, Vite, ESLint, Apollo Client, and Apollo Server
 
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
+💅 Styled with Emotion and Material UI design system
+
+## Getting Started
+
+To get started with the project, follow these steps:
+
+Clone the repository:
+
+```
+git clone git@github.com:amalv/bukie.git
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+Install the dependencies:
+
+```
+npm install
+```
+
+Start the development server:
+
+```
+npm run dev
+```
+
+## License
+
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
