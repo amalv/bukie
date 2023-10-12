@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/amalv/bukie/compare/v1.0.0...v1.1.0) (2023-10-12)
+
+
+### Features
+
+* add support for Robot font using Fountsource ([3b0351c](https://github.com/amalv/bukie/commit/3b0351c3caf45cafc3613e011e24c5d6ab46cecd))
+
 # 1.0.0 (2023-10-12)
 
 
