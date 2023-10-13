@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/amalv/bukie/compare/v1.2.0...v1.3.0) (2023-10-13)
+
+
+### Features
+
+* add vitest for testing ([2ac0057](https://github.com/amalv/bukie/commit/2ac0057a2bdce8768cbc8868b67ddc7a0119ce39))
+
 # [1.2.0](https://github.com/amalv/bukie/compare/v1.1.0...v1.2.0) (2023-10-12)
 
 
