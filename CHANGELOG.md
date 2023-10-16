@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/amalv/bukie/compare/v1.4.0...v1.5.0) (2023-10-16)
+
+
+### Features
+
+* add vite-plugin-checker for TypeScript type checking ([59cab43](https://github.com/amalv/bukie/commit/59cab430b7449e81a851dc6790723e5a5cb7567a))
+
 # [1.4.0](https://github.com/amalv/bukie/compare/v1.3.0...v1.4.0) (2023-10-16)
 
 
