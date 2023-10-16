@@ -1,3 +1,11 @@
+# [1.4.0](https://github.com/amalv/bukie/compare/v1.3.0...v1.4.0) (2023-10-16)
+
+
+### Features
+
+* add BookList UI with fake data and books factory ([c0602fb](https://github.com/amalv/bukie/commit/c0602fbe3b476ea568c855250d82bd13f61aef4d))
+* add support for Code Climate GitHub Action and React Testing Library ([b850851](https://github.com/amalv/bukie/commit/b8508510dc150a078a59bc272fd00a51ea5a13cc))
+
 # [1.3.0](https://github.com/amalv/bukie/compare/v1.2.0...v1.3.0) (2023-10-13)
 
 
