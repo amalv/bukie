@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/amalv/bukie/compare/v1.6.0...v1.7.0) (2023-11-27)
+
+
+### Features
+
+* Integrate Apollo Client for data retrieval and install dependencies ([b73589d](https://github.com/amalv/bukie/commit/b73589d53b4eb7b3af4a3cb48e64d6249fed0312))
+
 # [1.6.0](https://github.com/amalv/bukie/compare/v1.5.0...v1.6.0) (2023-11-27)
 
 
