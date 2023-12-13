@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/amalv/bukie/compare/v1.8.0...v1.9.0) (2023-12-13)
+
+
+### Features
+
+* differentiate API URL based on NODE_ENV ([a4334b7](https://github.com/amalv/bukie/commit/a4334b7597a7825b2faf7f465f4737246399a873))
+
 # [1.8.0](https://github.com/amalv/bukie/compare/v1.7.0...v1.8.0) (2023-12-13)
 
 
