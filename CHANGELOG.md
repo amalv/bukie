@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/amalv/bukie/compare/v1.7.0...v1.8.0) (2023-12-13)
+
+
+### Features
+
+* update book cards layout to occupy 8 columns on desktop screens ([159bceb](https://github.com/amalv/bukie/commit/159bceb8923b9f8e60bff312329f0dda181eea78))
+
 # [1.7.0](https://github.com/amalv/bukie/compare/v1.6.0...v1.7.0) (2023-11-27)
 
 
