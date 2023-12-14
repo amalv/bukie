@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/amalv/bukie/compare/v1.9.0...v1.10.0) (2023-12-14)
+
+
+### Features
+
+* enhance book card layout and adjust number of book cards per row ([c3c8488](https://github.com/amalv/bukie/commit/c3c8488e45ec1e330d12b56870a22c9a1fe910d6))
+
 # [1.9.0](https://github.com/amalv/bukie/compare/v1.8.0...v1.9.0) (2023-12-13)
 
 
