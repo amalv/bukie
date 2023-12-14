@@ -1,8 +1,15 @@
 import { useQuery } from "@apollo/client";
-import { CardActionArea, CardContent, Grid, Typography } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import { faker } from "@faker-js/faker";
 import { BOOKS_QUERY, Book } from "../../data/books";
-import { Root, CardWrapper, Cover } from "./BookList.styles";
+import {
+  Root,
+  CardWrapper,
+  InfoWrapper,
+  Cover,
+  TextWrapper,
+  CardActionAreaWrapper,
+} from "./BookList.styles";
 import { CircularProgressWithLabel } from "./components";
 
 const getYear = (dateString: string): string => {
@@ -26,9 +33,9 @@ const BookList = () => {
         <Grid item xs={10} sm={10} md={8}>
           <Grid container spacing={2}>
             {data.books.map((book: Book) => (
-              <Grid item xs={12} sm={6} md={3} key={book.title}>
+              <Grid item xs={12} sm={6} md={2} key={book.title}>
                 <CardWrapper>
-                  <CardActionArea>
+                  <CardActionAreaWrapper>
                     <Cover
                       component="img"
                       image={
@@ -37,26 +44,40 @@ const BookList = () => {
                       }
                       aria-label={book.title}
                     />
-                    <CardContent>
-                      <Typography
-                        gutterBottom
-                        variant="h5"
-                        component="h2"
-                        align="center"
-                      >
-                        {book.title}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="textSecondary"
-                        component="p"
-                        align="center"
-                      >
-                        {book.author} ({getYear(book.publicationDate)})
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                  <CircularProgressWithLabel value={book.rating} />
+                    <InfoWrapper>
+                      <TextWrapper>
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight={700}
+                          textOverflow="ellipsis"
+                          overflow="hidden"
+                          whiteSpace="nowrap"
+                        >
+                          {book.title}
+                        </Typography>
+                        <Typography
+                          variant="subtitle2"
+                          color="textSecondary"
+                          fontStyle="italic"
+                          textOverflow="ellipsis"
+                          overflow="hidden"
+                          whiteSpace="nowrap"
+                        >
+                          {book.author}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="textSecondary"
+                          textOverflow="ellipsis"
+                          overflow="hidden"
+                          whiteSpace="nowrap"
+                        >
+                          {getYear(book.publicationDate)}
+                        </Typography>
+                      </TextWrapper>
+                      <CircularProgressWithLabel value={book.rating} />
+                    </InfoWrapper>
+                  </CardActionAreaWrapper>
                 </CardWrapper>
               </Grid>
             ))}
