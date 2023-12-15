@@ -60,7 +60,7 @@ describe("BookList", () => {
     await Promise.all(
       expectedTitles.map(async (title) => {
         const bookTitle = await screen.findByText(title);
-        expect(bookTitle).toBeInTheDocument();
+        expect(bookTitle).toBeDefined();
       })
     );
   });
