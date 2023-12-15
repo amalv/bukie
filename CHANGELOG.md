@@ -1,3 +1,15 @@
+# [1.11.0](https://github.com/amalv/bukie/compare/v1.10.0...v1.11.0) (2023-12-15)
+
+
+### Bug Fixes
+
+* update assertion in BookList.test.tsx ([99ee329](https://github.com/amalv/bukie/commit/99ee3290b3d2435147236279dfcc8b3c1ac59f76))
+
+
+### Features
+
+* refactor BookList component and fix import in BookList.test.tsx ([bb2e4bb](https://github.com/amalv/bukie/commit/bb2e4bb4abc53b67d874168bc4bad3367b3453ec))
+
 # [1.10.0](https://github.com/amalv/bukie/compare/v1.9.0...v1.10.0) (2023-12-14)
 
 
