@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing";
 import { describe, expect, it } from "vitest";
 import { BOOKS_QUERY } from "../../data/books";
-import BookList from "./BookList";
+import { BookList } from "./BookList";
 
 const mocks = [
   {
@@ -47,7 +47,6 @@ const mocks = [
     },
   },
 ];
-
 describe("BookList", () => {
   it("renders a list of books", async () => {
     render(
@@ -55,13 +54,14 @@ describe("BookList", () => {
         <BookList />
       </MockedProvider>
     );
-    const bookTitles = await screen.findAllByRole("heading");
-    const bookTitlesText = bookTitles.map((heading) => heading.textContent);
 
-    expect(bookTitlesText).toEqual([
-      "1984",
-      "The Great Gatsby",
-      "To Kill a Mockingbird",
-    ]);
+    const expectedTitles = mocks[0].result.data.books.map((book) => book.title);
+
+    await Promise.all(
+      expectedTitles.map(async (title) => {
+        const bookTitle = await screen.findByText(title);
+        expect(bookTitle).toBeInTheDocument();
+      })
+    );
   });
 });

@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import CircularProgressWithLabel from "./CircularProgressWithLabel";
+import { CircularProgressWithLabel } from "./CircularProgressWithLabel";
 
 describe("CircularProgressWithLabel", () => {
   it("should render a circular progress bar with a label", () => {
