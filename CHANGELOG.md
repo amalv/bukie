@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/amalv/bukie/compare/v1.13.0...v1.14.0) (2023-12-17)
+
+
+### Features
+
+* add dark mode support and search functionality ([8117f66](https://github.com/amalv/bukie/commit/8117f6629c442ffdf30a118850b3163414705e2e))
+
 # [1.13.0](https://github.com/amalv/bukie/compare/v1.12.0...v1.13.0) (2023-12-17)
 
 
