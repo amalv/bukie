@@ -1,4 +1,3 @@
-import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { BookCard } from "./BookCard";
 import { Book } from "../../../../data/books";
