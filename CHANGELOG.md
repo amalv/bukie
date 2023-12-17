@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/amalv/bukie/compare/v1.12.0...v1.13.0) (2023-12-17)
+
+
+### Features
+
+* add @types/jest dependency and add test for BookCard ([be81247](https://github.com/amalv/bukie/commit/be812476a46b4643772b163d36ec363ceadbedca))
+
 # [1.12.0](https://github.com/amalv/bukie/compare/v1.11.0...v1.12.0) (2023-12-17)
 
 
