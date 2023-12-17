@@ -1,34 +1,36 @@
-import styled from "@emotion/styled";
 import { Card, CardActionArea, CardMedia, CardMediaProps } from "@mui/material";
+import { styled } from "@mui/material/styles";
 
-export const CardWrapper = styled(Card)`
+export const CardWrapper = styled(Card)(
+  ({ theme }) => `
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   margin-bottom: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid ${theme.palette.divider};
   border-radius: 8px;
-  overflow: hidden; // Ensure child elements don't spill outside
-  transition: box-shadow 0.3s ease-in-out, transform 0.5s ease-in-out; // Longer, smoother transition
-  background: #f5f5f5;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease-in-out, transform 0.5s ease-in-out;
+  background: ${theme.palette.background.paper};
 
   &:hover {
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 6px ${theme.palette.action.hover};
     transform: translate(2px, 2px);
   }
 
-  &:hover::before {
+  &:active::before {
     content: "";
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-    background: rgba(0, 0, 0, 0.1);
-    transition: background 0.3s ease-in-out; // Smoothly fade in and out
+    background: ${theme.palette.action.selected};
+    transition: background 0.3s ease-in-out;
   }
-`;
+`
+);
 
 export const Cover = styled(CardMedia)<CardMediaProps>`
   height: 216px;
@@ -37,12 +39,12 @@ export const Cover = styled(CardMedia)<CardMediaProps>`
   margin-bottom: 8px;
 `;
 
-export const InfoWrapper = styled.div`
+export const InfoWrapper = styled("div")`
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
-export const TextWrapper = styled.div`
+export const TextWrapper = styled("div")`
   display: flex;
   flex-direction: column;
   justify-content: center;

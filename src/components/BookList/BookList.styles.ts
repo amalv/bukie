@@ -1,11 +1,38 @@
-import styled from "@emotion/styled";
-import { Card, CardActionArea, CardMedia, CardMediaProps } from "@mui/material";
-export const Root = styled.div`
+import {
+  Card,
+  CardActionArea,
+  CardMedia,
+  CardMediaProps,
+  TextField,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+
+export const Root = styled("div")`
   display: flex;
+  flex-direction: column;
   justify-self: center;
   align-items: center;
 `;
-
+export const StyledTextField = styled(TextField)(({ theme }) => {
+  console.log(theme.palette?.mode); // Log the value
+  return `
+      .MuiInputBase-input {
+        background-color: ${
+          theme.palette?.mode === "dark"
+            ? "rgba(255, 255, 255, 0.15)"
+            : undefined
+        };
+        color: ${theme.palette?.mode === "dark" ? "#fff" : undefined};
+        &::placeholder {
+          color: ${
+            theme.palette?.mode === "dark"
+              ? "rgba(255, 255, 255, 0.5)"
+              : undefined
+          };
+        }
+      }
+    `;
+});
 export const CardWrapper = styled(Card)`
   display: flex;
   flex-direction: column;
@@ -22,12 +49,12 @@ export const Cover = styled(CardMedia)<CardMediaProps>`
   margin-bottom: 8px;
 `;
 
-export const InfoWrapper = styled.div`
+export const InfoWrapper = styled("div")`
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
-export const TextWrapper = styled.div`
+export const TextWrapper = styled("div")`
   display: flex;
   flex-direction: column;
   justify-content: center;
