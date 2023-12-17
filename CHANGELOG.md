@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/amalv/bukie/compare/v1.11.0...v1.12.0) (2023-12-17)
+
+
+### Features
+
+* add hover effect and transition to BookCard ([cb39f9a](https://github.com/amalv/bukie/commit/cb39f9a84e5078e5bbb0add5ddcbe3d047c48e20))
+
 # [1.11.0](https://github.com/amalv/bukie/compare/v1.10.0...v1.11.0) (2023-12-15)
 
 
