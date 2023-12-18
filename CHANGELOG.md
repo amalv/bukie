@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/amalv/bukie/compare/v1.15.0...v1.16.0) (2023-12-18)
+
+
+### Features
+
+* add .env.sample and update .gitignore and apolloClient.ts ([be12c6a](https://github.com/amalv/bukie/commit/be12c6a22f4b0cd10972dab461b830d4d5c09380))
+
 # [1.15.0](https://github.com/amalv/bukie/compare/v1.14.0...v1.15.0) (2023-12-18)
 
 
