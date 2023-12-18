@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing";
 import { describe, expect, it } from "vitest";
 import { BOOKS_QUERY } from "../../data/books";
@@ -8,6 +8,7 @@ const mocks = [
   {
     request: {
       query: BOOKS_QUERY,
+      variables: { title: "" },
     },
     result: {
       data: {
@@ -47,6 +48,7 @@ const mocks = [
     },
   },
 ];
+
 describe("BookList", () => {
   it("renders a list of books", async () => {
     render(
@@ -57,11 +59,10 @@ describe("BookList", () => {
 
     const expectedTitles = mocks[0].result.data.books.map((book) => book.title);
 
-    await Promise.all(
-      expectedTitles.map(async (title) => {
-        const bookTitle = await screen.findByText(title);
-        expect(bookTitle).toBeDefined();
-      })
-    );
+    for (const title of expectedTitles) {
+      await waitFor(() => {
+        expect(screen.getByText(title)).toBeInTheDocument();
+      });
+    }
   });
 });

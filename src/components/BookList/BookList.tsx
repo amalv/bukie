@@ -1,51 +1,112 @@
-import { ChangeEvent, useState } from "react";
+import {
+  ChangeEvent,
+  Dispatch,
+  useState,
+  useEffect,
+  SetStateAction,
+} from "react";
 import { useQuery } from "@apollo/client";
 import { Box, Grid } from "@mui/material";
 import { BOOKS_QUERY, Book } from "../../data/books";
 import { Root, StyledTextField } from "./BookList.styles";
 import { BookCard } from "./components";
 
-export const BookList = () => {
-  const { loading, error, data } = useQuery(BOOKS_QUERY);
-  const [search, setSearch] = useState("");
+interface SearchInputProps {
+  search: string;
+  setSearch: Dispatch<SetStateAction<string>>;
+}
 
+const SearchInput = ({ search, setSearch }: SearchInputProps) => {
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
-  if (loading) return null;
+  return (
+    <Box
+      py={2}
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        width: "100%",
+        alignSelf: "center",
+      }}
+    >
+      <Grid container justifyContent="center">
+        <Grid item xs={8}>
+          <StyledTextField
+            label="Search by title"
+            variant="outlined"
+            onChange={handleSearchChange}
+            fullWidth
+            value={search}
+          />
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
+interface BooksProps {
+  title: string;
+}
+
+const Books = ({ title }: BooksProps) => {
+  const { loading, error, data } = useQuery(BOOKS_QUERY, {
+    variables: { title },
+  });
+
+  if (loading) return <p>Loading...</p>;
 
   if (error) {
     console.error("Failed to fetch books:", error);
-    return null;
+    return <p>Error occurred while fetching books.</p>;
   }
 
   return (
-    <Root>
-      <Grid container spacing={2}>
-        <Grid item xs={1} sm={1} md={2} />
-        <Grid item xs={10} sm={10} md={8}>
-          <Box py={2}>
-            <StyledTextField
-              label="Search by title"
-              variant="outlined"
-              value={search}
-              onChange={handleSearchChange}
-              fullWidth
-            />
-          </Box>
-        </Grid>
-      </Grid>
-      <Grid container spacing={2}>
-        <Grid item xs={1} sm={1} md={2} />
-        <Grid item xs={10} sm={10} md={8}>
-          <Grid container spacing={2}>
-            {data.books.map((book: Book) => (
+    <Grid container spacing={2}>
+      <Grid item xs={1} sm={1} md={2} />
+      <Grid item xs={10} sm={10} md={8}>
+        <Grid container spacing={2}>
+          {data.books.length > 0 ? (
+            data.books.map((book: Book) => (
               <BookCard key={book.title} book={book} />
-            ))}
-          </Grid>
+            ))
+          ) : (
+            <Grid item xs={12}>
+              <Box
+                display="flex"
+                height="100%"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <p>No books available</p>
+              </Box>
+            </Grid>
+          )}
         </Grid>
       </Grid>
+    </Grid>
+  );
+};
+
+export const BookList = () => {
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [search]);
+
+  return (
+    <Root>
+      <SearchInput search={search} setSearch={setSearch} />
+      <Books title={debouncedSearch} />
     </Root>
   );
 };

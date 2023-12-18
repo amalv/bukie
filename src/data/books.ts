@@ -11,8 +11,8 @@ export type Book = {
 };
 
 export const BOOKS_QUERY = gql`
-  query GetBooks {
-    books {
+  query GetBooks($title: String) {
+    books(title: $title) {
       id
       title
       author

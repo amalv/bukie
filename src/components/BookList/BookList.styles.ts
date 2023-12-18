@@ -10,11 +10,9 @@ import { styled } from "@mui/material/styles";
 export const Root = styled("div")`
   display: flex;
   flex-direction: column;
-  justify-self: center;
-  align-items: center;
 `;
+
 export const StyledTextField = styled(TextField)(({ theme }) => {
-  console.log(theme.palette?.mode); // Log the value
   return `
       .MuiInputBase-input {
         background-color: ${
