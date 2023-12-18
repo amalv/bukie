@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/amalv/bukie/compare/v1.16.0...v1.17.0) (2023-12-18)
+
+
+### Features
+
+* add environment variable for production API URL ([f1029ed](https://github.com/amalv/bukie/commit/f1029ed7291cc1cb1ecae12f9649f9c8fb89db1e))
+
 # [1.16.0](https://github.com/amalv/bukie/compare/v1.15.0...v1.16.0) (2023-12-18)
 
 
