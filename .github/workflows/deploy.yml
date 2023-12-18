@@ -39,6 +39,8 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
+        env:
+          VITE_API_URL_PRODUCTION: ${{ secrets.VITE_API_URL_PRODUCTION }}
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
