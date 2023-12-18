@@ -11,6 +11,10 @@ import { BOOKS_QUERY, Book } from "../../data/books";
 import { Root, StyledTextField } from "./BookList.styles";
 import { BookCard } from "./components";
 
+interface BooksProps {
+  title: string;
+}
+
 interface SearchInputProps {
   search: string;
   setSearch: Dispatch<SetStateAction<string>>;
@@ -46,16 +50,23 @@ const SearchInput = ({ search, setSearch }: SearchInputProps) => {
   );
 };
 
-interface BooksProps {
-  title: string;
-}
+const Message = ({ text }: { text: string }) => (
+  <Grid item xs={12}>
+    <Box
+      display="flex"
+      height="100%"
+      justifyContent="center"
+      alignItems="center"
+    >
+      <p>{text}</p>
+    </Box>
+  </Grid>
+);
 
 const Books = ({ title }: BooksProps) => {
   const { loading, error, data } = useQuery(BOOKS_QUERY, {
     variables: { title },
   });
-
-  if (loading) return <p>Loading...</p>;
 
   if (error) {
     console.error("Failed to fetch books:", error);
@@ -67,21 +78,14 @@ const Books = ({ title }: BooksProps) => {
       <Grid item xs={1} sm={1} md={2} />
       <Grid item xs={10} sm={10} md={8}>
         <Grid container spacing={2}>
-          {data.books.length > 0 ? (
+          {loading ? (
+            <Message text="Loading..." />
+          ) : data.books.length > 0 ? (
             data.books.map((book: Book) => (
               <BookCard key={book.title} book={book} />
             ))
           ) : (
-            <Grid item xs={12}>
-              <Box
-                display="flex"
-                height="100%"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <p>No books available</p>
-              </Box>
-            </Grid>
+            <Message text="No books available" />
           )}
         </Grid>
       </Grid>
