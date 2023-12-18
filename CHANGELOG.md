@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/amalv/bukie/compare/v1.14.0...v1.15.0) (2023-12-18)
+
+
+### Features
+
+* refactor BookList component and add search functionality ([87a6e90](https://github.com/amalv/bukie/commit/87a6e909510eb55fa17c2e769e52f4f29a980273))
+
 # [1.14.0](https://github.com/amalv/bukie/compare/v1.13.0...v1.14.0) (2023-12-17)
 
 
