@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/amalv/bukie/compare/v1.17.0...v1.18.0) (2023-12-18)
+
+
+### Features
+
+* refactor BookList component and add loading message ([511972e](https://github.com/amalv/bukie/commit/511972ea47e31dffcb0fb5ac7351804a3fc1853d))
+
 # [1.17.0](https://github.com/amalv/bukie/compare/v1.16.0...v1.17.0) (2023-12-18)
 
 
