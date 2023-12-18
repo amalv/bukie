@@ -8,7 +8,7 @@ import {
   CardActionAreaWrapper,
 } from "./BookCard.styles";
 import { CircularProgressWithLabel } from "./components";
-import { Book } from "../../../../data/books";
+import { Book } from "../../../../../../data/books";
 
 const getYear = (dateString: string): string => {
   const date = new Date(dateString);

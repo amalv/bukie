@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { BookCard } from "./BookCard";
-import { Book } from "../../../../data/books";
+import { Book } from "../../../../../../data/books";
 
 test("renders book information correctly", async () => {
   const mockBook: Book = {
