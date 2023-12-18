@@ -25,3 +25,6 @@ dist-ssr
 
 # Test coverage reports directory 
 coverage/
+
+# Environment variables file
+.env
