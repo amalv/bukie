@@ -8,42 +8,45 @@ const mocks = [
   {
     request: {
       query: BOOKS_QUERY,
-      variables: { title: "" },
+      variables: { title: "", limit: 50 },
     },
     result: {
       data: {
-        books: [
-          {
-            id: "1",
-            title: "1984",
-            author: "George Orwell",
-            publicationDate: "1949-06-08",
-            image: null,
-            rating: 85,
-            ratingsCount: 123,
-            __typename: "Book",
-          },
-          {
-            id: "2",
-            title: "The Great Gatsby",
-            author: "F. Scott Fitzgerald",
-            publicationDate: "1925-04-10",
-            image: null,
-            rating: 88,
-            ratingsCount: 200,
-            __typename: "Book",
-          },
-          {
-            id: "3",
-            title: "To Kill a Mockingbird",
-            author: "Harper Lee",
-            publicationDate: "1960-07-11",
-            image: null,
-            rating: 90,
-            ratingsCount: 250,
-            __typename: "Book",
-          },
-        ],
+        books: {
+          cursor: "3",
+          books: [
+            {
+              id: "1",
+              title: "1984",
+              author: "George Orwell",
+              publicationDate: "1949-06-08",
+              image: null,
+              rating: 85,
+              ratingsCount: 123,
+              __typename: "Book",
+            },
+            {
+              id: "2",
+              title: "The Great Gatsby",
+              author: "F. Scott Fitzgerald",
+              publicationDate: "1925-04-10",
+              image: null,
+              rating: 88,
+              ratingsCount: 200,
+              __typename: "Book",
+            },
+            {
+              id: "3",
+              title: "To Kill a Mockingbird",
+              author: "Harper Lee",
+              publicationDate: "1960-07-11",
+              image: null,
+              rating: 90,
+              ratingsCount: 250,
+              __typename: "Book",
+            },
+          ],
+        },
       },
     },
   },
@@ -57,7 +60,9 @@ describe("BookList", () => {
       </MockedProvider>
     );
 
-    const expectedTitles = mocks[0].result.data.books.map((book) => book.title);
+    const expectedTitles = mocks[0].result.data.books.books.map(
+      (book) => book.title
+    );
 
     for (const title of expectedTitles) {
       await waitFor(() => {
