@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/amalv/bukie/compare/v1.20.1...v1.21.0) (2023-12-21)
+
+
+### Features
+
+* implement infinite scrolling in Books component ([e5ce2c6](https://github.com/amalv/bukie/commit/e5ce2c62c21b85d581b41a29279d968022682e82))
+
 ## [1.20.1](https://github.com/amalv/bukie/compare/v1.20.0...v1.20.1) (2023-12-21)
 
 
