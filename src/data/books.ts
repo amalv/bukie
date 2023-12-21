@@ -11,15 +11,18 @@ export type Book = {
 };
 
 export const BOOKS_QUERY = gql`
-  query GetBooks($title: String) {
-    books(title: $title) {
-      id
-      title
-      author
-      publicationDate
-      image
-      rating
-      ratingsCount
+  query GetBooks($title: String, $cursor: String, $limit: Int) {
+    books(title: $title, cursor: $cursor, limit: $limit) {
+      cursor
+      books {
+        id
+        title
+        author
+        publicationDate
+        image
+        rating
+        ratingsCount
+      }
     }
   }
 `;

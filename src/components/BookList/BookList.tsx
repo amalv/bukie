@@ -61,7 +61,7 @@ export const BookList = () => {
   return (
     <Root>
       <SearchInput search={search} setSearch={setSearch} />
-      <Books title={debouncedSearch} />
+      <Books title={debouncedSearch} limit={50} />
     </Root>
   );
 };

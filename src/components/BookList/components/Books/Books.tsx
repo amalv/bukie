@@ -7,6 +7,7 @@ import { BookCard } from "./components";
 
 interface BooksProps {
   title: string;
+  limit: number;
 }
 
 const Message = ({ text }: { text: string }) => (
@@ -22,15 +23,17 @@ const Message = ({ text }: { text: string }) => (
   </Grid>
 );
 
-export const Books = ({ title }: BooksProps) => {
+export const Books = ({ title, limit }: BooksProps) => {
   const { loading, error, data } = useQuery(BOOKS_QUERY, {
-    variables: { title },
+    variables: { title, limit },
   });
 
   if (error) {
     console.error("Failed to fetch books:", error);
     return <p>Error occurred while fetching books.</p>;
   }
+
+  const books = data?.books?.books || [];
 
   return (
     <Grid container spacing={2}>
@@ -39,10 +42,8 @@ export const Books = ({ title }: BooksProps) => {
         <Grid container spacing={2}>
           {loading ? (
             <Message text="Loading..." />
-          ) : data.books.length > 0 ? (
-            data.books.map((book: Book) => (
-              <BookCard key={book.title} book={book} />
-            ))
+          ) : books.length > 0 ? (
+            books.map((book: Book) => <BookCard key={book.title} book={book} />)
           ) : (
             <Message text="No books available" />
           )}
