@@ -1,11 +1,9 @@
-// components/BookList/components/Books/Books.tsx
-
-import { useQuery } from "@apollo/client";
 import { Box, Grid } from "@mui/material";
-import { BOOKS_QUERY, Book } from "../../../../data/books";
+import { Book } from "../../../../data/books";
 import { BookCard } from "./components";
+import { useBooks } from "./useBooks";
 
-interface BooksProps {
+export interface BooksProps {
   title: string;
   limit: number;
 }
@@ -24,9 +22,7 @@ const Message = ({ text }: { text: string }) => (
 );
 
 export const Books = ({ title, limit }: BooksProps) => {
-  const { loading, error, data } = useQuery(BOOKS_QUERY, {
-    variables: { title, limit },
-  });
+  const { loading, error, data, loader } = useBooks({ title, limit });
 
   if (error) {
     console.error("Failed to fetch books:", error);
@@ -47,8 +43,10 @@ export const Books = ({ title, limit }: BooksProps) => {
           ) : (
             <Message text="No books available" />
           )}
+          <div ref={loader} />
         </Grid>
       </Grid>
+      <Grid item xs={1} sm={1} md={2} />
     </Grid>
   );
 };
