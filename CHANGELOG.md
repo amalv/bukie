@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/amalv/bukie/compare/v1.19.0...v1.20.0) (2023-12-21)
+
+
+### Features
+
+* update BookList component to limit number of books displayed ([230756d](https://github.com/amalv/bukie/commit/230756db0b110e4cbc2073c6a71709cd376c8c5a))
+
 # [1.19.0](https://github.com/amalv/bukie/compare/v1.18.0...v1.19.0) (2023-12-21)
 
 
