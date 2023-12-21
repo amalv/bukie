@@ -30,7 +30,7 @@ const SearchInput = ({ search, setSearch }: SearchInputProps) => {
       }}
     >
       <Grid container justifyContent="center">
-        <Grid item xs={8}>
+        <Grid item xs={10} md={8}>
           <StyledTextField
             label="Search by title"
             variant="outlined"
