@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/amalv/bukie/compare/v1.18.0...v1.19.0) (2023-12-21)
+
+
+### Features
+
+* update grid item sizes in BookList and BookCard components in order to improve responsive view ([0415a89](https://github.com/amalv/bukie/commit/0415a89edc8ed5f178cd3f931a4ece856c11073a))
+
 # [1.18.0](https://github.com/amalv/bukie/compare/v1.17.0...v1.18.0) (2023-12-18)
 
 
