@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/amalv/bukie/compare/v1.21.0...v1.22.0) (2023-12-22)
+
+
+### Features
+
+* update search functionality in BookList component to support author ([defb5b2](https://github.com/amalv/bukie/commit/defb5b2ace2f50e6734ae47eac4e9f6978b0fff9))
+
 # [1.21.0](https://github.com/amalv/bukie/compare/v1.20.1...v1.21.0) (2023-12-21)
 
 
