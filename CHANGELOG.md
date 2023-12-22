@@ -1,3 +1,10 @@
+## [1.22.1](https://github.com/amalv/bukie/compare/v1.22.0...v1.22.1) (2023-12-22)
+
+
+### Bug Fixes
+
+* update  BookList test to support new search approach ([8ce1e34](https://github.com/amalv/bukie/commit/8ce1e347a5a3a148f129984cb546effafb20380d))
+
 # [1.22.0](https://github.com/amalv/bukie/compare/v1.21.0...v1.22.0) (2023-12-22)
 
 
