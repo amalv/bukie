@@ -19,7 +19,7 @@ describe("BookList", () => {
 
     expect(mockBooks).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: "", // Initial debouncedSearch value
+        search: "", // Initial debouncedSearch value
         limit: 50,
       })
     );
@@ -29,7 +29,7 @@ describe("BookList", () => {
     render(<BookList />);
 
     // Simulate user input to the SearchInput component
-    fireEvent.change(screen.getByLabelText("Search by title"), {
+    fireEvent.change(screen.getByLabelText("Search by title or author"), {
       target: { value: "New search value" },
     });
 
@@ -39,7 +39,7 @@ describe("BookList", () => {
     // Check that the Books component was called with the updated debouncedSearch value
     expect(mockBooks).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: "New search value",
+        search: "New search value",
       })
     );
   });
