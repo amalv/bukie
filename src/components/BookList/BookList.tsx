@@ -32,7 +32,7 @@ const SearchInput = ({ search, setSearch }: SearchInputProps) => {
       <Grid container justifyContent="center">
         <Grid item xs={10} md={8}>
           <StyledTextField
-            label="Search by title"
+            label="Search by title or author"
             variant="outlined"
             onChange={handleSearchChange}
             fullWidth
@@ -61,7 +61,7 @@ export const BookList = () => {
   return (
     <Root>
       <SearchInput search={search} setSearch={setSearch} />
-      <Books title={debouncedSearch} limit={50} />
+      <Books search={debouncedSearch} limit={50} />
     </Root>
   );
 };

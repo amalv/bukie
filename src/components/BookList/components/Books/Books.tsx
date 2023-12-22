@@ -4,7 +4,7 @@ import { BookCard } from "./components";
 import { useBooks } from "./useBooks";
 
 export interface BooksProps {
-  title: string;
+  search: string;
   limit: number;
 }
 
@@ -21,8 +21,8 @@ const Message = ({ text }: { text: string }) => (
   </Grid>
 );
 
-export const Books = ({ title, limit }: BooksProps) => {
-  const { loading, error, data, loader } = useBooks({ title, limit });
+export const Books = ({ search, limit }: BooksProps) => {
+  const { loading, error, data, loader } = useBooks({ search, limit });
 
   if (error) {
     console.error("Failed to fetch books:", error);

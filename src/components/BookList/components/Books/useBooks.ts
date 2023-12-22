@@ -1,18 +1,56 @@
 import { useQuery } from "@apollo/client";
-import { useEffect, useRef, useCallback, useState } from "react";
-import { BOOKS_QUERY } from "../../../../data/books";
+import { useEffect, useMemo, useRef, useCallback, useState } from "react";
+import {
+  BOOKS_QUERY,
+  BooksData,
+  BooksVars,
+  Book,
+} from "../../../../data/books";
 
+const PAGE_SIZE = 50;
+const ROOT_MARGIN = "20px";
+
+interface FetchMoreResult {
+  books: {
+    __typename: string;
+    cursor: string;
+    books: Book[];
+  };
+}
 interface UseBooksProps {
-  title: string;
+  search: string;
   limit: number;
 }
 
-export const useBooks = ({ title, limit }: UseBooksProps) => {
+export const useBooks = ({ search, limit }: UseBooksProps) => {
+  // State and refs
   const lastPageReachedRef = useRef(false);
   const [lastPageReached, setLastPageReached] = useState(false);
-  const { loading, error, data, fetchMore } = useQuery(BOOKS_QUERY, {
-    variables: { title, limit, cursor: "0" },
-  });
+
+  // Fetch books
+  const { loading, error, data, fetchMore } = useQuery<BooksData, BooksVars>(
+    BOOKS_QUERY,
+    {
+      variables: { title: search, author: search, limit, cursor: "0" },
+    }
+  );
+
+  // Update query with new data
+  const updateQuery = (
+    prev: BooksData,
+    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
+  ) => {
+    if (!fetchMoreResult) return prev;
+    const isLastPage = fetchMoreResult.books.books.length < PAGE_SIZE;
+    setLastPageReached(isLastPage);
+    return {
+      books: {
+        __typename: prev.books.__typename,
+        cursor: fetchMoreResult.books.cursor,
+        books: [...prev.books.books, ...fetchMoreResult.books.books],
+      },
+    };
+  };
 
   const loader = useRef(null);
 
@@ -20,61 +58,68 @@ export const useBooks = ({ title, limit }: UseBooksProps) => {
     lastPageReachedRef.current = lastPageReached;
   }, [lastPageReached]);
 
+  // Fetch more books when loader is visible
+  const handleFetchMore = useCallback(
+    (observer: IntersectionObserver) => {
+      if (loader.current) {
+        observer.unobserve(loader.current);
+      }
+
+      fetchMore({
+        variables: {
+          cursor: data?.books?.cursor,
+        },
+        updateQuery,
+      }).then(() => {
+        if (loader.current && observer && !lastPageReachedRef.current) {
+          observer.observe(loader.current);
+        }
+      });
+    },
+    [data, fetchMore]
+  );
+
+  // Handle intersection events
   const handleObserver = useCallback(
     (entities: IntersectionObserverEntry[], observer: IntersectionObserver) => {
       const target = entities[0];
       if (target.isIntersecting && !loading && !lastPageReachedRef.current) {
-        observer.unobserve(target.target);
-
-        fetchMore({
-          variables: {
-            cursor: data?.books?.cursor,
-          },
-          updateQuery: (prev, { fetchMoreResult }) => {
-            if (!fetchMoreResult) return prev;
-            const isLastPage = fetchMoreResult.books.books.length < 50;
-            setLastPageReached(isLastPage);
-            return {
-              books: {
-                __typename: prev.books.__typename,
-                cursor: fetchMoreResult.books.cursor,
-                books: [...prev.books.books, ...fetchMoreResult.books.books],
-              },
-            };
-          },
-        }).then(() => {
-          if (loader.current && observer && !lastPageReachedRef.current) {
-            observer.observe(loader.current);
-          }
-        });
+        handleFetchMore(observer);
       }
     },
-    [data, fetchMore, loading]
+    [loading, handleFetchMore]
   );
 
-  useEffect(() => {
-    const options = {
+  // Intersection observer options
+  const options = useMemo(
+    () => ({
       root: null,
-      rootMargin: "20px",
+      rootMargin: ROOT_MARGIN,
       threshold: 1.0,
-    };
+    }),
+    []
+  );
 
+  // Set up intersection observer
+  useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       if (observer) {
         handleObserver(entries, observer);
       }
     }, options);
 
-    if (loader.current) {
-      observer.observe(loader.current);
+    const currentLoader = loader.current;
+
+    if (currentLoader) {
+      observer.observe(currentLoader);
     }
 
     return () => {
-      if (loader.current) {
-        observer.unobserve(loader.current);
+      if (currentLoader) {
+        observer.unobserve(currentLoader);
       }
     };
-  }, [handleObserver]);
+  }, [handleObserver, options]);
 
   return { loading, error, data, loader };
 };
