@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/amalv/bukie/compare/v1.22.1...v1.23.0) (2023-12-23)
+
+
+### Features
+
+* add Auth0 authentication and login button component ([fce9943](https://github.com/amalv/bukie/commit/fce9943bace31a8918bd4c7305c1827d46365b5b))
+
 ## [1.22.1](https://github.com/amalv/bukie/compare/v1.22.0...v1.22.1) (2023-12-22)
 
 
