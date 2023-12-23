@@ -33,20 +33,14 @@ export const Books = ({ search, limit }: BooksProps) => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={1} sm={1} md={2} />
-      <Grid item xs={10} sm={10} md={8}>
-        <Grid container spacing={2}>
-          {loading ? (
-            <Message text="Loading..." />
-          ) : books.length > 0 ? (
-            books.map((book: Book) => <BookCard key={book.title} book={book} />)
-          ) : (
-            <Message text="No books available" />
-          )}
-          <div ref={loader} />
-        </Grid>
-      </Grid>
-      <Grid item xs={1} sm={1} md={2} />
+      {loading ? (
+        <Message text="Loading..." />
+      ) : books.length > 0 ? (
+        books.map((book: Book) => <BookCard key={book.title} book={book} />)
+      ) : (
+        <Message text="No books available" />
+      )}
+      <div ref={loader} />
     </Grid>
   );
 };

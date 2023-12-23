@@ -1,3 +1,4 @@
+import { useAuth0 } from "@auth0/auth0-react";
 import {
   ChangeEvent,
   Dispatch,
@@ -8,6 +9,7 @@ import {
 import { Box, Grid } from "@mui/material";
 import { Root, StyledTextField } from "./BookList.styles";
 import { Books } from "./components";
+import { LoginButton } from "./components/LoginButton/LoginButton";
 
 interface SearchInputProps {
   search: string;
@@ -22,24 +24,18 @@ const SearchInput = ({ search, setSearch }: SearchInputProps) => {
   return (
     <Box
       py={2}
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        width: "100%",
-        alignSelf: "center",
-      }}
+      display="flex"
+      justifyContent="center"
+      width="100%"
+      alignSelf="center"
     >
-      <Grid container justifyContent="center">
-        <Grid item xs={10} md={8}>
-          <StyledTextField
-            label="Search by title or author"
-            variant="outlined"
-            onChange={handleSearchChange}
-            fullWidth
-            value={search}
-          />
-        </Grid>
-      </Grid>
+      <StyledTextField
+        label="Search by title or author"
+        variant="outlined"
+        onChange={handleSearchChange}
+        fullWidth
+        value={search}
+      />
     </Box>
   );
 };
@@ -47,6 +43,14 @@ const SearchInput = ({ search, setSearch }: SearchInputProps) => {
 export const BookList = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { user } = useAuth0();
+  const showLogin = import.meta.env.VITE_SHOW_LOGIN === "true";
+
+  useEffect(() => {
+    if (user) {
+      console.log(user.sub); // user ID
+    }
+  }, [user]);
 
   useEffect(() => {
     const timerId = setTimeout(() => {
@@ -60,8 +64,19 @@ export const BookList = () => {
 
   return (
     <Root>
-      <SearchInput search={search} setSearch={setSearch} />
-      <Books search={debouncedSearch} limit={50} />
+      <Grid container>
+        <Grid item xs={1} sm={1} md={2} />
+        <Grid item xs={10} sm={10} md={8}>
+          {showLogin && (
+            <Box display="flex" justifyContent="flex-end" mt={2}>
+              <LoginButton />
+            </Box>
+          )}
+          <SearchInput search={search} setSearch={setSearch} />
+          <Books search={debouncedSearch} limit={50} />
+        </Grid>
+        <Grid item xs={1} sm={1} md={2} />
+      </Grid>
     </Root>
   );
 };

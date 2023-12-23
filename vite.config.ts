@@ -10,5 +10,5 @@ export default defineConfig({
       typescript: true,
     }),
   ],
-  base: "/bukie/",
+  base: process.env.NODE_ENV === "production" ? "/bukie/" : "/",
 });
