@@ -1,3 +1,10 @@
+# [1.28.0](https://github.com/amalv/bukie/compare/v1.27.0...v1.28.0) (2023-12-26)
+
+
+### Features
+
+* refactor BookList component and handle error display ([cb71a21](https://github.com/amalv/bukie/commit/cb71a2159ca7f48b4d549a6745ef6a495d97a655))
+
 # [1.27.0](https://github.com/amalv/bukie/compare/v1.26.0...v1.27.0) (2023-12-26)
 
 
