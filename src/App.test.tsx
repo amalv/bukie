@@ -3,6 +3,11 @@ import { render, screen } from "@testing-library/react";
 import App from "./App";
 
 const mockBookList = vi.fn();
+
+vi.mock("@auth0/auth0-react", () => ({
+  Auth0Provider: ({ children }) => children,
+}));
+
 vi.mock("./components/BookList/BookList", () => ({
   BookList: () => {
     mockBookList();
