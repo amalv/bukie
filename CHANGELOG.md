@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/amalv/bukie/compare/v1.26.0...v1.27.0) (2023-12-26)
+
+
+### Features
+
+* refactor BookList component and extract logic to useBookList hook ([e1c55ba](https://github.com/amalv/bukie/commit/e1c55ba254b5f774e1c226ef9c6486503464cfb1))
+
 # [1.26.0](https://github.com/amalv/bukie/compare/v1.25.1...v1.26.0) (2023-12-26)
 
 
