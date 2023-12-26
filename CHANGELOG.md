@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/amalv/bukie/compare/v1.28.0...v1.29.0) (2023-12-26)
+
+
+### Features
+
+* decouple intersection observer logic into useIntersectionObserver hook ([fe1dfa1](https://github.com/amalv/bukie/commit/fe1dfa1c63ad10883bbbeba5a9aa517457c37524))
+
 # [1.28.0](https://github.com/amalv/bukie/compare/v1.27.0...v1.28.0) (2023-12-26)
 
 
