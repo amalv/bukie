@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/amalv/bukie/compare/v1.29.0...v1.30.0) (2023-12-26)
+
+
+### Features
+
+* delete BookList component and replace with LibraryPage ([bd8be97](https://github.com/amalv/bukie/commit/bd8be97d34154fd0f6622b64613ea760c7fbfcce))
+
 # [1.29.0](https://github.com/amalv/bukie/compare/v1.28.0...v1.29.0) (2023-12-26)
 
 
