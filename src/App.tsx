@@ -10,6 +10,35 @@ const App = () => {
   const theme = createTheme({
     palette: {
       mode: prefersDarkMode ? "dark" : "light",
+      primary: {
+        light: "#a0522d",
+        main: "#a0522d",
+        dark: "#6d351a",
+        contrastText: "#fff",
+      },
+      secondary: {
+        light: "#556b2f",
+        main: "#556b2f",
+        dark: "#374b20",
+        contrastText: "#fff",
+      },
+    },
+    components: {
+      MuiAvatar: {
+        styleOverrides: {
+          root: {
+            backgroundColor: "#a0522d",
+            cursor: "pointer",
+          },
+        },
+      },
+      MuiListItemButton: {
+        styleOverrides: {
+          root: {
+            cursor: "pointer",
+          },
+        },
+      },
     },
   });
 
@@ -25,6 +54,7 @@ const App = () => {
       authorizationParams={{
         redirect_uri: redirectUri,
       }}
+      cacheLocation="localstorage"
     >
       <ApolloProvider client={client}>
         <ThemeProvider theme={theme}>

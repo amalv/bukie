@@ -6,7 +6,14 @@ import {
   useEffect,
   SetStateAction,
 } from "react";
-import { Box, Grid } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  CircularProgress,
+  Grid,
+  Menu,
+  MenuItem,
+} from "@mui/material";
 import { Root, StyledTextField } from "./BookList.styles";
 import { Books } from "./components";
 import { LoginButton } from "./components/LoginButton/LoginButton";
@@ -43,7 +50,8 @@ const SearchInput = ({ search, setSearch }: SearchInputProps) => {
 export const BookList = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const { user } = useAuth0();
+  const { user, logout, isLoading } = useAuth0();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -61,13 +69,40 @@ export const BookList = () => {
     };
   }, [search]);
 
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
     <Root>
       <Grid container>
         <Grid item xs={1} sm={1} md={2} />
         <Grid item xs={10} sm={10} md={8}>
           <Box display="flex" justifyContent="flex-end" mt={2}>
-            <LoginButton />
+            {isLoading ? (
+              <CircularProgress />
+            ) : user && user.name ? (
+              <div>
+                <Avatar onClick={handleClick}>{user.name[0]}</Avatar>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
+                >
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                </Menu>
+              </div>
+            ) : (
+              <LoginButton />
+            )}
           </Box>
           <SearchInput search={search} setSearch={setSearch} />
           <Books search={debouncedSearch} limit={50} />
