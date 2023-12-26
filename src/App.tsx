@@ -13,14 +13,17 @@ const App = () => {
     },
   });
 
-  console.log("Redirect URI: ", window.location.origin);
+  const isProduction = process.env.NODE_ENV === "production";
+  const redirectUri = isProduction
+    ? `${window.location.origin}/bukie`
+    : window.location.origin;
 
   return (
     <Auth0Provider
       domain={import.meta.env.VITE_AUTH0_DOMAIN}
       clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
       authorizationParams={{
-        redirect_uri: window.location.origin,
+        redirect_uri: redirectUri,
       }}
     >
       <ApolloProvider client={client}>
