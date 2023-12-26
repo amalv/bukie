@@ -1,3 +1,10 @@
+## [1.25.1](https://github.com/amalv/bukie/compare/v1.25.0...v1.25.1) (2023-12-26)
+
+
+### Bug Fixes
+
+* refactor redirect URI in App component ([fa4642e](https://github.com/amalv/bukie/commit/fa4642e7344e9b0666cb6f28b8228452a4ae817a))
+
 # [1.25.0](https://github.com/amalv/bukie/compare/v1.24.0...v1.25.0) (2023-12-26)
 
 
