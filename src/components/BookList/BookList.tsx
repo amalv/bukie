@@ -44,7 +44,6 @@ export const BookList = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const { user } = useAuth0();
-  const showLogin = import.meta.env.VITE_SHOW_LOGIN === "true";
 
   useEffect(() => {
     if (user) {
@@ -67,11 +66,9 @@ export const BookList = () => {
       <Grid container>
         <Grid item xs={1} sm={1} md={2} />
         <Grid item xs={10} sm={10} md={8}>
-          {showLogin && (
-            <Box display="flex" justifyContent="flex-end" mt={2}>
-              <LoginButton />
-            </Box>
-          )}
+          <Box display="flex" justifyContent="flex-end" mt={2}>
+            <LoginButton />
+          </Box>
           <SearchInput search={search} setSearch={setSearch} />
           <Books search={debouncedSearch} limit={50} />
         </Grid>
