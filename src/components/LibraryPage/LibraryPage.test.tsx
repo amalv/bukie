@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { BookList } from "./BookList";
+import { LibraryPage } from "./LibraryPage";
 import { BooksProps } from "./components";
 
 const mockBooks = vi.fn();
@@ -11,9 +11,9 @@ vi.mock("./components/Books/Books", () => ({
   },
 }));
 
-describe("BookList", () => {
+describe("LibraryPage", () => {
   it("renders correctly", () => {
-    render(<BookList />);
+    render(<LibraryPage />);
 
     expect(screen.getByText("Books")).toBeInTheDocument();
 
@@ -26,7 +26,7 @@ describe("BookList", () => {
   });
 
   it("updates search state correctly", async () => {
-    render(<BookList />);
+    render(<LibraryPage />);
 
     // Simulate user input to the SearchInput component
     fireEvent.change(screen.getByLabelText("Search by title or author"), {

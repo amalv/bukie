@@ -1,7 +1,7 @@
 import { ApolloProvider } from "@apollo/client";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { client } from "./apolloClient";
-import { BookList } from "./components/";
+import { LibraryPage } from "./components/";
 import { createTheme, ThemeProvider, useMediaQuery } from "@mui/material";
 
 const App = () => {
@@ -58,7 +58,7 @@ const App = () => {
     >
       <ApolloProvider client={client}>
         <ThemeProvider theme={theme}>
-          <BookList />
+          <LibraryPage />
         </ThemeProvider>
       </ApolloProvider>
     </Auth0Provider>

@@ -1,5 +1,5 @@
 import { ChangeEvent, Dispatch, SetStateAction } from "react";
-import { useBookList } from "./hooks";
+import { useLibraryPage } from "./hooks";
 import {
   Alert,
   Avatar,
@@ -10,7 +10,7 @@ import {
   MenuItem,
   Snackbar,
 } from "@mui/material";
-import { Root, StyledTextField } from "./BookList.styles";
+import { Root, StyledTextField } from "./LibraryPage.styles";
 import { Books } from "./components";
 import { LoginButton } from "./components/LoginButton/LoginButton";
 
@@ -43,7 +43,7 @@ const SearchInput = ({ search, setSearch }: SearchInputProps) => {
   );
 };
 
-export const BookList = () => {
+export const LibraryPage = () => {
   const {
     search,
     setSearch,
@@ -56,7 +56,7 @@ export const BookList = () => {
     handleLogout,
     setError,
     userState,
-  } = useBookList();
+  } = useLibraryPage();
 
   const userStates = {
     loading: <CircularProgress />,

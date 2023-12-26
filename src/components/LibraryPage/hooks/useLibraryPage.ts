@@ -4,7 +4,7 @@ import { User, useAuth0 } from "@auth0/auth0-react";
 
 type UserState = "loading" | "authenticated" | "unauthenticated";
 
-interface BookListHook {
+interface LibraryPageHook {
   search: string;
   setSearch: React.Dispatch<React.SetStateAction<string>>;
   debouncedSearch: string;
@@ -19,7 +19,9 @@ interface BookListHook {
   userState: UserState;
 }
 
-export const useBookList = (debounceDelay: number = 500): BookListHook => {
+export const useLibraryPage = (
+  debounceDelay: number = 500
+): LibraryPageHook => {
   const [error, setError] = useState<Error | null>(null);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, debounceDelay);
