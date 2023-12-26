@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { Book } from "../../../../data/books";
 import { BookCard } from "./components";
-import { useBooks } from "./useBooks";
+import { useBooks } from "./hooks";
 
 const SNACKBAR_AUTO_HIDE_DURATION = 6000;
 

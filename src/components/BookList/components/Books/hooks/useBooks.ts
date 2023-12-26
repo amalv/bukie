@@ -1,14 +1,14 @@
 import { useQuery } from "@apollo/client";
-import { useEffect, useMemo, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import {
   BOOKS_QUERY,
   BooksData,
   BooksVars,
   Book,
-} from "../../../../data/books";
+} from "../../../../../data/books";
+import { useIntersectionObserver } from "./useIntersectionObserver";
 
 const PAGE_SIZE = 50;
-const ROOT_MARGIN = "20px";
 
 interface FetchMoreResult {
   books: {
@@ -23,7 +23,6 @@ interface UseBooksProps {
 }
 
 export const useBooks = ({ search, limit }: UseBooksProps) => {
-  // State and refs
   const lastPageReachedRef = useRef(false);
   const [lastPageReached, setLastPageReached] = useState(false);
 
@@ -79,47 +78,7 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
     [data, fetchMore]
   );
 
-  // Handle intersection events
-  const handleObserver = useCallback(
-    (entities: IntersectionObserverEntry[], observer: IntersectionObserver) => {
-      const target = entities[0];
-      if (target.isIntersecting && !loading && !lastPageReachedRef.current) {
-        handleFetchMore(observer);
-      }
-    },
-    [loading, handleFetchMore]
-  );
-
-  // Intersection observer options
-  const options = useMemo(
-    () => ({
-      root: null,
-      rootMargin: ROOT_MARGIN,
-      threshold: 1.0,
-    }),
-    []
-  );
-
-  // Set up intersection observer
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      if (observer) {
-        handleObserver(entries, observer);
-      }
-    }, options);
-
-    const currentLoader = loader.current;
-
-    if (currentLoader) {
-      observer.observe(currentLoader);
-    }
-
-    return () => {
-      if (currentLoader) {
-        observer.unobserve(currentLoader);
-      }
-    };
-  }, [handleObserver, options]);
+  useIntersectionObserver(loader, handleFetchMore, loading, lastPageReachedRef);
 
   return { loading, error, data, loader };
 };
