@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/amalv/bukie/compare/v1.23.0...v1.24.0) (2023-12-26)
+
+
+### Features
+
+* add Auth0 configuration and remove obsolete code ([4c85438](https://github.com/amalv/bukie/commit/4c85438bab04c1165d07c2d80aca34b3423967e7))
+
 # [1.23.0](https://github.com/amalv/bukie/compare/v1.22.1...v1.23.0) (2023-12-23)
 
 
