@@ -1,12 +1,14 @@
 import { ChangeEvent, Dispatch, SetStateAction } from "react";
-import { useBookList } from "./useBookList";
+import { useBookList } from "./hooks";
 import {
+  Alert,
   Avatar,
   Box,
   CircularProgress,
   Grid,
   Menu,
   MenuItem,
+  Snackbar,
 } from "@mui/material";
 import { Root, StyledTextField } from "./BookList.styles";
 import { Books } from "./components";
@@ -46,11 +48,13 @@ export const BookList = () => {
     search,
     setSearch,
     debouncedSearch,
+    error,
     user,
     anchorEl,
-    handleClick,
-    handleClose,
+    handleMenuOpen,
+    handleMenuClose,
     handleLogout,
+    setError,
     userState,
   } = useBookList();
 
@@ -59,11 +63,11 @@ export const BookList = () => {
     authenticated:
       user && user.name ? (
         <div>
-          <Avatar onClick={handleClick}>{user?.name[0]}</Avatar>
+          <Avatar onClick={handleMenuOpen}>{user?.name[0]}</Avatar>
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
-            onClose={handleClose}
+            onClose={handleMenuClose}
           >
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
@@ -74,6 +78,15 @@ export const BookList = () => {
 
   return (
     <Root>
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError(null)}
+      >
+        <Alert severity="error" onClose={() => setError(null)}>
+          {error?.message}
+        </Alert>
+      </Snackbar>
       <Grid container>
         <Grid item xs={1} sm={1} md={2} />
         <Grid item xs={10} sm={10} md={8}>
