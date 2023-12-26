@@ -13,6 +13,8 @@ const App = () => {
     },
   });
 
+  console.log("Redirect URI: ", window.location.origin);
+
   return (
     <Auth0Provider
       domain={import.meta.env.VITE_AUTH0_DOMAIN}
