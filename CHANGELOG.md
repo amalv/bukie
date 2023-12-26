@@ -1,3 +1,16 @@
+# [1.25.0](https://github.com/amalv/bukie/compare/v1.24.0...v1.25.0) (2023-12-26)
+
+
+### Bug Fixes
+
+* add mock for Auth0Provider in App.test.tsx ([c0f8e1c](https://github.com/amalv/bukie/commit/c0f8e1c1e01a5bf149331bcae10a45fa3bd4d035))
+* add ReactNode type to Auth0Provider props ([63896e6](https://github.com/amalv/bukie/commit/63896e60f1f81cc00fc46246fb6aefdcdb41cae6))
+
+
+### Features
+
+* add console log for redirect URI ([6050810](https://github.com/amalv/bukie/commit/6050810eb491a2ad3701295d3c1b0c4d2b9f1b90))
+
 # [1.24.0](https://github.com/amalv/bukie/compare/v1.23.0...v1.24.0) (2023-12-26)
 
 
