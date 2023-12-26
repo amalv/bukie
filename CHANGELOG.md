@@ -1,3 +1,10 @@
+# [1.26.0](https://github.com/amalv/bukie/compare/v1.25.1...v1.26.0) (2023-12-26)
+
+
+### Features
+
+* add theme customization and user avatar with logout functionality ([57bcba4](https://github.com/amalv/bukie/commit/57bcba4107b7e1a9f9722ebfc00fca043b7d69d2))
+
 ## [1.25.1](https://github.com/amalv/bukie/compare/v1.25.0...v1.25.1) (2023-12-26)
 
 
