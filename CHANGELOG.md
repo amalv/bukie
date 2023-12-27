@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/amalv/bukie/compare/v1.30.0...v1.31.0) (2023-12-27)
+
+
+### Features
+
+* enhance layout, add tests, and improve folder structure in LibraryPage ([3c32ba7](https://github.com/amalv/bukie/commit/3c32ba796d1d6b774475b61bb336b6976776b7e5))
+
 # [1.30.0](https://github.com/amalv/bukie/compare/v1.29.0...v1.30.0) (2023-12-26)
 
 
