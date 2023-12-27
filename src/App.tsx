@@ -13,23 +13,23 @@ const App = () => {
     palette: {
       mode: darkMode ? "dark" : "light",
       primary: {
-        light: "#a0522d",
-        main: "#a0522d",
-        dark: "#6d351a",
-        contrastText: "#fff",
+        light: "#f5deb3", // wheat color
+        main: "#f5deb3",
+        dark: "#d2b48c", // tan color
+        contrastText: "#000", // black text for contrast
       },
       secondary: {
-        light: "#556b2f",
-        main: "#556b2f",
-        dark: "#374b20",
-        contrastText: "#fff",
+        light: "#90ee90", // light green
+        main: "#90ee90",
+        dark: "#3cb371", // medium sea green
+        contrastText: "#000", // black text for contrast
       },
     },
     components: {
       MuiAvatar: {
         styleOverrides: {
           root: {
-            backgroundColor: "#a0522d",
+            backgroundColor: "#f5deb3", // wheat color
             cursor: "pointer",
           },
         },
@@ -65,6 +65,7 @@ const App = () => {
               backgroundColor: theme.palette.background.default,
               color: theme.palette.text.primary,
               width: "100%",
+              minHeight: "100vh",
               margin: 0,
             }}
           >
