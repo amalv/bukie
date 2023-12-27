@@ -1,3 +1,10 @@
+# [1.32.0](https://github.com/amalv/bukie/compare/v1.31.0...v1.32.0) (2023-12-27)
+
+
+### Features
+
+* **LibraryPage:** update Books component and add unit tests ([849115a](https://github.com/amalv/bukie/commit/849115a7d5804f8fb8daddcda201c97401d5153b))
+
 # [1.31.0](https://github.com/amalv/bukie/compare/v1.30.0...v1.31.0) (2023-12-27)
 
 
