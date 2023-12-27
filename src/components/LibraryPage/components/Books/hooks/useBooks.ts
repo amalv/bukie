@@ -1,5 +1,6 @@
 import { useQuery } from "@apollo/client";
 import { useEffect, useRef, useCallback, useState } from "react";
+import { SnackbarCloseReason } from "@mui/material";
 import {
   BOOKS_QUERY,
   BooksData,
@@ -25,7 +26,7 @@ interface UseBooksProps {
 export const useBooks = ({ search, limit }: UseBooksProps) => {
   const lastPageReachedRef = useRef(false);
   const [lastPageReached, setLastPageReached] = useState(false);
-
+  const [isErrorSnackbarOpen, setIsErrorSnackbarOpen] = useState(false);
   // Fetch books
   const { loading, error, data, fetchMore } = useQuery<BooksData, BooksVars>(
     BOOKS_QUERY,
@@ -33,6 +34,23 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
       variables: { title: search, author: search, limit, cursor: "0" },
     }
   );
+
+  useEffect(() => {
+    if (error) {
+      setIsErrorSnackbarOpen(true);
+    }
+  }, [error]);
+
+  const handleCloseSnackbar = (
+    _: React.SyntheticEvent | Event,
+    reason?: SnackbarCloseReason
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setIsErrorSnackbarOpen(false);
+  };
 
   // Update query with new data
   const updateQuery = (
@@ -80,5 +98,12 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
 
   useIntersectionObserver(loader, handleFetchMore, loading, lastPageReachedRef);
 
-  return { loading, error, data, loader };
+  return {
+    isErrorSnackbarOpen,
+    handleCloseSnackbar,
+    loading,
+    error,
+    data,
+    loader,
+  };
 };
