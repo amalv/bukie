@@ -1,3 +1,10 @@
+# [1.33.0](https://github.com/amalv/bukie/compare/v1.32.0...v1.33.0) (2023-12-27)
+
+
+### Features
+
+* add theme selector and persistence ([40fa101](https://github.com/amalv/bukie/commit/40fa1013fb42ac971d02465dcb776d712412e1d1))
+
 # [1.32.0](https://github.com/amalv/bukie/compare/v1.31.0...v1.32.0) (2023-12-27)
 
 
