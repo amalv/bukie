@@ -1,5 +1,14 @@
-import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  makeVar,
+} from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
+
+export const darkModeVar = makeVar(
+  window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+);
 
 const API_URL =
   import.meta.env.VITE_API_URL_PRODUCTION ||
@@ -22,5 +31,17 @@ const authLink = setContext((_, { headers }) => {
 
 export const client = new ApolloClient({
   link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          darkMode: {
+            read() {
+              return darkModeVar();
+            },
+          },
+        },
+      },
+    },
+  }),
 });

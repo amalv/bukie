@@ -12,7 +12,9 @@ export const CardWrapper = styled(Card)(
   border-radius: 8px;
   overflow: hidden;
   transition: box-shadow 0.3s ease-in-out, transform 0.5s ease-in-out;
-  background: ${theme.palette.background.paper};
+  background: ${
+    theme.palette.mode === "dark" ? "#333" : theme.palette.background.paper
+  };
 
   &:hover {
     box-shadow: 0 3px 6px ${theme.palette.action.hover};
