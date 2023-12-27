@@ -20,7 +20,7 @@ interface BookCardProps {
 }
 
 export const BookCard: React.FC<BookCardProps> = ({ book }) => (
-  <Grid item xs={6} sm={4} md={4} lg={4} xl={2} key={book.title}>
+  <Grid item xs={6} sm={4} md={4} lg={3} xl={2} key={book.title}>
     <CardWrapper>
       <CardActionAreaWrapper>
         <Cover

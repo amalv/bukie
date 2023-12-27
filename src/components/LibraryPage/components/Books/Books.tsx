@@ -70,14 +70,7 @@ export const Books = ({ search, limit }: BooksProps) => {
         </Alert>
       </Snackbar>
       {loading ? (
-        <Grid
-          item
-          xs={12}
-          container
-          justifyContent="center"
-          alignItems="center"
-          minHeight="200px"
-        >
+        <Grid item xs={12} container minHeight="200px">
           <CircularProgress />
         </Grid>
       ) : books.length > 0 ? (

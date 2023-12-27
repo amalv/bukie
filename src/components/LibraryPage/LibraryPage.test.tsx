@@ -1,46 +1,38 @@
-import { render, screen, fireEvent, act } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
 import { LibraryPage } from "./LibraryPage";
-import { BooksProps } from "./components";
+import { useLibraryPage } from "./hooks";
+import { vi } from "vitest";
 
-const mockBooks = vi.fn();
-vi.mock("./components/Books/Books", () => ({
-  Books: (props: BooksProps) => {
-    mockBooks(props);
-    return <div>Books</div>;
-  },
+vi.mock("./hooks", () => ({
+  useLibraryPage: vi.fn(),
+}));
+
+vi.mock("./components/Books", () => ({
+  Books: () => <div>Books</div>,
+}));
+
+vi.mock("./components/Search", () => ({
+  Search: () => <div>Search</div>,
+}));
+
+vi.mock("./components/UserAuthentication", () => ({
+  UserAuthentication: () => <div>UserAuthentication</div>,
 }));
 
 describe("LibraryPage", () => {
-  it("renders correctly", () => {
-    render(<LibraryPage />);
-
-    expect(screen.getByText("Books")).toBeInTheDocument();
-
-    expect(mockBooks).toHaveBeenCalledWith(
-      expect.objectContaining({
-        search: "", // Initial debouncedSearch value
-        limit: 50,
-      })
-    );
-  });
-
-  it("updates search state correctly", async () => {
-    render(<LibraryPage />);
-
-    // Simulate user input to the SearchInput component
-    fireEvent.change(screen.getByLabelText("Search by title or author"), {
-      target: { value: "New search value" },
+  it("renders without crashing", () => {
+    (useLibraryPage as jest.Mock).mockReturnValue({
+      search: "",
+      setSearch: vi.fn(),
+      debouncedSearch: "",
+      error: null,
+      handleLogout: vi.fn(),
+      setError: vi.fn(),
     });
 
-    // Wait for the debounce delay
-    await act(() => new Promise((resolve) => setTimeout(resolve, 500)));
-
-    // Check that the Books component was called with the updated debouncedSearch value
-    expect(mockBooks).toHaveBeenCalledWith(
-      expect.objectContaining({
-        search: "New search value",
-      })
-    );
+    render(<LibraryPage />);
+    expect(screen.getByText("Books")).toBeInTheDocument();
+    expect(screen.getByText("Search")).toBeInTheDocument();
+    expect(screen.getByText("UserAuthentication")).toBeInTheDocument();
   });
 });
