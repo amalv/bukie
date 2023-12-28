@@ -1,16 +1,19 @@
-import { Box, ThemeProvider } from "@mui/material";
+import { ThemeProvider } from "@mui/material";
 import { ApolloProvider } from "@apollo/client";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { client } from "./apolloClient";
 import { LibraryPage } from "./components/";
 import { useTheme } from "./hooks";
 
-const App = () => {
-  const theme = useTheme();
+const getRedirectUri = () => {
   const isProduction = process.env.NODE_ENV === "production";
-  const redirectUri = isProduction
+  return isProduction
     ? `${window.location.origin}/bukie`
     : window.location.origin;
+};
+const App = () => {
+  const theme = useTheme();
+  const redirectUri = getRedirectUri();
 
   return (
     <Auth0Provider
@@ -23,17 +26,7 @@ const App = () => {
     >
       <ApolloProvider client={client}>
         <ThemeProvider theme={theme}>
-          <Box
-            sx={{
-              backgroundColor: theme.palette.background.default,
-              color: theme.palette.text.primary,
-              width: "100%",
-              minHeight: "100vh",
-              margin: 0,
-            }}
-          >
-            <LibraryPage />
-          </Box>
+          <LibraryPage />
         </ThemeProvider>
       </ApolloProvider>
     </Auth0Provider>

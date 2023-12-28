@@ -7,10 +7,15 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
-export const Root = styled("div")`
-  display: flex;
-  flex-direction: column;
-`;
+export const Root = styled("div")(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  backgroundColor: theme.palette.background.default,
+  color: theme.palette.text.primary,
+  width: "100%",
+  minHeight: "100vh",
+  margin: 0,
+}));
 
 export const StyledTextField = styled(TextField)(({ theme }) => {
   return `
