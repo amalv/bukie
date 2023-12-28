@@ -1,4 +1,9 @@
-import { useQuery } from "@apollo/client";
+import {
+  ApolloQueryResult,
+  FetchMoreQueryOptions,
+  FetchMoreOptions,
+  useQuery,
+} from "@apollo/client";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { SnackbarCloseReason } from "@mui/material";
 import {
@@ -23,6 +28,73 @@ interface UseBooksProps {
   limit: number;
 }
 
+const getCloseSnackbarHandler = (
+  setIsErrorSnackbarOpen: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  return (_: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setIsErrorSnackbarOpen(false);
+  };
+};
+
+const getUpdateQuery = (
+  setLastPageReached: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  return (
+    prev: BooksData,
+    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
+  ) => {
+    if (!fetchMoreResult) return prev;
+    const isLastPage = fetchMoreResult.books.books.length < PAGE_SIZE;
+    setLastPageReached(isLastPage);
+    return {
+      books: {
+        __typename: prev.books.__typename,
+        cursor: fetchMoreResult.books.cursor,
+        books: [...prev.books.books, ...fetchMoreResult.books.books],
+      },
+    };
+  };
+};
+
+const useHandleFetchMore = (
+  loader: React.MutableRefObject<null>,
+  fetchMore: (
+    options: FetchMoreQueryOptions<BooksVars, BooksData> &
+      FetchMoreOptions<BooksData, BooksVars>
+  ) => Promise<ApolloQueryResult<BooksData>>,
+  data: BooksData | undefined,
+  updateQuery: (
+    prev: BooksData,
+    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
+  ) => BooksData
+) => {
+  const lastPageReachedRef = useRef(false);
+
+  return useCallback(
+    (observer: IntersectionObserver) => {
+      if (loader.current) {
+        observer.unobserve(loader.current);
+      }
+
+      fetchMore({
+        variables: {
+          cursor: data?.books?.cursor,
+        },
+        updateQuery,
+      }).then(() => {
+        if (loader.current && observer && !lastPageReachedRef.current) {
+          observer.observe(loader.current);
+        }
+      });
+    },
+    [data, fetchMore, loader, updateQuery]
+  );
+};
+
 export const useBooks = ({ search, limit }: UseBooksProps) => {
   const lastPageReachedRef = useRef(false);
   const [lastPageReached, setLastPageReached] = useState(false);
@@ -41,60 +113,19 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
     }
   }, [error]);
 
-  const handleCloseSnackbar = (
-    _: React.SyntheticEvent | Event,
-    reason?: SnackbarCloseReason
-  ) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setIsErrorSnackbarOpen(false);
-  };
-
-  // Update query with new data
-  const updateQuery = (
-    prev: BooksData,
-    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
-  ) => {
-    if (!fetchMoreResult) return prev;
-    const isLastPage = fetchMoreResult.books.books.length < PAGE_SIZE;
-    setLastPageReached(isLastPage);
-    return {
-      books: {
-        __typename: prev.books.__typename,
-        cursor: fetchMoreResult.books.cursor,
-        books: [...prev.books.books, ...fetchMoreResult.books.books],
-      },
-    };
-  };
-
+  const handleCloseSnackbar = getCloseSnackbarHandler(setIsErrorSnackbarOpen);
+  const updateQuery = getUpdateQuery(setLastPageReached);
   const loader = useRef(null);
+  const handleFetchMore = useHandleFetchMore(
+    loader,
+    fetchMore,
+    data,
+    updateQuery
+  );
 
   useEffect(() => {
     lastPageReachedRef.current = lastPageReached;
   }, [lastPageReached]);
-
-  // Fetch more books when loader is visible
-  const handleFetchMore = useCallback(
-    (observer: IntersectionObserver) => {
-      if (loader.current) {
-        observer.unobserve(loader.current);
-      }
-
-      fetchMore({
-        variables: {
-          cursor: data?.books?.cursor,
-        },
-        updateQuery,
-      }).then(() => {
-        if (loader.current && observer && !lastPageReachedRef.current) {
-          observer.observe(loader.current);
-        }
-      });
-    },
-    [data, fetchMore]
-  );
 
   useIntersectionObserver(loader, handleFetchMore, loading, lastPageReachedRef);
 
