@@ -1,7 +1,8 @@
 import { useLibraryPage } from "./hooks";
-import { Alert, Box, Grid, Snackbar } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import { Root } from "./LibraryPage.styles";
 import { Books, Search, ThemeSwitch, UserAuthentication } from "./components";
+import { ErrorSnackbar } from "../shared";
 
 export const LibraryPage = () => {
   const { search, setSearch, debouncedSearch, error, setError } =
@@ -9,16 +10,11 @@ export const LibraryPage = () => {
 
   return (
     <Root>
-      <Snackbar
-        aria-live="polite"
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}
-      >
-        <Alert severity="error" onClose={() => setError(null)}>
-          {error?.message}
-        </Alert>
-      </Snackbar>
+      <ErrorSnackbar
+        open={Boolean(error)}
+        handleClose={() => setError(null)}
+        errorMessage={error?.message ?? ""}
+      />
       <Grid container>
         <Grid item xs={0.5} sm={1} md={2} lg={2} />
         <Grid item xs={11} sm={10} md={8} lg={8}>

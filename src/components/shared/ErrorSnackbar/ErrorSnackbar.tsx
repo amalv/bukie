@@ -19,6 +19,7 @@ export const ErrorSnackbar: React.FC<ErrorSnackbarProps> = ({
   errorMessage,
 }) => (
   <Snackbar
+    aria-live="polite"
     open={open}
     autoHideDuration={SNACKBAR_AUTO_HIDE_DURATION}
     onClose={handleClose}
