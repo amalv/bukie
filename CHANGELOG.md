@@ -1,3 +1,10 @@
+## [1.34.1](https://github.com/amalv/bukie/compare/v1.34.0...v1.34.1) (2023-12-28)
+
+
+### Bug Fixes
+
+* ThemeProvider import duplicated ([f8b1d57](https://github.com/amalv/bukie/commit/f8b1d577f1b9d334ab8bd3f28f7033762f2fae4c))
+
 # [1.34.0](https://github.com/amalv/bukie/compare/v1.33.0...v1.34.0) (2023-12-28)
 
 
