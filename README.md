@@ -2,6 +2,9 @@
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/38db54aa8cafbb619f02/maintainability)](https://codeclimate.com/github/amalv/bukie/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/38db54aa8cafbb619f02/test_coverage)](https://codeclimate.com/github/amalv/bukie/test_coverage)
+![Code Climate Status](https://github.com/amalv/bukie/actions/workflows/codeclimate.yml/badge.svg)
+![Deploy Status](https://github.com/amalv/bukie/actions/workflows/deploy.yml/badge.svg)
+![Semantic Release Status](https://github.com/amalv/bukie/actions/workflows/release.yml/badge.svg)
 
 Bukie is a project showcasing the use of TypeScript, React, Emotion, Material UI, and Apollo Client in a real-world application. It features a curated list of science fiction books, with a search engine and filters by title and author for easy navigation.
 
