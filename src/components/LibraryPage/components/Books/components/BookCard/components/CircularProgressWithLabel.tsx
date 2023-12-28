@@ -18,6 +18,23 @@ const determineColor = (value: number): CircularProgressProps["color"] => {
   }
   return "error";
 };
+
+const CircularProgressLabel = ({ value }: { value: number }) => (
+  <Box
+    display="flex"
+    alignItems="center"
+    justifyContent="center"
+    position="absolute"
+    top={0}
+    bottom={0}
+    left={0}
+    right={0}
+  >
+    <Typography variant="caption" component="div" color="text.secondary">
+      {`${Math.round(value)}%`}
+    </Typography>
+  </Box>
+);
 export const CircularProgressWithLabel = (
   props: CircularProgressProps & { value: number }
 ) => {
@@ -37,20 +54,7 @@ export const CircularProgressWithLabel = (
           value={props.value}
           color={color}
         />
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          position="absolute"
-          top={0}
-          bottom={0}
-          left={0}
-          right={0}
-        >
-          <Typography variant="caption" component="div" color="text.secondary">
-            {`${Math.round(props.value)}%`}
-          </Typography>
-        </Box>
+        <CircularProgressLabel value={props.value} />
       </Box>
     </CircularProgressWrapper>
   );
