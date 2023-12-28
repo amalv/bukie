@@ -1,0 +1,5 @@
+plugins:
+  duplication:
+    exclude_patterns:
+      - "**/*.test.ts"
+      - "**/*.test.tsx"
