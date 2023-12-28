@@ -1,10 +1,15 @@
 import { Avatar, CircularProgress, Menu, MenuItem } from "@mui/material";
-import { useAuth0 } from "@auth0/auth0-react";
+import { User, useAuth0 } from "@auth0/auth0-react";
 import { useState, useCallback } from "react";
 import { LoginButton } from "../LoginButton";
 
-export const UserAuthentication = () => {
-  const { user, isLoading, logout } = useAuth0();
+const UserMenu = ({
+  user,
+  onLogout,
+}: {
+  user: User;
+  onLogout: (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => void;
+}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleMenuOpen = useCallback(
@@ -17,6 +22,23 @@ export const UserAuthentication = () => {
   const handleMenuClose = useCallback(() => {
     setAnchorEl(null);
   }, []);
+
+  return (
+    <div>
+      <Avatar onClick={handleMenuOpen}>{user.name ? user.name[0] : ""}</Avatar>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={onLogout}>Logout</MenuItem>
+      </Menu>
+    </div>
+  );
+};
+
+export const UserAuthentication = () => {
+  const { user, isLoading, logout } = useAuth0();
 
   const handleLogout = useCallback(
     (event: React.MouseEvent<HTMLLIElement>) => {
@@ -31,18 +53,7 @@ export const UserAuthentication = () => {
   }
 
   if (user?.name) {
-    return (
-      <div>
-        <Avatar onClick={handleMenuOpen}>{user.name[0]}</Avatar>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-        >
-          <MenuItem onClick={handleLogout}>Logout</MenuItem>
-        </Menu>
-      </div>
-    );
+    return <UserMenu user={user} onLogout={handleLogout} />;
   }
 
   return <LoginButton />;
