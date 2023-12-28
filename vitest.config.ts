@@ -7,5 +7,14 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: "./tests.setup.ts",
+    coverage: {
+      exclude: [
+        "**/.eslintrc.cjs",
+        "**/main.tsx",
+        "**/vite-env.d.ts",
+        "**/.styles.ts",
+        "**/index.ts",
+      ],
+    },
   },
 });
