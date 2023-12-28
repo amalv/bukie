@@ -3,3 +3,6 @@ plugins:
     exclude_patterns:
       - "**/*.test.ts"
       - "**/*.test.tsx"
+coverage:
+  exclude_patterns:
+    - "**/index.ts"
