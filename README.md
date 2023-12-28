@@ -4,7 +4,7 @@
 
 Bukie is a project showcasing the use of TypeScript, React, Emotion, Material UI, and Apollo Client in a real-world application. It features a curated list of science fiction books, with a search engine and filters by title and author for easy navigation.
 
-The application supports both light and dark themes, adapting to user browser preference, and offers infinite scrolling on the book list for a seamless user experience. User authentication is handled via Auth0, ensuring a secure and reliable login system.
+The application supports both light and dark themes, adapting to user browser preference, and offers infinite scrolling on the book list. User authentication is handled via Auth0.
 
 The project leverages Semantic Release for automated versioning and releases, and ESLint for maintaining code quality. It also benefits from the fast development and build times provided by Vite.
 
