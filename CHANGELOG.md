@@ -1,3 +1,10 @@
+# [1.34.0](https://github.com/amalv/bukie/compare/v1.33.0...v1.34.0) (2023-12-28)
+
+
+### Features
+
+* refactor theme creation and usage ([da8a19e](https://github.com/amalv/bukie/commit/da8a19e0f2999bec5e9ab3fc04e45fd330b9bb99))
+
 # [1.33.0](https://github.com/amalv/bukie/compare/v1.32.0...v1.33.0) (2023-12-27)
 
 
