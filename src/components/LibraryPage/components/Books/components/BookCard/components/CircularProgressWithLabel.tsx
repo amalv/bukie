@@ -10,15 +10,18 @@ const CircularProgressWrapper = styled.div`
   flex: 0 0 50px; // This reserves a fixed width of 50px for the CircularProgressWithLabel
 `;
 
+const determineColor = (value: number): CircularProgressProps["color"] => {
+  if (value >= 70) {
+    return "success";
+  } else if (value >= 40) {
+    return "warning";
+  }
+  return "error";
+};
 export const CircularProgressWithLabel = (
   props: CircularProgressProps & { value: number }
 ) => {
-  let color: CircularProgressProps["color"] = "error";
-  if (props.value >= 70) {
-    color = "success";
-  } else if (props.value >= 40) {
-    color = "warning";
-  }
+  const color = determineColor(props.value);
 
   return (
     <CircularProgressWrapper>
