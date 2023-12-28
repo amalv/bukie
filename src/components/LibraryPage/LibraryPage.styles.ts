@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardActionArea,
-  CardMedia,
-  CardMediaProps,
-  TextField,
-} from "@mui/material";
+import { Card, CardActionArea, CardMedia, CardMediaProps } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
 export const Root = styled("div")(({ theme }) => ({
@@ -17,25 +11,6 @@ export const Root = styled("div")(({ theme }) => ({
   margin: 0,
 }));
 
-export const StyledTextField = styled(TextField)(({ theme }) => {
-  return `
-      .MuiInputBase-input {
-        background-color: ${
-          theme.palette?.mode === "dark"
-            ? "rgba(255, 255, 255, 0.15)"
-            : undefined
-        };
-        color: ${theme.palette?.mode === "dark" ? "#fff" : undefined};
-        &::placeholder {
-          color: ${
-            theme.palette?.mode === "dark"
-              ? "rgba(255, 255, 255, 0.5)"
-              : undefined
-          };
-        }
-      }
-    `;
-});
 export const CardWrapper = styled(Card)`
   display: flex;
   flex-direction: column;
