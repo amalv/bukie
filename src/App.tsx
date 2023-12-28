@@ -1,9 +1,8 @@
-import { Box } from "@mui/material";
+import { Box, ThemeProvider } from "@mui/material";
 import { ApolloProvider } from "@apollo/client";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { client } from "./apolloClient";
 import { LibraryPage } from "./components/";
-import { ThemeProvider } from "@mui/material";
 import { useTheme } from "./hooks";
 
 const App = () => {
