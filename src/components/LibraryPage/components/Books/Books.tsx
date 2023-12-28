@@ -17,7 +17,7 @@ export const Books = ({ search, limit }: BooksProps) => {
     handleCloseSnackbar,
   } = useBooks({ search, limit });
 
-  const books = data?.books?.books || [];
+  const books = data?.books?.books ?? [];
 
   return (
     <Grid container spacing={2}>

@@ -20,17 +20,25 @@ vi.mock("./components/BooksView", () => ({
   BooksView: () => <div>BooksView</div>,
 }));
 
+const mockUseBooks = (
+  isErrorSnackbarOpen: boolean,
+  loading: boolean,
+  error: ApolloError | undefined
+) => {
+  (useBooks as jest.Mock).mockReturnValue({
+    isErrorSnackbarOpen,
+    loading,
+    error,
+    data: { books: { books: [] } },
+    loader: null,
+    handleCloseSnackbar: vi.fn(),
+  });
+};
+
 describe("Books", () => {
   it("renders ErrorView when loading and there's an error", () => {
     const mockError = new ApolloError({ errorMessage: "Test error" });
-    (useBooks as jest.Mock).mockReturnValue({
-      isErrorSnackbarOpen: false,
-      loading: true,
-      error: mockError,
-      data: { books: { books: [] } },
-      loader: null,
-      handleCloseSnackbar: vi.fn(),
-    });
+    mockUseBooks(false, true, mockError);
 
     render(<Books search="" limit={10} />);
     expect(screen.getByText("ErrorView")).toBeInTheDocument();
@@ -38,14 +46,7 @@ describe("Books", () => {
   });
 
   it("renders LoadingView when loading and there's no error", () => {
-    (useBooks as jest.Mock).mockReturnValue({
-      isErrorSnackbarOpen: false,
-      loading: true,
-      error: null,
-      data: { books: { books: [] } },
-      loader: null,
-      handleCloseSnackbar: vi.fn(),
-    });
+    mockUseBooks(false, true, undefined);
 
     render(<Books search="" limit={10} />);
     expect(screen.queryByText("ErrorView")).not.toBeInTheDocument();
@@ -54,14 +55,7 @@ describe("Books", () => {
 
   it("renders ErrorView when not loading and there's an error", () => {
     const mockError = new ApolloError({ errorMessage: "Test error" });
-    (useBooks as jest.Mock).mockReturnValue({
-      isErrorSnackbarOpen: false,
-      loading: false,
-      error: mockError,
-      data: { books: { books: [] } },
-      loader: null,
-      handleCloseSnackbar: vi.fn(),
-    });
+    mockUseBooks(false, false, mockError);
 
     render(<Books search="" limit={10} />);
     expect(screen.getByText("ErrorView")).toBeInTheDocument();
@@ -69,14 +63,7 @@ describe("Books", () => {
   });
 
   it("renders BooksView when not loading and there's no error", () => {
-    (useBooks as jest.Mock).mockReturnValue({
-      isErrorSnackbarOpen: false,
-      loading: false,
-      error: null,
-      data: { books: { books: [] } },
-      loader: null,
-      handleCloseSnackbar: vi.fn(),
-    });
+    mockUseBooks(false, false, undefined);
 
     render(<Books search="" limit={10} />);
     expect(screen.queryByText("ErrorView")).not.toBeInTheDocument();
