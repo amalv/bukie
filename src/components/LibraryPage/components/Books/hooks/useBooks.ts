@@ -100,18 +100,24 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
   const [lastPageReached, setLastPageReached] = useState(false);
   const [isErrorSnackbarOpen, setIsErrorSnackbarOpen] = useState(false);
   // Fetch books
-  const { loading, error, data, fetchMore } = useQuery<BooksData, BooksVars>(
-    BOOKS_QUERY,
-    {
-      variables: { title: search, author: search, limit, cursor: "0" },
-    }
-  );
+  const { loading, error, data, fetchMore, refetch } = useQuery<
+    BooksData,
+    BooksVars
+  >(BOOKS_QUERY, {
+    variables: { title: search, author: search, limit, cursor: "0" },
+  });
 
   useEffect(() => {
     if (error) {
       setIsErrorSnackbarOpen(true);
     }
   }, [error]);
+
+  useEffect(() => {
+    setLastPageReached(false);
+    lastPageReachedRef.current = false;
+    refetch({ title: search, author: search, limit, cursor: "0" });
+  }, [search, refetch, limit]);
 
   const handleCloseSnackbar = getCloseSnackbarHandler(setIsErrorSnackbarOpen);
   const updateQuery = getUpdateQuery(setLastPageReached);
