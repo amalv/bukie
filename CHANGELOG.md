@@ -1,3 +1,10 @@
+## [1.34.2](https://github.com/amalv/bukie/compare/v1.34.1...v1.34.2) (2023-12-29)
+
+
+### Bug Fixes
+
+* reset lastPageReached state on search change for infinite scrolling ([d868c69](https://github.com/amalv/bukie/commit/d868c695143c5f5960f353ed96d74b17104c342f))
+
 ## [1.34.1](https://github.com/amalv/bukie/compare/v1.34.0...v1.34.1) (2023-12-28)
 
 
