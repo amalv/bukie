@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/amalv/bukie/compare/v1.34.2...v1.35.0) (2023-12-29)
+
+
+### Features
+
+* prevent unnecessary requests when initial search results are less than page size ([87facd1](https://github.com/amalv/bukie/commit/87facd10fe15cc291468d4a5aacd0f77f7599e3c))
+
 ## [1.34.2](https://github.com/amalv/bukie/compare/v1.34.1...v1.34.2) (2023-12-29)
 
 
