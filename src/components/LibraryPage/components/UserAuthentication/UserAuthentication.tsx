@@ -42,11 +42,9 @@ export const UserAuthentication = () => {
 
   useEffect(() => {
     if (user) {
-      console.log("GETTING TOKEN");
       getIdTokenClaims().then((claims) => {
         if (claims) {
           const idToken = claims.__raw; // The raw id_token
-          console.log("ID TOKEN", idToken);
           localStorage.setItem("auth0.token", idToken);
         }
       });
