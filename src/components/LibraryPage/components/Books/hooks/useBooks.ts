@@ -1,147 +1,17 @@
-import {
-  ApolloError,
-  ApolloQueryResult,
-  FetchMoreQueryOptions,
-  FetchMoreOptions,
-  useQuery,
-} from "@apollo/client";
-import { useEffect, useRef, useCallback, useState } from "react";
-import { SnackbarCloseReason } from "@mui/material";
-import {
-  BOOKS_QUERY,
-  BooksData,
-  BooksVars,
-  Book,
-} from "../../../../../data/books";
+import { ApolloError, ApolloQueryResult, useQuery } from "@apollo/client";
+import { useEffect, useRef, useState } from "react";
+import { BOOKS_QUERY, BooksData, BooksVars } from "../../../../../data/books";
 import { useIntersectionObserver } from "./useIntersectionObserver";
+import { getCloseSnackbarHandler, getUpdateQuery } from "./utils";
+import { useFetchMoreBooks } from "./useFetchMoreBooks";
 
 const PAGE_SIZE = 50;
 
-interface FetchMoreResult {
-  books: {
-    __typename: string;
-    cursor: string;
-    books: Book[];
-  };
-}
 interface UseBooksProps {
   search: string;
   limit: number;
 }
 
-type FetchMoreFunction = (
-  options: FetchMoreQueryOptions<BooksVars, BooksData> &
-    FetchMoreOptions<BooksData, BooksVars>
-) => Promise<ApolloQueryResult<BooksData>>;
-
-const getCloseSnackbarHandler = (
-  setIsErrorSnackbarOpen: React.Dispatch<React.SetStateAction<boolean>>
-) => {
-  return (_: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setIsErrorSnackbarOpen(false);
-  };
-};
-
-const getUpdateQuery = (
-  setLastPageReached: React.Dispatch<React.SetStateAction<boolean>>
-) => {
-  return (
-    prev: BooksData,
-    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
-  ) => {
-    if (!fetchMoreResult) return prev;
-    const isLastPage = fetchMoreResult.books.books.length < PAGE_SIZE;
-    setLastPageReached(isLastPage);
-
-    return {
-      books: {
-        __typename: prev.books.__typename,
-        cursor: fetchMoreResult.books.cursor,
-        books: [...prev.books.books, ...fetchMoreResult.books.books],
-      },
-    };
-  };
-};
-const unobserveLoader = (
-  loader: React.MutableRefObject<null>,
-  observer: IntersectionObserver
-) => {
-  if (loader.current) {
-    observer.unobserve(loader.current);
-  }
-};
-
-const observeLoader = (
-  loader: React.MutableRefObject<null>,
-  observer: IntersectionObserver,
-  lastPageReached: boolean
-) => {
-  if (loader.current && observer && !lastPageReached) {
-    observer.observe(loader.current);
-  }
-};
-
-const fetchMoreBooks = (
-  fetchMore: FetchMoreFunction,
-  data: BooksData | undefined,
-  updateQuery: (
-    prev: BooksData,
-    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
-  ) => BooksData
-) => {
-  return fetchMore({
-    variables: {
-      cursor: data?.books?.cursor,
-    },
-    updateQuery,
-  });
-};
-
-const handleFetchMoreBooks = (
-  fetchMore: FetchMoreFunction,
-  data: BooksData | undefined,
-  updateQuery: (
-    prev: BooksData,
-    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
-  ) => BooksData,
-  loader: React.MutableRefObject<null>,
-  observer: IntersectionObserver,
-  lastPageReached: boolean
-) => {
-  fetchMoreBooks(fetchMore, data, updateQuery).then(() => {
-    observeLoader(loader, observer, lastPageReached);
-  });
-};
-
-const useHandleFetchMore = (
-  loader: React.MutableRefObject<null>,
-  fetchMore: FetchMoreFunction,
-  data: BooksData | undefined,
-  updateQuery: (
-    prev: BooksData,
-    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
-  ) => BooksData,
-  lastPageReached: boolean
-) => {
-  return useCallback(
-    (observer: IntersectionObserver) => {
-      unobserveLoader(loader, observer);
-      handleFetchMoreBooks(
-        fetchMore,
-        data,
-        updateQuery,
-        loader,
-        observer,
-        lastPageReached
-      );
-    },
-    [data, fetchMore, loader, updateQuery, lastPageReached]
-  );
-};
 const useHandleError = (error: ApolloError | undefined) => {
   const [isErrorSnackbarOpen, setIsErrorSnackbarOpen] = useState(false);
 
@@ -194,8 +64,8 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
 
   const updateQuery = getUpdateQuery(setLastPageReached);
   const loader = useRef(null);
-  const handleFetchMore = useHandleFetchMore(
-    loader,
+
+  const handleFetchMore = useFetchMoreBooks(
     fetchMore,
     data,
     updateQuery,
