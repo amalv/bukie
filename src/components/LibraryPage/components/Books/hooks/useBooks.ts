@@ -206,6 +206,13 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
     lastPageReached
   );
 
+  // If the initial data load returned less than PAGE_SIZE results, set lastPageReached to true
+  useEffect(() => {
+    if (data && data.books.books.length < PAGE_SIZE) {
+      setLastPageReached(true);
+    }
+  }, [data, setLastPageReached]);
+
   useIntersectionObserver(loader, handleFetchMore, loading, lastPageReachedRef);
 
   return {
