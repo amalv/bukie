@@ -1,3 +1,4 @@
+import { MockedProvider } from "@apollo/client/testing";
 import { render, screen } from "@testing-library/react";
 import { BooksView } from "./BooksView";
 
@@ -24,7 +25,11 @@ describe("BooksView", () => {
       },
     ];
 
-    render(<BooksView books={books} />);
+    render(
+      <MockedProvider>
+        <BooksView books={books} />
+      </MockedProvider>
+    );
 
     books.forEach((book) => {
       expect(screen.getByText(book.title)).toBeInTheDocument();
@@ -32,7 +37,11 @@ describe("BooksView", () => {
   });
 
   it("renders a message when no books are provided", () => {
-    render(<BooksView books={[]} />);
+    render(
+      <MockedProvider>
+        <BooksView books={[]} />
+      </MockedProvider>
+    );
     expect(screen.getByText("No books available")).toBeInTheDocument();
   });
 });

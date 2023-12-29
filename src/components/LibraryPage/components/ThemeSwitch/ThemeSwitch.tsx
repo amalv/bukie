@@ -6,7 +6,7 @@ import Brightness4 from "@mui/icons-material/Brightness4";
 import Brightness7 from "@mui/icons-material/Brightness7";
 
 export const ThemeSwitch = () => {
-  const darkMode = useReactiveVar(darkModeVar) as boolean;
+  const darkMode = useReactiveVar(darkModeVar);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");

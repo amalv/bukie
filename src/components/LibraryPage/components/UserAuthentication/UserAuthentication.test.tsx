@@ -4,13 +4,20 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { vi } from "vitest";
 
 vi.mock("@auth0/auth0-react", () => ({
-  useAuth0: vi.fn(),
+  useAuth0: vi.fn().mockReturnValue({
+    getIdTokenClaims: vi.fn().mockResolvedValue({
+      __raw: "mocked_token",
+    }),
+  }),
 }));
 
 describe("UserAuthentication", () => {
   it("should render loading state", () => {
     (useAuth0 as jest.Mock).mockReturnValue({
       isLoading: true,
+      getIdTokenClaims: vi.fn().mockResolvedValue({
+        __raw: "mocked_token",
+      }),
     });
 
     render(<UserAuthentication />);
@@ -21,6 +28,9 @@ describe("UserAuthentication", () => {
     (useAuth0 as jest.Mock).mockReturnValue({
       isLoading: false,
       user: { name: "Test User" },
+      getIdTokenClaims: vi.fn().mockResolvedValue({
+        __raw: "mocked_token",
+      }),
     });
 
     render(<UserAuthentication />);
@@ -32,6 +42,9 @@ describe("UserAuthentication", () => {
     (useAuth0 as jest.Mock).mockReturnValue({
       isLoading: false,
       user: null,
+      getIdTokenClaims: vi.fn().mockResolvedValue({
+        __raw: "mocked_token",
+      }),
     });
 
     render(<UserAuthentication />);

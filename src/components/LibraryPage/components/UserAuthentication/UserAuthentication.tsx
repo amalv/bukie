@@ -1,6 +1,6 @@
+import { useEffect, useState, useCallback } from "react";
 import { Avatar, CircularProgress, Menu, MenuItem } from "@mui/material";
 import { User, useAuth0 } from "@auth0/auth0-react";
-import { useState, useCallback } from "react";
 import { LoginButton } from "../LoginButton";
 
 const UserMenu = ({
@@ -38,12 +38,26 @@ const UserMenu = ({
 };
 
 export const UserAuthentication = () => {
-  const { user, isLoading, logout } = useAuth0();
+  const { user, isLoading, logout, getIdTokenClaims } = useAuth0();
+
+  useEffect(() => {
+    if (user) {
+      console.log("GETTING TOKEN");
+      getIdTokenClaims().then((claims) => {
+        if (claims) {
+          const idToken = claims.__raw; // The raw id_token
+          console.log("ID TOKEN", idToken);
+          localStorage.setItem("auth0.token", idToken);
+        }
+      });
+    }
+  }, [user, getIdTokenClaims]);
 
   const handleLogout = useCallback(
     (event: React.MouseEvent<HTMLLIElement>) => {
       event.preventDefault();
       logout();
+      localStorage.removeItem("auth0.token"); // remove token on logout
     },
     [logout]
   );

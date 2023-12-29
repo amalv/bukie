@@ -38,12 +38,14 @@ global.IntersectionObserver = class IntersectionObserver {
 describe("useBooks", () => {
   it("fetches books and handles pagination", async () => {
     const mockFetchMore = vi.fn().mockResolvedValue({});
+    const mockRefetch = vi.fn().mockResolvedValue({}); // Mock the refetch function
     const mockData = { books: { cursor: "1", books: [] } };
     (useQuery as jest.Mock).mockReturnValue({
       loading: false,
       error: null,
       data: mockData,
       fetchMore: mockFetchMore,
+      refetch: mockRefetch,
     });
 
     const { result } = renderHook(() =>
