@@ -29,6 +29,11 @@ interface UseBooksProps {
   limit: number;
 }
 
+type FetchMoreFunction = (
+  options: FetchMoreQueryOptions<BooksVars, BooksData> &
+    FetchMoreOptions<BooksData, BooksVars>
+) => Promise<ApolloQueryResult<BooksData>>;
+
 const getCloseSnackbarHandler = (
   setIsErrorSnackbarOpen: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
@@ -81,10 +86,7 @@ const observeLoader = (
 };
 
 const fetchMoreBooks = (
-  fetchMore: (
-    options: FetchMoreQueryOptions<BooksVars, BooksData> &
-      FetchMoreOptions<BooksData, BooksVars>
-  ) => Promise<ApolloQueryResult<BooksData>>,
+  fetchMore: FetchMoreFunction,
   data: BooksData | undefined,
   updateQuery: (
     prev: BooksData,
@@ -100,10 +102,7 @@ const fetchMoreBooks = (
 };
 
 const handleFetchMoreBooks = (
-  fetchMore: (
-    options: FetchMoreQueryOptions<BooksVars, BooksData> &
-      FetchMoreOptions<BooksData, BooksVars>
-  ) => Promise<ApolloQueryResult<BooksData>>,
+  fetchMore: FetchMoreFunction,
   data: BooksData | undefined,
   updateQuery: (
     prev: BooksData,
@@ -120,10 +119,7 @@ const handleFetchMoreBooks = (
 
 const useHandleFetchMore = (
   loader: React.MutableRefObject<null>,
-  fetchMore: (
-    options: FetchMoreQueryOptions<BooksVars, BooksData> &
-      FetchMoreOptions<BooksData, BooksVars>
-  ) => Promise<ApolloQueryResult<BooksData>>,
+  fetchMore: FetchMoreFunction,
   data: BooksData | undefined,
   updateQuery: (
     prev: BooksData,
