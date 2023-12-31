@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Avatar, CircularProgress, Menu, MenuItem } from "@mui/material";
 import { User, useAuth0 } from "@auth0/auth0-react";
 import { LoginButton } from "../LoginButton";
@@ -63,21 +63,6 @@ const UserMenu = ({
   );
 };
 
-const useAuth0Token = () => {
-  const { user, getIdTokenClaims } = useAuth0();
-
-  useEffect(() => {
-    if (user) {
-      getIdTokenClaims().then((claims) => {
-        if (claims) {
-          const idToken = claims.__raw; // The raw id_token
-          localStorage.setItem("auth0.token", idToken);
-        }
-      });
-    }
-  }, [user, getIdTokenClaims]);
-};
-
 const useLogout = () => {
   const { logout } = useAuth0();
 
@@ -94,8 +79,6 @@ const useLogout = () => {
 export const UserAuthentication = () => {
   const { user, isLoading } = useAuth0();
   const handleLogout = useLogout();
-
-  useAuth0Token();
 
   if (isLoading) {
     return <CircularProgress />;

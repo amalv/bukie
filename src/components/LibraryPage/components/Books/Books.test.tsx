@@ -36,13 +36,13 @@ const mockUseBooks = (
 };
 
 describe("Books", () => {
-  it("renders ErrorView when loading and there's an error", () => {
+  it("renders LoadingView when loading and there's an error", () => {
     const mockError = new ApolloError({ errorMessage: "Test error" });
     mockUseBooks(false, true, mockError);
 
     render(<Books search="" limit={10} />);
-    expect(screen.getByText("ErrorView")).toBeInTheDocument();
-    expect(screen.queryByText("LoadingView")).not.toBeInTheDocument();
+    expect(screen.getByText("LoadingView")).toBeInTheDocument();
+    expect(screen.queryByText("ErrorView")).not.toBeInTheDocument();
   });
 
   it("renders LoadingView when loading and there's no error", () => {
@@ -59,6 +59,7 @@ describe("Books", () => {
 
     render(<Books search="" limit={10} />);
     expect(screen.getByText("ErrorView")).toBeInTheDocument();
+    expect(screen.queryByText("LoadingView")).not.toBeInTheDocument();
     expect(screen.queryByText("BooksView")).not.toBeInTheDocument();
   });
 
@@ -67,6 +68,7 @@ describe("Books", () => {
 
     render(<Books search="" limit={10} />);
     expect(screen.queryByText("ErrorView")).not.toBeInTheDocument();
+    expect(screen.queryByText("LoadingView")).not.toBeInTheDocument();
     expect(screen.getByText("BooksView")).toBeInTheDocument();
   });
 });

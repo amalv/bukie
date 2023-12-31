@@ -10,7 +10,6 @@ export const CardWrapper = styled(Card)(
   margin-bottom: 16px;
   border: 1px solid ${theme.palette.divider};
   border-radius: 8px;
-  overflow: hidden;
   transition: box-shadow 0.3s ease-in-out, transform 0.5s ease-in-out;
   background: ${
     theme.palette.mode === "dark" ? "#333" : theme.palette.background.paper

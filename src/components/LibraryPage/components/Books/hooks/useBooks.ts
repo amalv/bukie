@@ -1,9 +1,12 @@
-import { ApolloError, ApolloQueryResult, useQuery } from "@apollo/client";
-import { useEffect, useRef, useState } from "react";
-import { BOOKS_QUERY, BooksData, BooksVars } from "../../../../../data/books";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+import { ApolloError, useQuery } from "@apollo/client";
+import { BOOKS_QUERY, BooksData, BooksVars } from "@/data/books";
+import { FavoritesData, GET_FAVORITES_QUERY } from "@/data/favorites";
 import { useIntersectionObserver } from "./useIntersectionObserver";
 import { getCloseSnackbarHandler, getUpdateQuery } from "./utils";
 import { useFetchMoreBooks } from "./useFetchMoreBooks";
+import { useAuth } from "@/contexts";
 
 const PAGE_SIZE = 50;
 
@@ -28,10 +31,9 @@ const useHandleError = (error: ApolloError | undefined) => {
 
 const useHandleLastPageReached = (
   search: string,
-  refetch: (
-    variables?: Partial<BooksVars> | undefined
-  ) => Promise<ApolloQueryResult<BooksData>>,
-  limit: number
+  limit: number,
+  isAuthenticated: boolean,
+  favoritesLoading: boolean
 ) => {
   const lastPageReachedRef = useRef(false);
   const [lastPageReached, setLastPageReached] = useState(false);
@@ -39,8 +41,7 @@ const useHandleLastPageReached = (
   useEffect(() => {
     setLastPageReached(false);
     lastPageReachedRef.current = false;
-    refetch({ title: search, author: search, limit, cursor: "0" });
-  }, [search, refetch, limit]);
+  }, [search, limit, isAuthenticated, favoritesLoading]);
 
   useEffect(() => {
     lastPageReachedRef.current = lastPageReached;
@@ -50,17 +51,41 @@ const useHandleLastPageReached = (
 };
 
 export const useBooks = ({ search, limit }: UseBooksProps) => {
-  // Fetch books
-  const { loading, error, data, fetchMore, refetch } = useQuery<
-    BooksData,
-    BooksVars
-  >(BOOKS_QUERY, {
-    variables: { title: search, author: search, limit, cursor: "0" },
+  const { isAuthenticated } = useAuth0();
+  const { token } = useAuth();
+  const tokenRef = useRef(token);
+
+  const { loading, error, data, fetchMore } = useQuery<BooksData, BooksVars>(
+    BOOKS_QUERY,
+    {
+      variables: { title: search, author: search, limit, cursor: "0" },
+    }
+  );
+
+  // Fetch user favorites
+  const {
+    loading: favoritesLoading,
+    error: favoritesError,
+    data: favoritesData,
+    refetch: refetchFavorites,
+  } = useQuery<FavoritesData>(GET_FAVORITES_QUERY, {
+    skip: !token,
   });
 
+  useEffect(() => {
+    if (token && token !== tokenRef.current) {
+      refetchFavorites();
+    }
+    tokenRef.current = token;
+  }, [refetchFavorites, token]);
+
   const { isErrorSnackbarOpen, handleCloseSnackbar } = useHandleError(error);
+  const {
+    isErrorSnackbarOpen: isFavoritesErrorSnackbarOpen,
+    handleCloseSnackbar: handleCloseFavoritesSnackbar,
+  } = useHandleError(favoritesError);
   const { lastPageReached, setLastPageReached, lastPageReachedRef } =
-    useHandleLastPageReached(search, refetch, limit);
+    useHandleLastPageReached(search, limit, isAuthenticated, favoritesLoading);
 
   const updateQuery = getUpdateQuery(setLastPageReached);
   const loader = useRef(null);
@@ -81,12 +106,26 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
 
   useIntersectionObserver(loader, handleFetchMore, loading, lastPageReachedRef);
 
+  const isBookFavorited = useCallback(
+    (bookId: string) => {
+      const userFavorites = favoritesData?.user?.favorites || [];
+      return userFavorites.some((favorite) => favorite.book.id === bookId);
+    },
+    [favoritesData]
+  );
+
   return {
+    isBookFavorited,
     isErrorSnackbarOpen,
+    isFavoritesErrorSnackbarOpen,
     handleCloseSnackbar,
+    handleCloseFavoritesSnackbar,
     loading,
+    favoritesLoading,
     error,
+    favoritesError,
     data,
+    favoritesData,
     loader,
   };
 };

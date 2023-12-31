@@ -13,6 +13,7 @@ describe("BooksView", () => {
         image: "image-url-1",
         rating: 4.5,
         ratingsCount: 100,
+        isFavorited: false,
       },
       {
         id: "2",
@@ -22,6 +23,7 @@ describe("BooksView", () => {
         image: "image-url-2",
         rating: 4.0,
         ratingsCount: 200,
+        isFavorited: true,
       },
     ];
 

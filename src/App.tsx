@@ -1,9 +1,10 @@
 import { ThemeProvider } from "@mui/material";
-import { ApolloProvider } from "@apollo/client";
 import { Auth0Provider } from "@auth0/auth0-react";
-import { client } from "./apolloClient";
 import { LibraryPage } from "./components/";
 import { useTheme } from "./hooks";
+import { AuthProvider } from "./contexts";
+import { ApolloProvider } from "@apollo/client";
+import { client } from "./apolloClient";
 
 const getRedirectUri = () => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -24,11 +25,13 @@ const App = () => {
       }}
       cacheLocation="localstorage"
     >
-      <ApolloProvider client={client}>
-        <ThemeProvider theme={theme}>
-          <LibraryPage />
-        </ThemeProvider>
-      </ApolloProvider>
+      <AuthProvider>
+        <ApolloProvider client={client}>
+          <ThemeProvider theme={theme}>
+            <LibraryPage />
+          </ThemeProvider>
+        </ApolloProvider>
+      </AuthProvider>
     </Auth0Provider>
   );
 };

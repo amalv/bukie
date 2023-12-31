@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { MockedProvider } from "@apollo/client/testing";
 import { BookCard } from "./BookCard";
 import { Book } from "../../../../../../data/books";
 
@@ -13,7 +14,11 @@ test("renders book information correctly", async () => {
     ratingsCount: 100,
   };
 
-  render(<BookCard book={mockBook} />);
+  render(
+    <MockedProvider>
+      <BookCard book={mockBook} isFavorited={false} />
+    </MockedProvider>
+  );
 
   expect(await screen.findByText(mockBook.title)).toBeInTheDocument();
   expect(await screen.findByText(mockBook.author)).toBeInTheDocument();

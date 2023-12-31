@@ -38,14 +38,13 @@ const fetchMoreBooks = (
     prev: BooksData,
     { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
   ) => BooksData
-) => {
-  return fetchMore({
+) =>
+  fetchMore({
     variables: {
       cursor: data?.books?.cursor,
     },
     updateQuery,
   });
-};
 
 const handleFetchMoreBooks = (
   fetchMore: FetchMoreFunction,
