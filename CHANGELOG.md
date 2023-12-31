@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/amalv/bukie/compare/v1.35.0...v1.36.0) (2023-12-31)
+
+
+### Features
+
+* Add AuthProvider and favorites support ([e004aeb](https://github.com/amalv/bukie/commit/e004aebecbb2f7af811c3681b936354dd0368763))
+
 # [1.35.0](https://github.com/amalv/bukie/compare/v1.34.2...v1.35.0) (2023-12-29)
 
 
