@@ -1,11 +1,5 @@
-import {
-  createContext,
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-} from "react";
-import { useAuth0, User } from "@auth0/auth0-react";
+import { createContext, useState, useEffect, useMemo } from "react";
+import { IdToken, useAuth0, User } from "@auth0/auth0-react";
 import { jwtDecode } from "jwt-decode";
 
 interface DecodedToken {
@@ -30,35 +24,41 @@ export const AuthContext = createContext<AuthContextProps>({
   user: undefined,
 });
 
+const refreshToken = (
+  getIdTokenClaims: () => Promise<IdToken | undefined>,
+  setToken: (token: string | null) => void
+) => {
+  getIdTokenClaims().then((claims) => {
+    if (claims) {
+      const idToken = claims.__raw; // The raw id_token
+      localStorage.setItem("auth0.token", idToken);
+      setToken(idToken);
+
+      try {
+        const decodedToken: DecodedToken = jwtDecode(idToken);
+        const expiryTime = decodedToken.exp * 1000; // Convert to milliseconds
+        const timeoutDuration = expiryTime - Date.now() - 60 * 1000; // Refresh 1 minute before expiry
+
+        setTimeout(
+          () => refreshToken(getIdTokenClaims, setToken),
+          timeoutDuration
+        );
+      } catch (error) {
+        console.error("Invalid token", error);
+      }
+    }
+  });
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { user, getIdTokenClaims } = useAuth0();
   const [token, setToken] = useState<string | null>(null);
 
-  const refreshToken = useCallback(() => {
-    getIdTokenClaims().then((claims) => {
-      if (claims) {
-        const idToken = claims.__raw; // The raw id_token
-        localStorage.setItem("auth0.token", idToken);
-        setToken(idToken);
-
-        try {
-          const decodedToken: DecodedToken = jwtDecode(idToken);
-          const expiryTime = decodedToken.exp * 1000; // Convert to milliseconds
-          const timeoutDuration = expiryTime - Date.now() - 60 * 1000; // Refresh 1 minute before expiry
-
-          setTimeout(refreshToken, timeoutDuration);
-        } catch (error) {
-          console.error("Invalid token", error);
-        }
-      }
-    });
-  }, [getIdTokenClaims]);
-
   useEffect(() => {
-    if (user) {
-      refreshToken();
+    if (user && getIdTokenClaims) {
+      refreshToken(getIdTokenClaims, setToken);
     }
-  }, [user, refreshToken]);
+  }, [user, getIdTokenClaims]);
 
   const value = useMemo(() => ({ token, user }), [token, user]);
 
