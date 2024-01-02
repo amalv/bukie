@@ -29,7 +29,7 @@ export const BookCard: React.FC<BookCardProps> = ({
   book,
   isFavorited: initialIsFavorited,
 }) => {
-  const { user } = useAuth0();
+  const { user, loginWithRedirect } = useAuth0();
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
   const { addFavorite, removeFavorite } = useFavorite();
 
@@ -38,6 +38,10 @@ export const BookCard: React.FC<BookCardProps> = ({
   }, [initialIsFavorited]);
 
   const handleFavoriteClick = () => {
+    if (!user) {
+      loginWithRedirect();
+      return;
+    }
     if (isFavorited) {
       removeFavorite({ variables: { bookId: book.id } });
     } else {
@@ -49,25 +53,23 @@ export const BookCard: React.FC<BookCardProps> = ({
   return (
     <Grid item xs={6} sm={4} md={4} lg={3} xl={2} key={book.title}>
       <Box position="relative">
-        {user && (
-          <IconButton
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              transform: "translate(40%, -40%)",
-              color: isFavorited ? "red" : "gray",
-              zIndex: 1,
-            }}
-            onClick={handleFavoriteClick}
-          >
-            {isFavorited ? (
-              <Favorite fontSize="large" />
-            ) : (
-              <FavoriteBorder fontSize="large" />
-            )}
-          </IconButton>
-        )}
+        <IconButton
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            transform: "translate(40%, -40%)",
+            color: isFavorited ? "red" : "gray",
+            zIndex: 1,
+          }}
+          onClick={handleFavoriteClick}
+        >
+          {isFavorited ? (
+            <Favorite fontSize="large" />
+          ) : (
+            <FavoriteBorder fontSize="large" />
+          )}
+        </IconButton>
       </Box>
       <CardWrapper>
         <CardActionAreaWrapper>
