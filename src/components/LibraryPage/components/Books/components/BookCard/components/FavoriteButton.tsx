@@ -8,18 +8,6 @@ interface FavoriteButtonProps {
   isFavorited: boolean;
 }
 
-const FavoritedButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-  <StyledIconButton style={{ color: "red", zIndex: 1 }} onClick={onClick}>
-    <Favorite fontSize="large" />
-  </StyledIconButton>
-);
-
-const NonFavoritedButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-  <StyledIconButton style={{ color: "gray", zIndex: 1 }} onClick={onClick}>
-    <FavoriteBorder fontSize="large" />
-  </StyledIconButton>
-);
-
 export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   bookId,
   isFavorited: initialIsFavorited,
@@ -29,9 +17,16 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
     initialIsFavorited
   );
 
-  return isFavorited ? (
-    <FavoritedButton onClick={handleFavoriteClick} />
-  ) : (
-    <NonFavoritedButton onClick={handleFavoriteClick} />
+  return (
+    <StyledIconButton
+      style={{ color: isFavorited ? "red" : "gray", zIndex: 1 }}
+      onClick={handleFavoriteClick}
+    >
+      {isFavorited ? (
+        <Favorite fontSize="large" />
+      ) : (
+        <FavoriteBorder fontSize="large" />
+      )}
+    </StyledIconButton>
   );
 };
