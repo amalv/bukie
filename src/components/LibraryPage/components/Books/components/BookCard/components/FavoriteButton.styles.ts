@@ -6,5 +6,4 @@ export const StyledIconButton = styled(IconButton)`
   top: 0;
   right: 0;
   transform: translate(40%, -40%);
-  zindex: 1;
 `;
