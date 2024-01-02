@@ -1,3 +1,10 @@
+# [1.37.0](https://github.com/amalv/bukie/compare/v1.36.0...v1.37.0) (2024-01-02)
+
+
+### Features
+
+* Redirect unauthenticated users to login when favoriting a book ([d43c157](https://github.com/amalv/bukie/commit/d43c157cd59439eb920e5e065b5557d32588e531))
+
 # [1.36.0](https://github.com/amalv/bukie/compare/v1.35.0...v1.36.0) (2023-12-31)
 
 
