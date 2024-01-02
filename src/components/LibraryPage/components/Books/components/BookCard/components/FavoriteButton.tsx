@@ -1,64 +1,37 @@
-import { useAuth0 } from "@auth0/auth0-react";
-import { useState, useEffect, useCallback } from "react";
-import { IconButton } from "@mui/material";
+import { useFavoriteButton } from "./useFavoriteButton";
+import { StyledIconButton } from "./FavoriteButton.styles";
 import Favorite from "@mui/icons-material/Favorite";
 import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
-import { useFavorite } from "../useFavorite";
 
 interface FavoriteButtonProps {
   bookId: string;
   isFavorited: boolean;
 }
 
+const FavoritedButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+  <StyledIconButton style={{ color: "red", zIndex: 1 }} onClick={onClick}>
+    <Favorite fontSize="large" />
+  </StyledIconButton>
+);
+
+const NonFavoritedButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+  <StyledIconButton style={{ color: "gray", zIndex: 1 }} onClick={onClick}>
+    <FavoriteBorder fontSize="large" />
+  </StyledIconButton>
+);
+
 export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   bookId,
   isFavorited: initialIsFavorited,
 }) => {
-  const { user, loginWithRedirect } = useAuth0();
-  const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
-  const { addFavorite, removeFavorite } = useFavorite();
-
-  useEffect(() => {
-    setIsFavorited(initialIsFavorited);
-  }, [initialIsFavorited]);
-
-  const handleFavoriteClick = useCallback(() => {
-    if (!user) {
-      loginWithRedirect();
-      return;
-    }
-    if (isFavorited) {
-      removeFavorite({ variables: { bookId } });
-    } else {
-      addFavorite({ variables: { bookId } });
-    }
-    setIsFavorited(!isFavorited);
-  }, [
-    user,
-    isFavorited,
+  const { isFavorited, handleFavoriteClick } = useFavoriteButton(
     bookId,
-    addFavorite,
-    removeFavorite,
-    loginWithRedirect,
-  ]);
+    initialIsFavorited
+  );
 
-  return (
-    <IconButton
-      style={{
-        position: "absolute",
-        top: 0,
-        right: 0,
-        transform: "translate(40%, -40%)",
-        color: isFavorited ? "red" : "gray",
-        zIndex: 1,
-      }}
-      onClick={handleFavoriteClick}
-    >
-      {isFavorited ? (
-        <Favorite fontSize="large" />
-      ) : (
-        <FavoriteBorder fontSize="large" />
-      )}
-    </IconButton>
+  return isFavorited ? (
+    <FavoritedButton onClick={handleFavoriteClick} />
+  ) : (
+    <NonFavoritedButton onClick={handleFavoriteClick} />
   );
 };
