@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useFavorite } from "../useFavorite";
 import { FetchResult } from "@apollo/client";
@@ -24,10 +24,6 @@ export const useFavoriteButton = (
   const { user, loginWithRedirect } = useAuth0();
   const { addFavorite, removeFavorite } = useFavorite();
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
-
-  useEffect(() => {
-    setIsFavorited(initialIsFavorited);
-  }, [initialIsFavorited]);
 
   const handleFavoriteClick = useCallback(() => {
     if (!user) {
