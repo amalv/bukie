@@ -3,24 +3,18 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useFavorite } from "../useFavorite";
 import { FetchResult } from "@apollo/client";
 
-const handleAddFavorite = (
-  addFavorite: (arg: { variables: { bookId: string } }) => Promise<FetchResult>,
-  bookId: string,
-  setIsFavorited: (favorited: boolean) => void
-) => {
-  addFavorite({ variables: { bookId } });
-  setIsFavorited(true);
-};
+type FavoriteAction = (arg: {
+  variables: { bookId: string };
+}) => Promise<FetchResult>;
 
-const handleRemoveFavorite = (
-  removeFavorite: (arg: {
-    variables: { bookId: string };
-  }) => Promise<FetchResult>,
+const handleFavorite = (
+  action: FavoriteAction,
   bookId: string,
-  setIsFavorited: (favorited: boolean) => void
+  setIsFavorited: (favorited: boolean) => void,
+  favorited: boolean
 ) => {
-  removeFavorite({ variables: { bookId } });
-  setIsFavorited(false);
+  action({ variables: { bookId } });
+  setIsFavorited(favorited);
 };
 
 export const useFavoriteButton = (
@@ -40,9 +34,12 @@ export const useFavoriteButton = (
       loginWithRedirect();
       return;
     }
-    isFavorited
-      ? handleRemoveFavorite(removeFavorite, bookId, setIsFavorited)
-      : handleAddFavorite(addFavorite, bookId, setIsFavorited);
+    handleFavorite(
+      isFavorited ? removeFavorite : addFavorite,
+      bookId,
+      setIsFavorited,
+      !isFavorited
+    );
   }, [
     user,
     isFavorited,
