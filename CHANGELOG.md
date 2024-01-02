@@ -1,3 +1,10 @@
+## [1.37.1](https://github.com/amalv/bukie/compare/v1.37.0...v1.37.1) (2024-01-02)
+
+
+### Bug Fixes
+
+* Remove unnecessary zIndex from StyledIconButton ([9c14b93](https://github.com/amalv/bukie/commit/9c14b93f92bfa03fdd859b3b4273bb1d67e76269))
+
 # [1.37.0](https://github.com/amalv/bukie/compare/v1.36.0...v1.37.0) (2024-01-02)
 
 
