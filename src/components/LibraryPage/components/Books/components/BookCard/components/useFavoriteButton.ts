@@ -1,21 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useFavorite } from "../useFavorite";
-import { FetchResult } from "@apollo/client";
-
-type FavoriteAction = (arg: {
-  variables: { bookId: string };
-}) => Promise<FetchResult>;
-
-const handleFavorite = (
-  action: FavoriteAction,
-  bookId: string,
-  setIsFavorited: (favorited: boolean) => void,
-  favorited: boolean
-) => {
-  action({ variables: { bookId } });
-  setIsFavorited(favorited);
-};
 
 export const useFavoriteButton = (
   bookId: string,
@@ -34,12 +19,9 @@ export const useFavoriteButton = (
       loginWithRedirect();
       return;
     }
-    handleFavorite(
-      isFavorited ? removeFavorite : addFavorite,
-      bookId,
-      setIsFavorited,
-      !isFavorited
-    );
+    const action = isFavorited ? removeFavorite : addFavorite;
+    action({ variables: { bookId } });
+    setIsFavorited(!isFavorited);
   }, [
     user,
     isFavorited,
