@@ -1,3 +1,10 @@
+# [1.39.0](https://github.com/amalv/bukie/compare/v1.38.0...v1.39.0) (2024-01-04)
+
+
+### Features
+
+* update useBooks hook to always fetch from network and conditionally set authorization header ([ce87138](https://github.com/amalv/bukie/commit/ce87138c47250cbbfed5b9c14f9de3fcc6d25365))
+
 # [1.38.0](https://github.com/amalv/bukie/compare/v1.37.1...v1.38.0) (2024-01-04)
 
 
