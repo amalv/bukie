@@ -1,3 +1,10 @@
+# [1.40.0](https://github.com/amalv/bukie/compare/v1.39.0...v1.40.0) (2024-01-04)
+
+
+### Features
+
+* trigger BOOKS_QUERY re-execution on token change ([44e938d](https://github.com/amalv/bukie/commit/44e938d0eebba4f3e1527a78e6c6503af375f747))
+
 # [1.39.0](https://github.com/amalv/bukie/compare/v1.38.0...v1.39.0) (2024-01-04)
 
 
