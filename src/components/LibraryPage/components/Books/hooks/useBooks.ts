@@ -59,6 +59,10 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
     BooksVars
   >(BOOKS_QUERY, {
     variables: { title: search, author: search, limit, cursor: "0" },
+    context: {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    },
+    fetchPolicy: "network-only",
   });
 
   useEffect(() => {
