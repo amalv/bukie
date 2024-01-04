@@ -9,23 +9,15 @@ export interface BooksProps {
 
 export const Books = ({ search, limit }: BooksProps) => {
   const {
-    isBookFavorited,
     isErrorSnackbarOpen,
     loading,
-    favoritesLoading,
     error,
     data,
     loader,
     handleCloseSnackbar,
   } = useBooks({ search, limit });
 
-  const books =
-    data?.books?.books.map((book) => ({
-      ...book,
-      isFavorited: isBookFavorited(book.id),
-    })) ?? [];
-
-  if (loading || favoritesLoading) {
+  if (loading) {
     return <LoadingView />;
   }
 
@@ -38,7 +30,7 @@ export const Books = ({ search, limit }: BooksProps) => {
           handleCloseSnackbar={handleCloseSnackbar}
         />
       ) : (
-        <BooksView books={books} />
+        <BooksView books={data?.books.books || []} />
       )}
       <div ref={loader} />
     </Grid>

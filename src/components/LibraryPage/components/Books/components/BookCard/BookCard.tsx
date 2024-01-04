@@ -4,13 +4,12 @@ import { Book } from "../../../../../../data/books";
 
 interface BookCardProps {
   book: Book;
-  isFavorited: boolean;
 }
 
-export const BookCard: React.FC<BookCardProps> = ({ book, isFavorited }) => (
+export const BookCard: React.FC<BookCardProps> = ({ book }) => (
   <Grid item xs={6} sm={4} md={4} lg={3} xl={2} key={book.title}>
     <Box position="relative">
-      <FavoriteButton bookId={book.id} isFavorited={isFavorited} />
+      <FavoriteButton bookId={book.id} isFavorited={book.isFavorited} />
     </Box>
     <CardContent book={book} />
   </Grid>

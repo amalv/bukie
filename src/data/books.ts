@@ -4,6 +4,7 @@ export type Book = {
   id: string;
   title: string;
   author: string;
+  isFavorited: boolean;
   publicationDate: string;
   image: string;
   rating: number;
@@ -37,6 +38,7 @@ export const BOOKS_QUERY = gql`
         id
         title
         author
+        isFavorited
         publicationDate
         image
         rating

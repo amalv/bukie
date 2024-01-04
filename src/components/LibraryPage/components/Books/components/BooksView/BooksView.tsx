@@ -1,15 +1,9 @@
 import { BookCard, Message } from "../";
-import { Book } from "../../../../../../data/books";
+import { Book } from "@/data/books";
 
-interface BookWithFavoriteStatus extends Book {
-  isFavorited: boolean;
-}
-
-export const BooksView = ({ books }: { books: BookWithFavoriteStatus[] }) =>
+export const BooksView = ({ books }: { books: Book[] }) =>
   books.length > 0 ? (
-    books.map((book: BookWithFavoriteStatus) => (
-      <BookCard key={book.id} book={book} isFavorited={book.isFavorited} />
-    ))
+    books.map((book: Book) => <BookCard key={book.id} book={book} />)
   ) : (
     <Message text="No books available" />
   );

@@ -8,6 +8,7 @@ test("renders book information correctly", async () => {
     id: "1",
     title: "Test Book",
     author: "Test Author",
+    isFavorited: false,
     publicationDate: "2000-01-01",
     image: "https://example.com/image.jpg",
     rating: 80,
@@ -16,7 +17,7 @@ test("renders book information correctly", async () => {
 
   render(
     <MockedProvider>
-      <BookCard book={mockBook} isFavorited={false} />
+      <BookCard book={mockBook} />
     </MockedProvider>
   );
 
