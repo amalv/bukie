@@ -51,27 +51,17 @@ const useHandleLastPageReached = (
 export const useBooks = ({ search, limit }: UseBooksProps) => {
   const { isAuthenticated } = useAuth0();
   const { token } = useAuth();
-  const tokenRef = useRef(token);
-  console.log("useBooks token: ", token);
 
-  const { loading, error, data, fetchMore, refetch } = useQuery<
-    BooksData,
-    BooksVars
-  >(BOOKS_QUERY, {
-    variables: { title: search, author: search, limit, cursor: "0" },
-    context: {
-      headers: token ? { authorization: `Bearer ${token}` } : {},
-    },
-    fetchPolicy: "network-only",
-  });
-
-  useEffect(() => {
-    if (token && token !== tokenRef.current) {
-      console.log("token changed");
-      refetch();
+  const { loading, error, data, fetchMore } = useQuery<BooksData, BooksVars>(
+    BOOKS_QUERY,
+    {
+      variables: { title: search, author: search, limit, cursor: "0", token },
+      context: {
+        headers: token ? { authorization: `Bearer ${token}` } : {},
+      },
+      fetchPolicy: "network-only",
     }
-    tokenRef.current = token;
-  }, [token, refetch]);
+  );
 
   const { isErrorSnackbarOpen, handleCloseSnackbar } = useHandleError(error);
   const { lastPageReached, setLastPageReached, lastPageReachedRef } =

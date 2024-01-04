@@ -15,6 +15,7 @@ export interface BooksVars {
   title: string;
   cursor: string;
   limit: number;
+  token: string | null;
 }
 
 export interface BooksData {
