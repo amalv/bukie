@@ -1,3 +1,10 @@
+# [1.38.0](https://github.com/amalv/bukie/compare/v1.37.1...v1.38.0) (2024-01-04)
+
+
+### Features
+
+* Enhance book fetching logic ([d561d59](https://github.com/amalv/bukie/commit/d561d5950f08d51ac7270d38b39611f7e21f615b))
+
 ## [1.37.1](https://github.com/amalv/bukie/compare/v1.37.0...v1.37.1) (2024-01-02)
 
 
