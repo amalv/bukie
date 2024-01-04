@@ -33,6 +33,7 @@ const refreshToken = (
       const idToken = claims.__raw; // The raw id_token
       localStorage.setItem("auth0.token", idToken);
       setToken(idToken);
+      console.log("refreshToken idToken:", idToken); // Add this line
 
       try {
         const decodedToken: DecodedToken = jwtDecode(idToken);

@@ -52,6 +52,7 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
   const { isAuthenticated } = useAuth0();
   const { token } = useAuth();
   const tokenRef = useRef(token);
+  console.log("useBooks token: ", token);
 
   const { loading, error, data, fetchMore, refetch } = useQuery<
     BooksData,
@@ -62,6 +63,7 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
 
   useEffect(() => {
     if (token && token !== tokenRef.current) {
+      console.log("token changed");
       refetch();
     }
     tokenRef.current = token;
