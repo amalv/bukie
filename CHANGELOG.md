@@ -1,3 +1,10 @@
+# [1.41.0](https://github.com/amalv/bukie/compare/v1.40.0...v1.41.0) (2024-01-06)
+
+
+### Features
+
+* add Playwright for end-to-end testing ([3b1ed19](https://github.com/amalv/bukie/commit/3b1ed19f25947038588d1ecfc6e681466e65c144))
+
 # [1.40.0](https://github.com/amalv/bukie/compare/v1.39.0...v1.40.0) (2024-01-04)
 
 
