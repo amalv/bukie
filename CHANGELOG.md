@@ -1,3 +1,10 @@
+## [1.41.1](https://github.com/amalv/bukie/compare/v1.41.0...v1.41.1) (2024-01-06)
+
+
+### Bug Fixes
+
+* exclude Playwright tests from Vitest configuration ([dc6daa5](https://github.com/amalv/bukie/commit/dc6daa51ffbd7f5f6350875de2e39525a5d2d1e5))
+
 # [1.41.0](https://github.com/amalv/bukie/compare/v1.40.0...v1.41.0) (2024-01-06)
 
 
