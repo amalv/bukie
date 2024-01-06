@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/amalv/bukie/compare/v1.41.1...v1.42.0) (2024-01-06)
+
+
+### Features
+
+* enhance CI/CD pipeline with unit and e2e testing ([d11b147](https://github.com/amalv/bukie/commit/d11b147d7a28c5647607894548716d0e95b28e2f))
+
 ## [1.41.1](https://github.com/amalv/bukie/compare/v1.41.0...v1.41.1) (2024-01-06)
 
 
