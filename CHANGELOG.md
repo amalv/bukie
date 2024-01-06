@@ -1,3 +1,10 @@
+# [1.43.0](https://github.com/amalv/bukie/compare/v1.42.0...v1.43.0) (2024-01-06)
+
+
+### Features
+
+* integrate e2e and unit tests into a single workflow ([ce4e0ad](https://github.com/amalv/bukie/commit/ce4e0ad42d5415d7d5184fe65fa8251f624b6fb3))
+
 # [1.42.0](https://github.com/amalv/bukie/compare/v1.41.1...v1.42.0) (2024-01-06)
 
 
