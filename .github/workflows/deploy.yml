@@ -3,7 +3,7 @@ name: Deploy static content to Pages
 
 on:
   workflow_run:
-    workflows: ["Run Tests", "Run Playwright Tests"]
+    workflows: ["Run Tests"]
     types:
       - completed
 
