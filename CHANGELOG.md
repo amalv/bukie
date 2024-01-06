@@ -1,3 +1,10 @@
+## [1.43.1](https://github.com/amalv/bukie/compare/v1.43.0...v1.43.1) (2024-01-06)
+
+
+### Bug Fixes
+
+* ensure semantic release only runs on successful deploy ([4252074](https://github.com/amalv/bukie/commit/4252074d66a6778a222d99c29455d00ce1283d07))
+
 # [1.43.0](https://github.com/amalv/bukie/compare/v1.42.0...v1.43.0) (2024-01-06)
 
 
