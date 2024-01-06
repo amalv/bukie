@@ -10,7 +10,8 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "semantic-release": "semantic-release",
-    "test": "vitest"
+    "test": "vitest",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@apollo/client": "^3.8.7",
@@ -44,12 +45,18 @@
     "eslint": "^8.45.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
+    "husky": "^8.0.3",
     "jsdom": "^23.0.1",
+    "lint-staged": "^15.2.0",
     "semantic-release": "^22.0.5",
     "typescript": "^5.0.2",
     "vite": "^5.0.7",
     "vite-plugin-checker": "^0.6.2",
     "vite-tsconfig-paths": "^4.2.3",
     "vitest": "^1.0.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix",
+    "*test.{ts,tsx}": "npm run test"
   }
 }
