@@ -1,4 +1,4 @@
-name: Build, Deploy and Test
+name: Run Tests
 on:
   push:
   pull_request:
