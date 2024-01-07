@@ -18,6 +18,8 @@ export default defineConfig({
         "**/index.ts",
         "**/tests/**",
         "**/tests-examples/**",
+        "/playwrightconfig.ts",
+        "**/types.ts",
       ],
     },
   },

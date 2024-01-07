@@ -9,7 +9,7 @@ vi.mock("@auth0/auth0-react", () => ({
   Auth0Provider: ({ children }: { children: ReactNode }) => children,
 }));
 
-vi.mock("./contexts/AuthContext", () => ({
+vi.mock("./contexts/AuthProvider", () => ({
   AuthProvider: ({ children }: { children: ReactNode }) => children,
 }));
 
