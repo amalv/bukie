@@ -1,3 +1,17 @@
+# [1.47.0](https://github.com/amalv/bukie/compare/v1.46.0...v1.47.0) (2024-01-07)
+
+
+### Bug Fixes
+
+* consolidate deploy staging and test workflows into a single one ([836e0ee](https://github.com/amalv/bukie/commit/836e0ee2ddfd3cb516b2ccdc74fba10c9140e292))
+* update name for test.yml job ([bc3cb40](https://github.com/amalv/bukie/commit/bc3cb40df973b50961bdcc5d265ec3ff2f7fb1c7))
+
+
+### Features
+
+* add id to Deploy to Netlify step for output access ([f02c8c3](https://github.com/amalv/bukie/commit/f02c8c3d8d7dcdd0644027722ef0162fd8b58463))
+* add Playwright e2e basic test and support for staging URL ([fb01805](https://github.com/amalv/bukie/commit/fb018057e7caf9b7cda87c796ec786b03e40c5ce))
+
 # [1.46.0](https://github.com/amalv/bukie/compare/v1.45.1...v1.46.0) (2024-01-07)
 
 
