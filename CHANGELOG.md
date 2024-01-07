@@ -1,3 +1,10 @@
+## [1.45.1](https://github.com/amalv/bukie/compare/v1.45.0...v1.45.1) (2024-01-07)
+
+
+### Bug Fixes
+
+* correct VITE_API_URL_PRODUCTION value in deploy-staging.yml ([0c27cd4](https://github.com/amalv/bukie/commit/0c27cd4eb5c78863d79f5c961ef314063b443a69))
+
 # [1.45.0](https://github.com/amalv/bukie/compare/v1.44.0...v1.45.0) (2024-01-07)
 
 
