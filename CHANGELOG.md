@@ -1,3 +1,10 @@
+# [1.46.0](https://github.com/amalv/bukie/compare/v1.45.1...v1.46.0) (2024-01-07)
+
+
+### Features
+
+* add noindex meta tag to prevent search engine indexing ([9889220](https://github.com/amalv/bukie/commit/98892202eb0d2512d7b278b2240f9f39b2f26536))
+
 ## [1.45.1](https://github.com/amalv/bukie/compare/v1.45.0...v1.45.1) (2024-01-07)
 
 
