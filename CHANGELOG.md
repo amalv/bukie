@@ -1,3 +1,10 @@
+# [1.45.0](https://github.com/amalv/bukie/compare/v1.44.0...v1.45.0) (2024-01-07)
+
+
+### Features
+
+* add staging deployment workflow with Netlify integration ([3724023](https://github.com/amalv/bukie/commit/3724023672fa165eb0cc233ab45c61fd5347e313))
+
 # [1.44.0](https://github.com/amalv/bukie/compare/v1.43.1...v1.44.0) (2024-01-07)
 
 
