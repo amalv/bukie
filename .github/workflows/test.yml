@@ -20,6 +20,7 @@ jobs:
         env:
           VITE_API_URL_PRODUCTION: ${{ secrets.VITE_API_URL_PRODUCTION }}
       - name: Deploy to Netlify
+        id: deploy
         uses: nwtgck/actions-netlify@v2.0
         with:
           publish-dir: "./dist"
