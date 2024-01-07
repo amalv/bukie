@@ -1,5 +1,5 @@
 import { SnackbarCloseReason } from "@mui/material";
-import { BooksData } from "../../../../../../data/books";
+import { BooksData } from "@/data/books";
 import { FetchMoreResult } from "../types";
 
 const PAGE_SIZE = 50;
