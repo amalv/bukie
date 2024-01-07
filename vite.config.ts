@@ -11,7 +11,7 @@ export default defineConfig({
       typescript: true,
     }),
   ],
-  base: process.env.NODE_ENV === "production" ? "/bukie/" : "/",
+  base: process.env.PUBLIC_BASE_URL || "/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
