@@ -14,6 +14,35 @@ interface DecodedToken {
 interface AuthProviderProps {
   children: React.ReactNode;
 }
+
+const decodeToken = (idToken: string) => {
+  try {
+    const decodedToken: DecodedToken = jwtDecode(idToken);
+    const expiryTime = decodedToken.exp * 1000; // Convert to milliseconds
+    const timeoutDuration = expiryTime - Date.now() - 60 * 1000; // Refresh 1 minute before expiry
+    return timeoutDuration;
+  } catch (error) {
+    console.error("Invalid token", error);
+    return null;
+  }
+};
+
+const setTokenAndScheduleRefresh = (
+  getIdTokenClaims: () => Promise<IdToken | undefined>,
+  setToken: (token: string | null) => void,
+  idToken: string
+) => {
+  localStorage.setItem("auth0.token", idToken);
+  setToken(idToken);
+
+  const timeoutDuration = decodeToken(idToken);
+  if (timeoutDuration) {
+    setTimeout(() => {
+      refreshToken(getIdTokenClaims, setToken);
+    }, timeoutDuration);
+  }
+};
+
 const refreshToken = async (
   getIdTokenClaims: () => Promise<IdToken | undefined>,
   setToken: (token: string | null) => void
@@ -22,20 +51,7 @@ const refreshToken = async (
     const claims = await getIdTokenClaims();
     if (claims) {
       const idToken = claims.__raw; // The raw id_token
-      localStorage.setItem("auth0.token", idToken);
-      setToken(idToken);
-
-      try {
-        const decodedToken: DecodedToken = jwtDecode(idToken);
-        const expiryTime = decodedToken.exp * 1000; // Convert to milliseconds
-        const timeoutDuration = expiryTime - Date.now() - 60 * 1000; // Refresh 1 minute before expiry
-
-        setTimeout(() => {
-          refreshToken(getIdTokenClaims, setToken);
-        }, timeoutDuration);
-      } catch (error) {
-        console.error("Invalid token", error);
-      }
+      setTokenAndScheduleRefresh(getIdTokenClaims, setToken, idToken);
     }
   }
 };
