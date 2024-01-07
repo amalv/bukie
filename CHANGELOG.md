@@ -1,3 +1,11 @@
+# [1.44.0](https://github.com/amalv/bukie/compare/v1.43.1...v1.44.0) (2024-01-07)
+
+
+### Features
+
+* extract AuthProvider from AuthContext and add tests ([6559550](https://github.com/amalv/bukie/commit/655955006de550d8e396ee2c22bf68cad65c2fd2))
+* install lint-staged and husky for pre-commit testing and linting ([e85ece5](https://github.com/amalv/bukie/commit/e85ece50827b4fa2c660949f2f9eaa0681d1a3da))
+
 ## [1.43.1](https://github.com/amalv/bukie/compare/v1.43.0...v1.43.1) (2024-01-06)
 
 
