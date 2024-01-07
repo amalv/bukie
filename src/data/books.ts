@@ -10,6 +10,7 @@ export type Book = {
   rating: number;
   ratingsCount: number;
 };
+
 export interface BooksVars {
   author: string;
   title: string;

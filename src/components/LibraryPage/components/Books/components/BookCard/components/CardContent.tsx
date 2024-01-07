@@ -7,7 +7,7 @@ import {
   CardActionAreaWrapper,
 } from "../BookCard.styles";
 import { CircularProgressWithLabel, BookDetails } from "./";
-import { Book } from "../../../../../../../data/books";
+import { Book } from "@/data/books";
 
 interface CardContentProps {
   book: Book;
@@ -29,7 +29,10 @@ export const CardContent: React.FC<CardContentProps> = ({ book }) => (
             publicationDate={book.publicationDate}
           />
         </TextWrapper>
-        <CircularProgressWithLabel value={book.rating} />
+        <CircularProgressWithLabel
+          value={book.rating}
+          aria-label={`${book.rating}%`}
+        />
       </InfoWrapper>
     </CardActionAreaWrapper>
   </CardWrapper>
