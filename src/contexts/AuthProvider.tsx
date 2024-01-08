@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { IdToken, useAuth0 } from "@auth0/auth0-react";
+import { useAuth0, GetTokenSilentlyOptions } from "@auth0/auth0-react";
 import { jwtDecode } from "jwt-decode";
 import { AuthContext } from "./AuthContext";
 
@@ -15,9 +15,9 @@ interface AuthProviderProps {
   children: React.ReactNode;
 }
 
-const decodeToken = (idToken: string) => {
+const decodeToken = (accessToken: string) => {
   try {
-    const decodedToken: DecodedToken = jwtDecode(idToken);
+    const decodedToken: DecodedToken = jwtDecode(accessToken);
     const expiryTime = decodedToken.exp * 1000; // Convert to milliseconds
     const timeoutDuration = expiryTime - Date.now() - 60 * 1000; // Refresh 1 minute before expiry
     return timeoutDuration;
@@ -28,43 +28,42 @@ const decodeToken = (idToken: string) => {
 };
 
 const setTokenAndScheduleRefresh = (
-  getIdTokenClaims: () => Promise<IdToken | undefined>,
+  getAccessTokenSilently: (
+    options?: GetTokenSilentlyOptions
+  ) => Promise<string>,
   setToken: (token: string | null) => void,
-  idToken: string
+  accessToken: string
 ) => {
-  localStorage.setItem("auth0.token", idToken);
-  setToken(idToken);
+  localStorage.setItem("auth0.token", accessToken);
+  setToken(accessToken);
 
-  const timeoutDuration = decodeToken(idToken);
+  const timeoutDuration = decodeToken(accessToken);
   if (timeoutDuration) {
     setTimeout(() => {
-      refreshToken(getIdTokenClaims, setToken);
+      refreshToken(getAccessTokenSilently, setToken);
     }, timeoutDuration);
   }
 };
 
 const refreshToken = async (
-  getIdTokenClaims: () => Promise<IdToken | undefined>,
+  getAccessTokenSilently: (
+    options?: GetTokenSilentlyOptions
+  ) => Promise<string>,
   setToken: (token: string | null) => void
 ) => {
-  if (getIdTokenClaims) {
-    const claims = await getIdTokenClaims();
-    if (claims) {
-      const idToken = claims.__raw; // The raw id_token
-      setTokenAndScheduleRefresh(getIdTokenClaims, setToken, idToken);
-    }
-  }
+  const accessToken = await getAccessTokenSilently();
+  setTokenAndScheduleRefresh(getAccessTokenSilently, setToken, accessToken);
 };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const { user, getIdTokenClaims } = useAuth0();
+  const { user, getAccessTokenSilently } = useAuth0();
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user && getIdTokenClaims) {
-      refreshToken(getIdTokenClaims, setToken);
+    if (user && getAccessTokenSilently) {
+      refreshToken(getAccessTokenSilently, setToken);
     }
-  }, [user, getIdTokenClaims]);
+  }, [user, getAccessTokenSilently]);
 
   const value = useMemo(() => ({ token, user }), [token, user]);
 

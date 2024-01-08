@@ -21,6 +21,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
     <StyledIconButton
       style={{ color: isFavorited ? "red" : "gray", zIndex: 1 }}
       onClick={handleFavoriteClick}
+      aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
     >
       {isFavorited ? (
         <Favorite fontSize="large" />

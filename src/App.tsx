@@ -21,6 +21,8 @@ const App = () => {
       domain={import.meta.env.VITE_AUTH0_DOMAIN}
       clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
       authorizationParams={{
+        audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+        scope: "openid profile email",
         redirect_uri: redirectUri,
       }}
       cacheLocation="localstorage"
