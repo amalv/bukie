@@ -1,3 +1,10 @@
+# [1.49.0](https://github.com/amalv/bukie/compare/v1.48.1...v1.49.0) (2024-01-09)
+
+
+### Features
+
+* add staging Auth0 variables to GitHub Actions ([d7f6caf](https://github.com/amalv/bukie/commit/d7f6cafc7fdc9ec529fdad7dcb38cbecf6c5c7f8))
+
 ## [1.48.1](https://github.com/amalv/bukie/compare/v1.48.0...v1.48.1) (2024-01-09)
 
 
