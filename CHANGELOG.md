@@ -1,3 +1,10 @@
+## [1.48.1](https://github.com/amalv/bukie/compare/v1.48.0...v1.48.1) (2024-01-09)
+
+
+### Bug Fixes
+
+* update audience for Auth0Provider ([216f129](https://github.com/amalv/bukie/commit/216f12919966fe5951f82716c84f3586baf17308))
+
 # [1.48.0](https://github.com/amalv/bukie/compare/v1.47.0...v1.48.0) (2024-01-09)
 
 
