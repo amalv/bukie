@@ -10,9 +10,13 @@ export const darkModeVar = makeVar(
   window?.matchMedia("(prefers-color-scheme: dark)")?.matches
 );
 
-const API_URL =
-  import.meta.env.VITE_API_URL_PRODUCTION ||
-  import.meta.env.VITE_API_URL_DEVELOPMENT;
+const apiUrlMap = {
+  production: import.meta.env.VITE_API_URL_PRODUCTION,
+  staging: import.meta.env.VITE_API_URL_STAGING,
+  development: import.meta.env.VITE_API_URL_DEVELOPMENT,
+};
+
+const API_URL = apiUrlMap[import.meta.env.VITE_ENV] || apiUrlMap.development;
 
 const httpLink = createHttpLink({
   uri: API_URL,

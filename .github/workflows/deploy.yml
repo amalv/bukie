@@ -46,6 +46,7 @@ jobs:
           VITE_API_URL_PRODUCTION: ${{ secrets.VITE_API_URL_PRODUCTION }}
           VITE_AUTH0_DOMAIN: ${{ secrets.VITE_AUTH0_DOMAIN }}
           VITE_AUTH0_CLIENT_ID: ${{ secrets.VITE_AUTH0_CLIENT_ID }}
+          VITE_ENV: production
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
