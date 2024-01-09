@@ -1,3 +1,10 @@
+## [1.51.2](https://github.com/amalv/bukie/compare/v1.51.1...v1.51.2) (2024-01-09)
+
+
+### Bug Fixes
+
+* **useBooks:** remove token from BOOKS_QUERY variables to prevent double query execution ([82cfaac](https://github.com/amalv/bukie/commit/82cfaac50fa0d211c5508af546206be93dea2e2f))
+
 ## [1.51.1](https://github.com/amalv/bukie/compare/v1.51.0...v1.51.1) (2024-01-09)
 
 
