@@ -16,7 +16,9 @@ const apiUrlMap = {
   development: import.meta.env.VITE_API_URL_DEVELOPMENT,
 };
 
-const API_URL = apiUrlMap[import.meta.env.VITE_ENV] || apiUrlMap.development;
+const API_URL =
+  apiUrlMap[import.meta.env.VITE_ENV as keyof typeof apiUrlMap] ||
+  apiUrlMap.development;
 
 const httpLink = createHttpLink({
   uri: API_URL,
