@@ -69,7 +69,7 @@ const useLogout = () => {
   return useCallback(
     (event: React.MouseEvent<HTMLLIElement>) => {
       event.preventDefault();
-      logout();
+      logout({ logoutParams: { returnTo: window.location.origin } });
       localStorage.removeItem("auth0.token");
     },
     [logout]
