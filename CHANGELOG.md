@@ -1,3 +1,16 @@
+# [1.52.0](https://github.com/amalv/bukie/compare/v1.51.2...v1.52.0) (2024-01-09)
+
+
+### Bug Fixes
+
+* correct syntax for test.yml ([fb1be92](https://github.com/amalv/bukie/commit/fb1be92557ca6f6f9e3dea78c08867191ed97ca9))
+
+
+### Features
+
+* enable again e2e tests job ([b0f4a56](https://github.com/amalv/bukie/commit/b0f4a569f4a270123c6535b938cab9b48f1d4421))
+* **testing:** set baseURL dynamically for Playwright tests ([cfa3bdd](https://github.com/amalv/bukie/commit/cfa3bdd8292265ddce722818130f6dfecc990033))
+
 ## [1.51.2](https://github.com/amalv/bukie/compare/v1.51.1...v1.51.2) (2024-01-09)
 
 
