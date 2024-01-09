@@ -1,3 +1,10 @@
+# [1.50.0](https://github.com/amalv/bukie/compare/v1.49.0...v1.50.0) (2024-01-09)
+
+
+### Features
+
+* add staging environment check for Auth0 redirect URI ([8daa979](https://github.com/amalv/bukie/commit/8daa979ca75ff02cba87f05086ed19b635a48293))
+
 # [1.49.0](https://github.com/amalv/bukie/compare/v1.48.1...v1.49.0) (2024-01-09)
 
 
