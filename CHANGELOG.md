@@ -1,3 +1,10 @@
+## [1.50.1](https://github.com/amalv/bukie/compare/v1.50.0...v1.50.1) (2024-01-09)
+
+
+### Bug Fixes
+
+* add returnTo parameter to Auth0 logout function ([b0dbd27](https://github.com/amalv/bukie/commit/b0dbd27e008c01eb735900abc1d7840b1467b88e))
+
 # [1.50.0](https://github.com/amalv/bukie/compare/v1.49.0...v1.50.0) (2024-01-09)
 
 
