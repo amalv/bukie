@@ -1,3 +1,16 @@
+# [1.48.0](https://github.com/amalv/bukie/compare/v1.47.0...v1.48.0) (2024-01-09)
+
+
+### Bug Fixes
+
+* disable e2e tests job ([c4bf813](https://github.com/amalv/bukie/commit/c4bf8139903ef36cea2880f65d7ee6ed58417a66))
+* **playwright:** update baseURL to use BASE_URL environment variable ([50c9271](https://github.com/amalv/bukie/commit/50c9271b4603a49aac2ef6b012d1b1438a0eaa8c))
+
+
+### Features
+
+* update AuthProvider to use access token ([8b2a2b4](https://github.com/amalv/bukie/commit/8b2a2b437d99e4dd108cda783ba4cd80eb16a630))
+
 # [1.47.0](https://github.com/amalv/bukie/compare/v1.46.0...v1.47.0) (2024-01-07)
 
 
