@@ -1,3 +1,10 @@
+## [1.51.1](https://github.com/amalv/bukie/compare/v1.51.0...v1.51.1) (2024-01-09)
+
+
+### Bug Fixes
+
+* use correct staging API URL in test.yml workflow ([e283438](https://github.com/amalv/bukie/commit/e2834384cec0aceb80f4b8fd989b8f3d392f1d0b))
+
 # [1.51.0](https://github.com/amalv/bukie/compare/v1.50.1...v1.51.0) (2024-01-09)
 
 
