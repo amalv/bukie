@@ -19,6 +19,8 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL_PRODUCTION: ${{ secrets.VITE_API_URL_PRODUCTION }}
+          VITE_AUTH0_DOMAIN: ${{ secrets.VITE_AUTH0_DOMAIN_STAGING }}
+          VITE_AUTH0_CLIENT_ID: ${{ secrets.VITE_AUTH0_CLIENT_ID_STAGING }}
       - name: Deploy to Netlify
         id: deploy
         uses: nwtgck/actions-netlify@v2.0
