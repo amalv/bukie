@@ -72,6 +72,8 @@ jobs:
       - name: Set deploy URL
         id: url
         run: echo "::set-output name=DEPLOY_URL::$(cat deploy-url.txt)"
+      - name: Debug deploy URL
+        run: echo "DEPLOY_URL: ${{ steps.url.outputs.DEPLOY_URL }}"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -83,7 +85,7 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
         env:
-          URL: ${{ steps.url.outputs.DEPLOY_URL }}
+          PLAYWRIGHT_TEST_BASE_URL: ${{ steps.url.outputs.DEPLOY_URL }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
