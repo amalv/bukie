@@ -1,3 +1,15 @@
+# [1.51.0](https://github.com/amalv/bukie/compare/v1.50.1...v1.51.0) (2024-01-09)
+
+
+### Bug Fixes
+
+* resolve TypeScript indexing error in API URL selection ([d1eb137](https://github.com/amalv/bukie/commit/d1eb1375fe99b8ec71e3443f804284714bf073d9))
+
+
+### Features
+
+* add staging support for API url in apolloClient ([88099fc](https://github.com/amalv/bukie/commit/88099fc4c316a2881f9bbb5512070be94abc21b1))
+
 ## [1.50.1](https://github.com/amalv/bukie/compare/v1.50.0...v1.50.1) (2024-01-09)
 
 
