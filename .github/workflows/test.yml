@@ -73,7 +73,7 @@ jobs:
         id: url
         run: echo "::set-output name=DEPLOY_URL::$(cat deploy-url.txt)"
       - name: Debug deploy URL
-        run: echo "DEPLOY_URL: ${{ steps.url.outputs.DEPLOY_URL }}"
+        run: 'echo "DEPLOY_URL: ${{ steps.url.outputs.DEPLOY_URL }}"'
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
