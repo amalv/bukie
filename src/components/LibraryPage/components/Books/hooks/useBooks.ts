@@ -55,7 +55,7 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
   const { loading, error, data, fetchMore } = useQuery<BooksData, BooksVars>(
     BOOKS_QUERY,
     {
-      variables: { title: search, author: search, limit, cursor: "0", token },
+      variables: { title: search, author: search, limit, cursor: "0" },
       context: {
         headers: token ? { authorization: `Bearer ${token}` } : {},
       },
