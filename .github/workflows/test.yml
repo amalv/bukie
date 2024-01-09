@@ -18,7 +18,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL_PRODUCTION: ${{ secrets.VITE_API_URL_PRODUCTION }}
+          VITE_API_URL_STAGING: ${{ secrets.VITE_API_URL_STAGING}}
           VITE_AUTH0_DOMAIN: ${{ secrets.VITE_AUTH0_DOMAIN_STAGING }}
           VITE_AUTH0_CLIENT_ID: ${{ secrets.VITE_AUTH0_CLIENT_ID_STAGING }}
           VITE_ENV: staging
