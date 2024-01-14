@@ -88,7 +88,6 @@ export const UserAuthentication = () => {
     return <CircularProgress />;
   }
 
-  console.log("user", user);
   if (user?.name) {
     return <UserMenu user={user} onLogout={handleLogout} />;
   }
