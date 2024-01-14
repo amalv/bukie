@@ -1,3 +1,16 @@
+# [1.53.0](https://github.com/amalv/bukie/compare/v1.52.0...v1.53.0) (2024-01-14)
+
+
+### Bug Fixes
+
+* **e2e-tests:** move test username and password to e2e-tests job ([0f03310](https://github.com/amalv/bukie/commit/0f03310357e6edf7fea0fa9f31bfa3175fd64dd5))
+* **tests:** move auth.setup.ts to tests directory ([5577b2b](https://github.com/amalv/bukie/commit/5577b2bb21014e74f847ccd4d275ae70549d24bf))
+
+
+### Features
+
+* **tests:** add support for authenticated tests in Playwright ([7b4aa5e](https://github.com/amalv/bukie/commit/7b4aa5ef39adaf1036f1f1926ecacd62800dd246))
+
 # [1.52.0](https://github.com/amalv/bukie/compare/v1.51.2...v1.52.0) (2024-01-09)
 
 
