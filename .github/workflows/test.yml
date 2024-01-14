@@ -21,6 +21,8 @@ jobs:
           VITE_API_URL_STAGING: ${{ secrets.VITE_API_URL_STAGING}}
           VITE_AUTH0_DOMAIN: ${{ secrets.VITE_AUTH0_DOMAIN_STAGING }}
           VITE_AUTH0_CLIENT_ID: ${{ secrets.VITE_AUTH0_CLIENT_ID_STAGING }}
+          VITE_AUTH0_TEST_USERNAME: ${{ secrets.VITE_AUTH0_TEST_USERNAME }}
+          VITE_AUTH0_TEST_PASSWORD: ${{ secrets.VITE_AUTH0_TEST_PASSWORD }}
           VITE_ENV: staging
       - name: Deploy to Netlify
         id: deploy

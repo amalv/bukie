@@ -9,7 +9,11 @@ const UserAvatar = ({
 }: {
   user: User;
   onClick: (event: React.MouseEvent<HTMLDivElement>) => void;
-}) => <Avatar onClick={onClick}>{user.name ? user.name[0] : ""}</Avatar>;
+}) => (
+  <Avatar data-testid="user-avatar" onClick={onClick}>
+    {user.name ? user.name[0] : ""}
+  </Avatar>
+);
 
 const UserMenuDropdown = ({
   anchorEl,
@@ -84,6 +88,7 @@ export const UserAuthentication = () => {
     return <CircularProgress />;
   }
 
+  console.log("user", user);
   if (user?.name) {
     return <UserMenu user={user} onLogout={handleLogout} />;
   }
