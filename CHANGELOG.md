@@ -1,3 +1,10 @@
+# [1.54.0](https://github.com/amalv/bukie/compare/v1.53.1...v1.54.0) (2024-01-15)
+
+
+### Features
+
+* add getEnvironmentDependentUrl function to reduce code duplication ([3089926](https://github.com/amalv/bukie/commit/3089926bb8c386b1043cf3f494bebb2751b7c883))
+
 ## [1.53.1](https://github.com/amalv/bukie/compare/v1.53.0...v1.53.1) (2024-01-15)
 
 
