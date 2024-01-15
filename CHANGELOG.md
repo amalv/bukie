@@ -1,3 +1,10 @@
+## [1.53.1](https://github.com/amalv/bukie/compare/v1.53.0...v1.53.1) (2024-01-15)
+
+
+### Bug Fixes
+
+* **auth:** adjust returnTo URL based on environment in useLogout ([f939381](https://github.com/amalv/bukie/commit/f939381fa7d08e80b375e9aace47985eab721b7e))
+
 # [1.53.0](https://github.com/amalv/bukie/compare/v1.52.0...v1.53.0) (2024-01-14)
 
 
