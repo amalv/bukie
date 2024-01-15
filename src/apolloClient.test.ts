@@ -5,17 +5,30 @@ import { describe, it, vi } from "vitest";
 import { darkModeVar } from "./apolloClient";
 
 describe("apolloClient", () => {
-  it("creates ApolloClient with correct configuration", () => {
-    const mocks = vi.hoisted(() => {
-      const mockLink = {
-        concat: vi.fn(),
-        split: vi.fn(),
-        request: vi.fn(),
-        setOnError: vi.fn(),
-      };
-      return { mockLink };
-    });
+  const mocks = vi.hoisted(() => {
+    const mockLink = {
+      concat: vi.fn(),
+      split: vi.fn(),
+      request: vi.fn(),
+      setOnError: vi.fn(),
+    };
 
+    const setContextMock = vi
+      .fn()
+      .mockImplementation((_, { headers } = { headers: {} }) => {
+        const token = "test-token";
+        return {
+          headers: {
+            ...headers,
+            authorization: token ? `Bearer ${token}` : "",
+          },
+          concat: vi.fn(),
+        };
+      });
+
+    return { mockLink, setContextMock };
+  });
+  it("creates ApolloClient with correct configuration", () => {
     vi.mock("@apollo/client", () => ({
       ApolloClient: vi.fn(),
       createHttpLink: vi.fn().mockReturnValue(mocks.mockLink),
@@ -55,5 +68,27 @@ describe("apolloClient", () => {
     const darkModeReadFunction = (InMemoryCache as jest.Mock).mock.calls[0][0]
       .typePolicies.Query.fields.darkMode.read;
     expect(darkModeReadFunction()).toBe(darkModeVar());
+  });
+
+  it("sets authorization header when token is present in localStorage", () => {
+    const token = "test-token";
+    vi.stubGlobal("localStorage", {
+      getItem: vi.fn().mockReturnValue(token),
+    });
+
+    vi.mock("@apollo/client/link/context", () => ({
+      setContext: mocks.setContextMock,
+    }));
+
+    const context = mocks.setContextMock({}, { headers: {} });
+
+    expect(context).toEqual({
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+      concat: expect.any(Function),
+    });
+
+    vi.unstubAllGlobals();
   });
 });
