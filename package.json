@@ -62,7 +62,10 @@
     "vitest": "^1.0.4"
   },
   "lint-staged": {
-    "*.{ts,tsx}": "eslint --fix",
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "tsc --noEmit"
+    ],
     "*test.{ts,tsx}": "npm run test:staged"
   }
 }
