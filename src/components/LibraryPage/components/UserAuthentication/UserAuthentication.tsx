@@ -67,13 +67,23 @@ const UserMenu = ({
   );
 };
 
+const getReturnToUrl = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+  const isStaging = import.meta.env.VITE_ENV === "staging";
+  if (isProduction && !isStaging) {
+    return `${window.location.origin}/bukie`;
+  }
+  return window.location.origin;
+};
+
 const useLogout = () => {
   const { logout } = useAuth0();
 
   return useCallback(
     (event: React.MouseEvent<HTMLLIElement>) => {
       event.preventDefault();
-      logout({ logoutParams: { returnTo: window.location.origin } });
+      const returnTo = getReturnToUrl();
+      logout({ logoutParams: { returnTo } });
       localStorage.removeItem("auth0.token");
     },
     [logout]
