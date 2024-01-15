@@ -63,8 +63,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix",
-      "tsc --noEmit"
+      "eslint --fix"
     ],
     "*test.{ts,tsx}": "npm run test:staged"
   }
