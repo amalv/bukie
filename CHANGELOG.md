@@ -1,3 +1,10 @@
+# [1.55.0](https://github.com/amalv/bukie/compare/v1.54.0...v1.55.0) (2024-01-15)
+
+
+### Features
+
+* **eslint-config:** enhance ESLint configuration with additional plugins and rules ([2aeab5a](https://github.com/amalv/bukie/commit/2aeab5a4e5c0d824c1a16e9014df3a4e96d0af32))
+
 # [1.54.0](https://github.com/amalv/bukie/compare/v1.53.1...v1.54.0) (2024-01-15)
 
 
