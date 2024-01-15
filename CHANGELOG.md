@@ -1,3 +1,10 @@
+## [1.55.1](https://github.com/amalv/bukie/compare/v1.55.0...v1.55.1) (2024-01-15)
+
+
+### Bug Fixes
+
+* **urlUtils.test:** replace direct manipulation of window.location with vi.stubGlobal ([8200aa6](https://github.com/amalv/bukie/commit/8200aa687a6a78f344447d4d117162b79bf974b0))
+
 # [1.55.0](https://github.com/amalv/bukie/compare/v1.54.0...v1.55.0) (2024-01-15)
 
 
