@@ -1,8 +1,9 @@
 import { ApolloError } from "@apollo/client";
 import { render, screen } from "@testing-library/react";
+import { vi } from "vitest";
+
 import { Books } from "./Books";
 import { useBooks } from "./hooks";
-import { vi } from "vitest";
 
 vi.mock("./hooks", () => ({
   useBooks: vi.fn(),

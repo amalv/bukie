@@ -1,6 +1,7 @@
 import { renderHook, act } from "@testing-library/react";
-import { useDebounce } from "./useDebounce";
 import { vi } from "vitest";
+
+import { useDebounce } from "./useDebounce";
 
 describe("useDebounce", () => {
   it("returns the same value after the delay", () => {

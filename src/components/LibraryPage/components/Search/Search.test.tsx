@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { Search } from "./Search";
 import { vi } from "vitest";
+
+import { Search } from "./Search";
 
 describe("Search", () => {
   it("updates the search value when typed into", async () => {

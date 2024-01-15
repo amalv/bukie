@@ -1,13 +1,14 @@
 import { ThemeProvider } from "@mui/material";
 import { Auth0Provider } from "@auth0/auth0-react";
+import { ApolloProvider } from "@apollo/client";
+
 import { LibraryPage } from "./components/";
 import { useTheme } from "./hooks";
 import { AuthProvider } from "./contexts";
-import { ApolloProvider } from "@apollo/client";
 import { client } from "./apolloClient";
 import { getEnvironmentDependentUrl } from "./utils/";
 
-const App = () => {
+export const App = () => {
   const theme = useTheme();
   const redirectUri = getEnvironmentDependentUrl();
 
@@ -32,5 +33,3 @@ const App = () => {
     </Auth0Provider>
   );
 };
-
-export default App;

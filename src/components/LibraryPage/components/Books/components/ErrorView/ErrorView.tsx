@@ -1,5 +1,6 @@
 import { SnackbarCloseReason } from "@mui/material";
 import { ApolloError } from "@apollo/client";
+
 import { Message } from "../Message";
 import { ErrorSnackbar } from "../../../../../shared";
 

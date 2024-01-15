@@ -1,5 +1,6 @@
 import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { Box } from "@mui/material";
+
 import { StyledTextField } from "./SearchInput.styles";
 
 interface SearchProps {

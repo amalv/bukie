@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { ErrorSnackbar } from "./ErrorSnackbar";
 import { vi } from "vitest";
+
+import { ErrorSnackbar } from "./ErrorSnackbar";
 
 describe("ErrorSnackbar", () => {
   const user = userEvent.setup();

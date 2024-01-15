@@ -1,7 +1,8 @@
 import { renderHook } from "@testing-library/react";
-import { useIntersectionObserver } from "./useIntersectionObserver";
 import { vi } from "vitest";
 import { RefObject } from "react";
+
+import { useIntersectionObserver } from "./useIntersectionObserver";
 
 interface MockIntersectionObserver extends IntersectionObserver {
   triggerCallback(entries: IntersectionObserverEntry[]): void;

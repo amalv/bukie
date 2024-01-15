@@ -1,7 +1,9 @@
 import { useState, useCallback } from "react";
 import { Avatar, CircularProgress, Menu, MenuItem } from "@mui/material";
 import { User, useAuth0 } from "@auth0/auth0-react";
+
 import { LoginButton } from "../LoginButton";
+
 import { getEnvironmentDependentUrl } from "@/utils/";
 
 const UserAvatar = ({

@@ -1,6 +1,8 @@
 import { Box, Grid } from "@mui/material";
-import { FavoriteButton, CardContent } from "./components";
+
 import { Book } from "../../../../../../data/books";
+
+import { FavoriteButton, CardContent } from "./components";
 
 interface BookCardProps {
   book: Book;

@@ -1,6 +1,5 @@
 import { Snackbar, Alert } from "@mui/material";
 import { SnackbarCloseReason } from "@mui/material/Snackbar";
-import React from "react";
 
 interface ErrorSnackbarProps {
   open: boolean;

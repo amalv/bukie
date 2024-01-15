@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+
 import {
   Cover,
   CardWrapper,
@@ -6,7 +7,9 @@ import {
   TextWrapper,
   CardActionAreaWrapper,
 } from "../BookCard.styles";
+
 import { CircularProgressWithLabel, BookDetails } from "./";
+
 import { Book } from "@/data/books";
 
 interface CardContentProps {

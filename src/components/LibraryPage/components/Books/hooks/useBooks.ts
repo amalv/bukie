@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/contexts";
 import { useAuth0 } from "@auth0/auth0-react";
 import { ApolloError, useQuery } from "@apollo/client";
-import { BOOKS_QUERY, BooksData, BooksVars } from "@/data/books";
+
 import { useIntersectionObserver } from "./useIntersectionObserver";
 import { getCloseSnackbarHandler, getUpdateQuery } from "./utils";
 import { useFetchMoreBooks } from "./useFetchMoreBooks";
+
+import { BOOKS_QUERY, BooksData, BooksVars } from "@/data/books";
+import { useAuth } from "@/contexts";
 
 const PAGE_SIZE = 50;
 

@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
+import { vi } from "vitest";
+
 import { LibraryPage } from "./LibraryPage";
 import { useLibraryPage } from "./hooks";
-import { vi } from "vitest";
 
 vi.mock("./hooks", () => ({
   useLibraryPage: vi.fn(),

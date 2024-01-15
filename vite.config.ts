@@ -1,13 +1,14 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import checker from "vite-plugin-checker";
 import path from "path";
 
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { checker } from "vite-plugin-checker";
+
+/* eslint-disable import/no-default-export */
 export default defineConfig({
   plugins: [
     react(),
     checker({
-      // e.g. use TypeScript check
       typescript: true,
     }),
   ],

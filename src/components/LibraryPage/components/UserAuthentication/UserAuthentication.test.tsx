@@ -1,7 +1,8 @@
 import { render, fireEvent, waitFor, screen } from "@testing-library/react";
-import { UserAuthentication } from "./UserAuthentication";
 import { useAuth0 } from "@auth0/auth0-react";
 import { vi } from "vitest";
+
+import { UserAuthentication } from "./UserAuthentication";
 
 vi.mock("@auth0/auth0-react", () => ({
   useAuth0: vi.fn().mockReturnValue({

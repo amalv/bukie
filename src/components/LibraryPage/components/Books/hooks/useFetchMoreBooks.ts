@@ -4,7 +4,9 @@ import {
   FetchMoreOptions,
 } from "@apollo/client";
 import { useRef, useCallback } from "react";
+
 import { BooksData, BooksVars } from "../../../../../data/books";
+
 import { FetchMoreResult } from "./types";
 
 type FetchMoreFunction = (

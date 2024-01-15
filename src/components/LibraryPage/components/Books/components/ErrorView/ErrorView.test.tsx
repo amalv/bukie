@@ -1,8 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { ApolloError } from "@apollo/client";
-import { ErrorView } from "./ErrorView";
 import { vi } from "vitest";
+
+import { ErrorView } from "./ErrorView";
 
 describe("ErrorView", () => {
   it("renders an error message when provided", () => {

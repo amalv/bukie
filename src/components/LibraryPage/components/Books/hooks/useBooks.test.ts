@@ -1,8 +1,9 @@
 import { renderHook, act } from "@testing-library/react";
 import { useQuery } from "@apollo/client";
+import { vi } from "vitest";
+
 import { useBooks } from "./useBooks";
 import { useIntersectionObserver } from "./useIntersectionObserver";
-import { vi } from "vitest";
 
 vi.mock("@apollo/client", async () => {
   const actual = await vi.importActual("@apollo/client");

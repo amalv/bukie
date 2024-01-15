@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing";
-import { BookCard } from "./BookCard";
+
 import { Book } from "../../../../../../data/books";
+
+import { BookCard } from "./BookCard";
 
 test("renders book information correctly", async () => {
   const mockBook: Book = {
