@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Avatar, CircularProgress, Menu, MenuItem } from "@mui/material";
 import { User, useAuth0 } from "@auth0/auth0-react";
 import { LoginButton } from "../LoginButton";
+import { getEnvironmentDependentUrl } from "@/utils/";
 
 const UserAvatar = ({
   user,
@@ -67,22 +68,13 @@ const UserMenu = ({
   );
 };
 
-const getReturnToUrl = () => {
-  const isProduction = process.env.NODE_ENV === "production";
-  const isStaging = import.meta.env.VITE_ENV === "staging";
-  if (isProduction && !isStaging) {
-    return `${window.location.origin}/bukie`;
-  }
-  return window.location.origin;
-};
-
 const useLogout = () => {
   const { logout } = useAuth0();
 
   return useCallback(
     (event: React.MouseEvent<HTMLLIElement>) => {
       event.preventDefault();
-      const returnTo = getReturnToUrl();
+      const returnTo = getEnvironmentDependentUrl();
       logout({ logoutParams: { returnTo } });
       localStorage.removeItem("auth0.token");
     },

@@ -5,18 +5,11 @@ import { useTheme } from "./hooks";
 import { AuthProvider } from "./contexts";
 import { ApolloProvider } from "@apollo/client";
 import { client } from "./apolloClient";
+import { getEnvironmentDependentUrl } from "./utils/";
 
-const getRedirectUri = () => {
-  const isProduction = process.env.NODE_ENV === "production";
-  const isStaging = import.meta.env.VITE_ENV === "staging";
-  if (isProduction && !isStaging) {
-    return `${window.location.origin}/bukie`;
-  }
-  return window.location.origin;
-};
 const App = () => {
   const theme = useTheme();
-  const redirectUri = getRedirectUri();
+  const redirectUri = getEnvironmentDependentUrl();
 
   return (
     <Auth0Provider
