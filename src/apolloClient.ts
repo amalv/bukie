@@ -24,13 +24,14 @@ const httpLink = createHttpLink({
   uri: API_URL,
 });
 
-const authLink = setContext((_, { headers }) => {
+export const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem("auth0.token");
+  const authHeaders = token && { authorization: `Bearer ${token}` };
 
   return {
     headers: {
       ...headers,
-      ...(token ? { authorization: `Bearer ${token}` } : {}),
+      ...authHeaders,
     },
   };
 });

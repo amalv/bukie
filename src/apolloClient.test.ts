@@ -12,22 +12,28 @@ describe("apolloClient", () => {
       request: vi.fn(),
       setOnError: vi.fn(),
     };
+    const createHttpLinkMock = vi.fn().mockReturnValue(mockLink);
 
     const setContextMock = vi
       .fn()
       .mockImplementation((_, { headers } = { headers: {} }) => {
-        const token = "test-token";
+        const token = localStorage.getItem("auth0.token");
+        const authHeaders = token && { authorization: `Bearer ${token}` };
         return {
           headers: {
             ...headers,
-            authorization: token ? `Bearer ${token}` : "",
+            ...authHeaders,
           },
           concat: vi.fn(),
         };
       });
+    const httpLink = createHttpLinkMock({
+      uri: import.meta.env.VITE_API_URL_DEVELOPMENT,
+    });
 
-    return { mockLink, setContextMock };
+    return { mockLink, setContextMock, httpLink };
   });
+
   it("creates ApolloClient with correct configuration", () => {
     vi.mock("@apollo/client", () => ({
       ApolloClient: vi.fn(),
@@ -37,7 +43,7 @@ describe("apolloClient", () => {
     }));
 
     vi.mock("@apollo/client/link/context", () => ({
-      setContext: vi.fn().mockReturnValue(mocks.mockLink),
+      setContext: mocks.setContextMock,
     }));
 
     const mockLink = mocks.mockLink;
@@ -86,6 +92,25 @@ describe("apolloClient", () => {
       headers: {
         authorization: `Bearer ${token}`,
       },
+      concat: expect.any(Function),
+    });
+
+    vi.unstubAllGlobals();
+  });
+
+  it("does not set authorization header when no token in localStorage", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: vi.fn().mockReturnValue(null), // No token
+    });
+
+    vi.mock("@apollo/client/link/context", () => ({
+      setContext: mocks.setContextMock,
+    }));
+
+    const context = mocks.setContextMock({}, { headers: {} });
+
+    expect(context).toEqual({
+      headers: {},
       concat: expect.any(Function),
     });
 
