@@ -20,6 +20,10 @@ The project leverages Semantic Release for automated versioning and releases, an
 
 ⚠️ This project is the companion to a backend project, which is an Apollo Server project that uses serverless, AWS Lambda, and Postgres as a database. The backend project must be launched first for local development. You can find it [here](https://github.com/amalv/apollo-server-lambda-postgres/).
 
+## Screenshot
+
+![Showcase Image](https://i.postimg.cc/BvCHjxWY/cropped.png)
+
 ## Features
 
 📚 Curated list of science fiction books
