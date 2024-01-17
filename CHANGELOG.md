@@ -1,3 +1,10 @@
+# [1.56.0](https://github.com/amalv/bukie/compare/v1.55.1...v1.56.0) (2024-01-17)
+
+
+### Features
+
+* refactor favorite handling to use Apollo Client cache ([a64be23](https://github.com/amalv/bukie/commit/a64be232c5f3a299dea4307d764dc5ef78644cd1))
+
 ## [1.55.1](https://github.com/amalv/bukie/compare/v1.55.0...v1.55.1) (2024-01-15)
 
 
