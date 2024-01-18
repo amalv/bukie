@@ -29,10 +29,12 @@ jobs:
                -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                https://api.github.com/repos/${{ github.repository }}/actions/artifacts
       - name: Download deploy URL
-        uses: actions/download-artifact@v4
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v3
         with:
-          name: deploy-url
-          github-token: ${{ secrets.GH_PAT }}
+          workflow: "deploy_staging.yml"
+          workflow_conclusion: "success"
+          name: "deploy-url"
       - name: Set deploy URL
         id: url
         run: echo "::set-output name=DEPLOY_URL::$(cat deploy-url.txt)"
