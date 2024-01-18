@@ -1,3 +1,17 @@
+# [1.57.0](https://github.com/amalv/bukie/compare/v1.56.0...v1.57.0) (2024-01-18)
+
+
+### Bug Fixes
+
+* add GH_PAT to download-artifact for sufficient permissions ([998ff42](https://github.com/amalv/bukie/commit/998ff42d74f9acf35337067187fd5004a8ff38ac))
+* change artifact download action ([eaf3f39](https://github.com/amalv/bukie/commit/eaf3f398d25818871768b39cf821d58e4a2bbca9))
+
+
+### Features
+
+* add list all artifacts steps in e2e-tests ([92fb1de](https://github.com/amalv/bukie/commit/92fb1decad2732beb86ccfbb3cbfb79eb0f90719))
+* split test workflow into separate deploy staging and test workflows ([bb0e946](https://github.com/amalv/bukie/commit/bb0e946e038d30c4a799aae09a19142d6d5a9fec))
+
 # [1.56.0](https://github.com/amalv/bukie/compare/v1.55.1...v1.56.0) (2024-01-17)
 
 
