@@ -1,0 +1,47 @@
+name: Deploy to Staging
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL_STAGING: ${{ secrets.VITE_API_URL_STAGING}}
+          VITE_AUTH0_DOMAIN: ${{ secrets.VITE_AUTH0_DOMAIN_STAGING }}
+          VITE_AUTH0_CLIENT_ID: ${{ secrets.VITE_AUTH0_CLIENT_ID_STAGING }}
+          VITE_ENV: staging
+      - name: Deploy to Netlify
+        id: deploy
+        uses: nwtgck/actions-netlify@v2.0
+        with:
+          publish-dir: "./dist"
+          production-branch: master
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 1
+      - name: Save deploy URL
+        run: echo "${{ steps.deploy.outputs.deploy-url }}" > deploy-url.txt
+      - name: Upload deploy URL
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-url
+          path: deploy-url.txt
