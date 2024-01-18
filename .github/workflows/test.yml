@@ -32,6 +32,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: deploy-url
+          github-token: ${{ secrets.GH_PAT }}
       - name: Set deploy URL
         id: url
         run: echo "::set-output name=DEPLOY_URL::$(cat deploy-url.txt)"
