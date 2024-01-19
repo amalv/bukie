@@ -1,3 +1,10 @@
+# [1.58.0](https://github.com/amalv/bukie/compare/v1.57.0...v1.58.0) (2024-01-19)
+
+
+### Features
+
+* Add Lighthouse CI workflow for performance auditing ([b9a9a14](https://github.com/amalv/bukie/commit/b9a9a14f3a2426ac89fbcf906b3434414c991495))
+
 # [1.57.0](https://github.com/amalv/bukie/compare/v1.56.0...v1.57.0) (2024-01-18)
 
 
