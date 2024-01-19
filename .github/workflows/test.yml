@@ -37,9 +37,9 @@ jobs:
           name: "deploy-url"
       - name: Set deploy URL
         id: url
-        run: echo "::set-output name=DEPLOY_URL::$(cat deploy-url.txt)"
+        run: echo "DEPLOY_URL=$(cat deploy-url.txt)" >> $GITHUB_ENV
       - name: Debug deploy URL
-        run: 'echo "DEPLOY_URL: ${{ steps.url.outputs.DEPLOY_URL }}"'
+        run: 'echo "DEPLOY_URL: ${{ env.DEPLOY_URL }}"'
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -53,7 +53,7 @@ jobs:
         env:
           VITE_AUTH0_TEST_USERNAME: ${{ secrets.VITE_AUTH0_TEST_USERNAME }}
           VITE_AUTH0_TEST_PASSWORD: ${{ secrets.VITE_AUTH0_TEST_PASSWORD }}
-          PLAYWRIGHT_TEST_BASE_URL: ${{ steps.url.outputs.DEPLOY_URL }}
+          PLAYWRIGHT_TEST_BASE_URL: ${{ env.DEPLOY_URL }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
