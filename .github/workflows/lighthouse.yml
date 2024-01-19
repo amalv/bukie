@@ -1,0 +1,30 @@
+name: Lighthouse CI
+on:
+  workflow_run:
+    workflows: ["Deploy to Staging"]
+    types:
+      - completed
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download deploy URL
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: "deploy_staging.yml"
+          workflow_conclusion: "success"
+          name: "deploy-url"
+
+      - name: Set deploy URL
+        run: echo "DEPLOY_URL=$(cat deploy-url.txt)" >> $GITHUB_ENV
+
+      - name: Audit URLs using Lighthouse
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: ${{ env.DEPLOY_URL }}
+          uploadArtifacts: true
+          temporaryPublicStorage: true
