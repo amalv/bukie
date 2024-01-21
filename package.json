@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "coverage": "vitest run --coverage",
+    "lhci": "lhci autorun",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "semantic-release": "semantic-release",
@@ -30,6 +31,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.13.0",
     "@playwright/test": "^1.41.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",

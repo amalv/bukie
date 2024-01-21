@@ -33,3 +33,7 @@ coverage/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth
+
+# lighthouse reports
+/lhci_reports
+.lighthouseci
