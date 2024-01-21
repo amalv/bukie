@@ -1,3 +1,10 @@
+# [1.59.0](https://github.com/amalv/bukie/compare/v1.58.0...v1.59.0) (2024-01-21)
+
+
+### Features
+
+* integrate Lighthouse CI and add performance assertions in new workflow ([a570814](https://github.com/amalv/bukie/commit/a57081486d9f1cc2debec135a086f89045e203cd))
+
 # [1.58.0](https://github.com/amalv/bukie/compare/v1.57.0...v1.58.0) (2024-01-19)
 
 
