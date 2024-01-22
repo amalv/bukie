@@ -42,4 +42,12 @@ module.exports = {
       },
     },
   },
+  overrides: [
+    {
+      files: ["**/*.test.ts", "**/*.test.tsx"], // adjust this to match your test files
+      rules: {
+        "max-lines-per-function": "off",
+      },
+    },
+  ],
 };
