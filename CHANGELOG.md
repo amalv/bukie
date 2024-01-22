@@ -1,3 +1,10 @@
+# [1.60.0](https://github.com/amalv/bukie/compare/v1.59.0...v1.60.0) (2024-01-22)
+
+
+### Features
+
+* update ESLint and CodeClimate rules ([1c57eba](https://github.com/amalv/bukie/commit/1c57eba828c4e45971bc64fb9e1fa0003f11301c))
+
 # [1.59.0](https://github.com/amalv/bukie/compare/v1.58.0...v1.59.0) (2024-01-21)
 
 
