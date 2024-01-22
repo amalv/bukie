@@ -74,7 +74,10 @@ describe("useAddFavorite", () => {
     const cache = new InMemoryCache();
     const writeFragmentSpy = vi.spyOn(cache, "writeFragment");
 
-    let updateFunction;
+    let updateFunction: (
+      cache: InMemoryCache,
+      result: { data: { addFavorite: { book: { id: string } } } }
+    ) => void;
 
     // Define the fragment
     const fragment = gql`
