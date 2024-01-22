@@ -27,6 +27,7 @@ module.exports = {
       { components: ["Link"], specialLink: ["to"] },
     ], // Enforce valid anchor elements
     "react/prop-types": "off",
+    "max-lines-per-function": ["error", 50],
   },
   settings: {
     react: {
