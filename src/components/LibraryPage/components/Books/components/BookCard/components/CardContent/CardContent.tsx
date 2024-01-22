@@ -1,14 +1,13 @@
 import { faker } from "@faker-js/faker";
 
+import { BookDetails, CircularProgressWithLabel } from "./components";
 import {
   Cover,
   CardWrapper,
   InfoWrapper,
   TextWrapper,
   CardActionAreaWrapper,
-} from "../BookCard.styles";
-
-import { CircularProgressWithLabel, BookDetails } from "./";
+} from "./CardContent.styles";
 
 import { Book } from "@/data/books";
 

@@ -5,12 +5,11 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { ReactNode } from "react";
 import { vi } from "vitest";
 
-import { useFavorite } from "../useFavorite";
-
+import { useFavorite } from "./useFavorite";
 import { useFavoriteButton } from "./useFavoriteButton";
 
 vi.mock("@auth0/auth0-react");
-vi.mock("../useFavorite");
+vi.mock("./useFavorite");
 vi.mock("@apollo/client");
 
 describe("useFavoriteButton", () => {

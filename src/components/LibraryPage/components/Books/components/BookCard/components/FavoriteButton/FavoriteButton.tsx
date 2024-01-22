@@ -1,7 +1,7 @@
 import Favorite from "@mui/icons-material/Favorite";
 import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 
-import { useFavoriteButton } from "./useFavoriteButton";
+import { useFavoriteButton } from "./hooks";
 import { StyledIconButton } from "./FavoriteButton.styles";
 
 interface FavoriteButtonProps {

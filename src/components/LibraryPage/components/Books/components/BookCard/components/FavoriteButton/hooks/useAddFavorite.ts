@@ -1,12 +1,9 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { useMutation, gql } from "@apollo/client";
 
-import {
-  ADD_FAVORITE_MUTATION,
-  REMOVE_FAVORITE_MUTATION,
-} from "@/data/favorites";
+import { ADD_FAVORITE_MUTATION } from "@/data/favorites";
 
-export const useFavorite = () => {
+export const useAddFavorite = () => {
   const { user } = useAuth0();
 
   const [addFavorite, { data: addData, loading: addLoading, error: addError }] =
@@ -41,41 +38,5 @@ export const useFavorite = () => {
       },
     });
 
-  const [removeFavorite, { loading: removeLoading, error: removeError }] =
-    useMutation(REMOVE_FAVORITE_MUTATION, {
-      optimisticResponse: {
-        __typename: "Mutation",
-        removeFavorite: true,
-      },
-    });
-
-  const removeFavoriteWithVariables = async ({
-    variables: { bookId },
-  }: {
-    variables: { bookId: string };
-  }) => {
-    await removeFavorite({
-      variables: { bookId },
-      update(cache) {
-        cache.modify({
-          id: `Book:${bookId}`,
-          fields: {
-            isFavorited() {
-              return false;
-            },
-          },
-        });
-      },
-    });
-  };
-
-  return {
-    addFavorite,
-    addData,
-    addLoading,
-    addError,
-    removeFavorite: removeFavoriteWithVariables,
-    removeLoading,
-    removeError,
-  };
+  return { addFavorite, addData, addLoading, addError };
 };

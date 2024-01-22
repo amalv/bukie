@@ -2,7 +2,7 @@ import { gql, useApolloClient } from "@apollo/client";
 import { useEffect, useCallback } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
-import { useFavorite } from "../useFavorite";
+import { useFavorite } from "./useFavorite";
 
 export const useFavoriteButton = (
   bookId: string,
