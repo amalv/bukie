@@ -4,6 +4,12 @@ import { useAuth0 } from "@auth0/auth0-react";
 
 import { useFavorite } from "./useFavorite";
 
+const FAVORITE_FRAGMENT = gql`
+  fragment Favorite on Book {
+    isFavorited
+  }
+`;
+
 export const useFavoriteButton = (
   bookId: string,
   initialIsFavorited: boolean
@@ -15,27 +21,16 @@ export const useFavoriteButton = (
   useEffect(() => {
     client.writeFragment({
       id: `Book:${bookId}`,
-      fragment: gql`
-        fragment Favorite on Book {
-          isFavorited
-        }
-      `,
-      data: {
-        isFavorited: initialIsFavorited,
-      },
+      fragment: FAVORITE_FRAGMENT,
+      data: { isFavorited: initialIsFavorited },
     });
   }, [client, bookId, initialIsFavorited]);
 
   const getIsFavorited = useCallback(() => {
     const data = client.readFragment({
       id: `Book:${bookId}`,
-      fragment: gql`
-        fragment Favorite on Book {
-          isFavorited
-        }
-      `,
+      fragment: FAVORITE_FRAGMENT,
     });
-
     return data?.isFavorited;
   }, [client, bookId]);
 
@@ -44,7 +39,6 @@ export const useFavoriteButton = (
       loginWithRedirect();
       return;
     }
-
     const isFavorited = getIsFavorited();
     const action = isFavorited ? removeFavorite : addFavorite;
     await action({ variables: { bookId } });
@@ -57,7 +51,5 @@ export const useFavoriteButton = (
     removeFavorite,
   ]);
 
-  const isFavorited = getIsFavorited();
-
-  return { isFavorited, handleFavoriteClick };
+  return { isFavorited: getIsFavorited(), handleFavoriteClick };
 };
