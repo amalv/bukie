@@ -18,16 +18,23 @@ interface UseBooksProps {
 
 const useHandleError = (error: ApolloError | undefined) => {
   const [isErrorSnackbarOpen, setIsErrorSnackbarOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (error) {
       setIsErrorSnackbarOpen(true);
+      if (error instanceof ApolloError && error.message.includes("500")) {
+        localStorage.removeItem("auth0.token");
+        setErrorMessage("Your session has expired. Please log in again.");
+      } else {
+        setErrorMessage(error.message);
+      }
     }
   }, [error]);
 
   const handleCloseSnackbar = getCloseSnackbarHandler(setIsErrorSnackbarOpen);
 
-  return { isErrorSnackbarOpen, handleCloseSnackbar };
+  return { isErrorSnackbarOpen, handleCloseSnackbar, errorMessage };
 };
 
 const useHandleLastPageReached = (
