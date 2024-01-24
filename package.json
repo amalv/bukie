@@ -31,6 +31,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@graphql-eslint/eslint-plugin": "^3.20.1",
     "@lhci/cli": "^0.13.0",
     "@playwright/test": "^1.41.1",
     "@semantic-release/changelog": "^6.0.3",

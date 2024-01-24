@@ -10,6 +10,7 @@ module.exports = {
     "plugin:import/errors",
     "plugin:import/warnings",
     "plugin:import/typescript",
+    "plugin:@graphql-eslint/operations-recommended",
   ],
   ignorePatterns: ["dist", ".eslintrc.cjs"],
   parser: "@typescript-eslint/parser",
@@ -28,6 +29,9 @@ module.exports = {
     ], // Enforce valid anchor elements
     "react/prop-types": "off",
     "max-lines-per-function": ["error", 50],
+    "@graphql-eslint/no-deprecated": "off",
+    "@graphql-eslint/require-id-when-available": "off",
+    "@graphql-eslint/selection-set-depth": "off",
   },
   settings: {
     react: {
