@@ -5,7 +5,7 @@ on:
     types:
       - completed
 jobs:
-    lint:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
