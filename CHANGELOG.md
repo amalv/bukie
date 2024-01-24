@@ -1,3 +1,10 @@
+## [1.60.1](https://github.com/amalv/bukie/compare/v1.60.0...v1.60.1) (2024-01-24)
+
+
+### Bug Fixes
+
+* correct error syntax at test workflow ([f9f63af](https://github.com/amalv/bukie/commit/f9f63af9c64fa2b269e51c81fa67ffe793ec29ae))
+
 # [1.60.0](https://github.com/amalv/bukie/compare/v1.59.0...v1.60.0) (2024-01-22)
 
 
