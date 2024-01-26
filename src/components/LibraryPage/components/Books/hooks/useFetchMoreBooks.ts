@@ -11,12 +11,12 @@ import { FetchMoreResult } from "./types";
 
 type FetchMoreFunction = (
   options: FetchMoreQueryOptions<BooksVars, BooksData> &
-    FetchMoreOptions<BooksData, BooksVars>
+    FetchMoreOptions<BooksData, BooksVars>,
 ) => Promise<ApolloQueryResult<BooksData>>;
 
 const unobserveLoader = (
   loader: React.MutableRefObject<null>,
-  observer: IntersectionObserver
+  observer: IntersectionObserver,
 ) => {
   if (loader.current) {
     observer.unobserve(loader.current);
@@ -26,7 +26,7 @@ const unobserveLoader = (
 const observeLoader = (
   loader: React.MutableRefObject<null>,
   observer: IntersectionObserver,
-  lastPageReached: boolean
+  lastPageReached: boolean,
 ) => {
   if (loader.current && observer && !lastPageReached) {
     observer.observe(loader.current);
@@ -38,8 +38,8 @@ const fetchMoreBooks = (
   data: BooksData | undefined,
   updateQuery: (
     prev: BooksData,
-    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
-  ) => BooksData
+    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult },
+  ) => BooksData,
 ) =>
   fetchMore({
     variables: {
@@ -53,11 +53,11 @@ const handleFetchMoreBooks = (
   data: BooksData | undefined,
   updateQuery: (
     prev: BooksData,
-    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
+    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult },
   ) => BooksData,
   loader: React.MutableRefObject<null>,
   observer: IntersectionObserver,
-  lastPageReached: boolean
+  lastPageReached: boolean,
 ) => {
   fetchMoreBooks(fetchMore, data, updateQuery).then(() => {
     observeLoader(loader, observer, lastPageReached);
@@ -69,9 +69,9 @@ export const useFetchMoreBooks = (
   data: BooksData | undefined,
   updateQuery: (
     prev: BooksData,
-    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
+    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult },
   ) => BooksData,
-  lastPageReached: boolean
+  lastPageReached: boolean,
 ) => {
   const loader = useRef(null);
 
@@ -84,9 +84,9 @@ export const useFetchMoreBooks = (
         updateQuery,
         loader,
         observer,
-        lastPageReached
+        lastPageReached,
       );
     },
-    [data, fetchMore, updateQuery, lastPageReached]
+    [data, fetchMore, updateQuery, lastPageReached],
   );
 };

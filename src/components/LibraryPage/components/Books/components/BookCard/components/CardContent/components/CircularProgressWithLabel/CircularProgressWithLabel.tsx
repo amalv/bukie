@@ -36,7 +36,7 @@ const CircularProgressLabel = ({ value }: { value: number }) => (
   </Box>
 );
 export const CircularProgressWithLabel = (
-  props: CircularProgressProps & { value: number }
+  props: CircularProgressProps & { value: number },
 ) => {
   const color = determineColor(props.value);
 

@@ -40,7 +40,7 @@ const useHandleError = (error: ApolloError | undefined) => {
 const useHandleLastPageReached = (
   search: string,
   limit: number,
-  isAuthenticated: boolean
+  isAuthenticated: boolean,
 ) => {
   const lastPageReachedRef = useRef(false);
   const [lastPageReached, setLastPageReached] = useState(false);
@@ -69,7 +69,7 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
         headers: token ? { authorization: `Bearer ${token}` } : {},
       },
       fetchPolicy: "network-only",
-    }
+    },
   );
 
   const { isErrorSnackbarOpen, handleCloseSnackbar } = useHandleError(error);
@@ -83,7 +83,7 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
     fetchMore,
     data,
     updateQuery,
-    lastPageReached
+    lastPageReached,
   );
 
   // If the initial data load returned less than PAGE_SIZE results, set lastPageReached to true

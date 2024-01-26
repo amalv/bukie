@@ -76,7 +76,7 @@ describe("useAddFavorite", () => {
 
     let updateFunction: (
       cache: InMemoryCache,
-      result: { data: { addFavorite: { book: { id: string } } } }
+      result: { data: { addFavorite: { book: { id: string } } } },
     ) => void;
 
     // Define the fragment

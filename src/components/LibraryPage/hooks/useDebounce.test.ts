@@ -8,7 +8,7 @@ describe("useDebounce", () => {
     vi.useFakeTimers();
     const { result, rerender } = renderHook(
       ({ value, delay }) => useDebounce(value, delay),
-      { initialProps: { value: "test", delay: 500 } }
+      { initialProps: { value: "test", delay: 500 } },
     );
 
     expect(result.current).toBe("test");

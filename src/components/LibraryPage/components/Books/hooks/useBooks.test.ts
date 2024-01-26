@@ -50,7 +50,7 @@ describe("useBooks", () => {
     });
 
     const { result } = renderHook(() =>
-      useBooks({ search: "test", limit: 10 })
+      useBooks({ search: "test", limit: 10 }),
     );
 
     // Check that the data is returned correctly

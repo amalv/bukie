@@ -18,7 +18,7 @@ export const ErrorView = ({
   isErrorSnackbarOpen: boolean;
   handleCloseSnackbar: (
     _: React.SyntheticEvent | Event,
-    reason?: SnackbarCloseReason
+    reason?: SnackbarCloseReason,
   ) => void;
 }) => {
   const errorMessage = useErrorMessage(error);

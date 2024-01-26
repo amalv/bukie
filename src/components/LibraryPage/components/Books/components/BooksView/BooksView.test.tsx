@@ -31,7 +31,7 @@ describe("BooksView", () => {
     render(
       <MockedProvider>
         <BooksView books={books} />
-      </MockedProvider>
+      </MockedProvider>,
     );
 
     books.forEach((book) => {
@@ -43,7 +43,7 @@ describe("BooksView", () => {
     render(
       <MockedProvider>
         <BooksView books={[]} />
-      </MockedProvider>
+      </MockedProvider>,
     );
     expect(screen.getByText("No books available")).toBeInTheDocument();
   });

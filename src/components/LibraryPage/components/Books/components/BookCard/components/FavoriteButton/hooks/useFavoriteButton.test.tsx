@@ -44,7 +44,7 @@ describe("useFavoriteButton", () => {
 
     const { result } = renderHook(
       () => useFavoriteButton(bookId, initialIsFavorited),
-      { wrapper }
+      { wrapper },
     );
 
     act(() => {

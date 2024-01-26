@@ -39,7 +39,7 @@ const useMenu = () => {
     (event: React.MouseEvent<HTMLDivElement>) => {
       setAnchorEl(event.currentTarget);
     },
-    []
+    [],
   );
 
   const handleMenuClose = useCallback(() => {
@@ -80,7 +80,7 @@ const useLogout = () => {
       logout({ logoutParams: { returnTo } });
       localStorage.removeItem("auth0.token");
     },
-    [logout]
+    [logout],
   );
 };
 

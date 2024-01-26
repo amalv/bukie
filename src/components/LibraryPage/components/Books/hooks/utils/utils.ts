@@ -7,7 +7,7 @@ import { BooksData } from "@/data/books";
 const PAGE_SIZE = 50;
 
 export const getCloseSnackbarHandler = (
-  setIsErrorSnackbarOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setIsErrorSnackbarOpen: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   return (_: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
     if (reason === "clickaway") {
@@ -19,11 +19,11 @@ export const getCloseSnackbarHandler = (
 };
 
 export const getUpdateQuery = (
-  setLastPageReached: React.Dispatch<React.SetStateAction<boolean>>
+  setLastPageReached: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   return (
     prev: BooksData,
-    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult }
+    { fetchMoreResult }: { fetchMoreResult?: FetchMoreResult },
   ) => {
     if (!fetchMoreResult) return prev;
     const isLastPage = fetchMoreResult.books.books.length < PAGE_SIZE;

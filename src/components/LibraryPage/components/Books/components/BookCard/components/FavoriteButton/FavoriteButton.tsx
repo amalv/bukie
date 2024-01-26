@@ -15,7 +15,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
 }) => {
   const { handleFavoriteClick, isFavorited } = useFavoriteButton(
     bookId,
-    initialIsFavorited
+    initialIsFavorited,
   );
 
   return (

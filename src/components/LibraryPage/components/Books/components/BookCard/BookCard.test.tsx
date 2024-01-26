@@ -20,7 +20,7 @@ test("renders book information correctly", async () => {
   render(
     <MockedProvider>
       <BookCard book={mockBook} />
-    </MockedProvider>
+    </MockedProvider>,
   );
 
   expect(await screen.findByText(mockBook.title)).toBeInTheDocument();

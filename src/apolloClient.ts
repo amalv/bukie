@@ -7,7 +7,7 @@ import {
 import { setContext } from "@apollo/client/link/context";
 
 export const darkModeVar = makeVar(
-  window?.matchMedia("(prefers-color-scheme: dark)")?.matches
+  window?.matchMedia("(prefers-color-scheme: dark)")?.matches,
 );
 
 const apiUrlMap = {

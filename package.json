@@ -8,12 +8,13 @@
     "build": "tsc && vite build",
     "coverage": "vitest run --coverage",
     "lhci": "lhci autorun",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext ts,tsx --max-warnings 0",
     "preview": "vite preview",
     "semantic-release": "semantic-release",
     "test": "vitest",
     "test:staged": "CI=true npm test",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "prettier": "prettier --write ."
   },
   "dependencies": {
     "@apollo/client": "^3.8.7",
@@ -48,6 +49,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "@vitest/coverage-v8": "^1.0.4",
     "eslint": "^8.45.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.8.0",
@@ -57,6 +59,7 @@
     "husky": "^8.0.3",
     "jsdom": "^23.0.1",
     "lint-staged": "^15.2.0",
+    "prettier": "^3.2.4",
     "semantic-release": "^23.0.0",
     "typescript": "^5.0.2",
     "vite": "^5.0.7",
@@ -66,6 +69,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
+      "prettier --write",
       "eslint --fix"
     ],
     "*test.{ts,tsx}": "npm run test:staged"

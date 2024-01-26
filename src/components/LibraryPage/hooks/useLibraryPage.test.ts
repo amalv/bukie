@@ -16,7 +16,7 @@ describe("useLibraryPage", () => {
 
     // Wait for debounce and check debouncedSearch
     await waitFor(() =>
-      expect(result.current.debouncedSearch).toBe("Test search")
+      expect(result.current.debouncedSearch).toBe("Test search"),
     );
   });
 
@@ -33,7 +33,7 @@ describe("useLibraryPage", () => {
 
     // Wait for debounce and check debouncedSearch
     await waitFor(() =>
-      expect(result.current.debouncedSearch).toBe("Test search")
+      expect(result.current.debouncedSearch).toBe("Test search"),
     );
   });
 

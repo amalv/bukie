@@ -6,7 +6,6 @@ import { useLibraryPage } from "./hooks";
 import { Root } from "./LibraryPage.styles";
 import { Books, Search, ThemeSwitch, UserAuthentication } from "./components";
 
-
 interface LibraryGridProps {
   search: string;
   setSearch: React.Dispatch<React.SetStateAction<string>>;

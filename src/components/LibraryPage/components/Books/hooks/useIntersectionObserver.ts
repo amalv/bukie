@@ -11,9 +11,9 @@ const useObserverEffect = (
   loader: RefObject<HTMLElement>,
   handleObserver: (
     entries: IntersectionObserverEntry[],
-    observer: IntersectionObserver
+    observer: IntersectionObserver,
   ) => void,
-  options: IntersectionObserverInit
+  options: IntersectionObserverInit,
 ) => {
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -40,7 +40,7 @@ export const useIntersectionObserver = (
   loader: RefObject<HTMLElement>,
   handleFetchMore: (observer: IntersectionObserver) => void,
   loading: boolean,
-  lastPageReachedRef: RefObject<boolean>
+  lastPageReachedRef: RefObject<boolean>,
 ) => {
   const handleObserver = useCallback(
     (entities: IntersectionObserverEntry[], observer: IntersectionObserver) => {
@@ -49,7 +49,7 @@ export const useIntersectionObserver = (
         handleFetchMore(observer);
       }
     },
-    [loading, handleFetchMore, lastPageReachedRef]
+    [loading, handleFetchMore, lastPageReachedRef],
   );
   const options = useMemo(createOptions, []);
 

@@ -24,7 +24,7 @@ describe("CardContent", () => {
     expect(screen.getByText(/2022/)).toBeInTheDocument(); // Use a regex to match the year
     expect(screen.getByRole("img", { name: "Test Book" })).toHaveAttribute(
       "src",
-      "https://test.com/test.jpg"
+      "https://test.com/test.jpg",
     );
     expect(screen.getByLabelText(`${book.rating}%`)).toBeInTheDocument();
   });

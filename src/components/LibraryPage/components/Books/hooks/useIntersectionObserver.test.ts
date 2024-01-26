@@ -19,7 +19,7 @@ class MockIntersectionObserverImpl implements MockIntersectionObserver {
 
   constructor(
     callback: (entries: IntersectionObserverEntry[]) => void,
-    loading: boolean
+    loading: boolean,
   ) {
     this.callback = callback;
     this.loading = loading;
@@ -52,11 +52,11 @@ test("calls handleFetchMore when loader is visible", () => {
 
   const mockIntersectionObserver = new MockIntersectionObserverImpl(
     handleFetchMore,
-    false
+    false,
   );
 
   renderHook(() =>
-    useIntersectionObserver(loader, handleFetchMore, false, lastPageReachedRef)
+    useIntersectionObserver(loader, handleFetchMore, false, lastPageReachedRef),
   );
 
   // simulate an intersection event where the loader is visible
@@ -71,11 +71,13 @@ test("does not call handleFetchMore when loader is not visible", () => {
   const handleFetchMore = vi.fn();
   const lastPageReachedRef = { current: false };
 
-  const mockIntersectionObserver = new MockIntersectionObserverImpl(() => {},
-  false);
+  const mockIntersectionObserver = new MockIntersectionObserverImpl(
+    () => {},
+    false,
+  );
 
   renderHook(() =>
-    useIntersectionObserver(loader, handleFetchMore, false, lastPageReachedRef)
+    useIntersectionObserver(loader, handleFetchMore, false, lastPageReachedRef),
   );
 
   // simulate an intersection event where the loader is not visible
@@ -91,7 +93,7 @@ test("does not call handleFetchMore when data is loading", () => {
   const lastPageReachedRef = { current: false };
 
   renderHook(() =>
-    useIntersectionObserver(loader, handleFetchMore, true, lastPageReachedRef)
+    useIntersectionObserver(loader, handleFetchMore, true, lastPageReachedRef),
   );
 
   expect(handleFetchMore).not.toHaveBeenCalled();
@@ -102,7 +104,7 @@ test("does not call handlefetchmore when last page has been reached", () => {
   const lastPageReachedRef = { current: true };
 
   renderHook(() =>
-    useIntersectionObserver(loader, handleFetchMore, false, lastPageReachedRef)
+    useIntersectionObserver(loader, handleFetchMore, false, lastPageReachedRef),
   );
 
   expect(handleFetchMore).not.toHaveBeenCalled();

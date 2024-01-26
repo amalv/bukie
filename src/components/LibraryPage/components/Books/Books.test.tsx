@@ -24,7 +24,7 @@ vi.mock("./components/BooksView", () => ({
 const mockUseBooks = (
   isErrorSnackbarOpen: boolean,
   loading: boolean,
-  error: ApolloError | undefined
+  error: ApolloError | undefined,
 ) => {
   (useBooks as jest.Mock).mockReturnValue({
     isErrorSnackbarOpen,

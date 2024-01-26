@@ -1,6 +1,7 @@
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
+  reportUnusedDisableDirectives: true,
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
@@ -11,6 +12,7 @@ module.exports = {
     "plugin:import/warnings",
     "plugin:import/typescript",
     "plugin:@graphql-eslint/operations-recommended",
+    "prettier",
   ],
   ignorePatterns: ["dist", ".eslintrc.cjs"],
   parser: "@typescript-eslint/parser",

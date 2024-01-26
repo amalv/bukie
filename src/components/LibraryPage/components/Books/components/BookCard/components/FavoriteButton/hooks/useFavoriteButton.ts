@@ -12,7 +12,7 @@ const FAVORITE_FRAGMENT = gql`
 
 export const useFavoriteButton = (
   bookId: string,
-  initialIsFavorited: boolean
+  initialIsFavorited: boolean,
 ) => {
   const client = useApolloClient();
   const { user, loginWithRedirect } = useAuth0();

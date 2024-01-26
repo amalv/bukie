@@ -30,7 +30,7 @@ export const CardWrapper = styled(Card)(
     background: ${theme.palette.action.selected};
     transition: background 0.3s ease-in-out;
   }
-`
+`,
 );
 
 export const Cover = styled(CardMedia)<CardMediaProps>`

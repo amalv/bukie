@@ -14,7 +14,7 @@ describe("ErrorView", () => {
         error={error}
         isErrorSnackbarOpen={true}
         handleCloseSnackbar={vi.fn()}
-      />
+      />,
     );
 
     const errorMessages = screen.getAllByText("Test error");
@@ -30,7 +30,7 @@ describe("ErrorView", () => {
         error={error}
         isErrorSnackbarOpen={true}
         handleCloseSnackbar={handleCloseSnackbar}
-      />
+      />,
     );
 
     const user = userEvent.setup();

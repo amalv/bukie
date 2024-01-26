@@ -16,7 +16,7 @@ describe("ErrorSnackbar", () => {
         open={true}
         handleClose={handleClose}
         errorMessage={errorMessage}
-      />
+      />,
     );
 
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
@@ -31,7 +31,7 @@ describe("ErrorSnackbar", () => {
         open={true}
         handleClose={handleClose}
         errorMessage={errorMessage}
-      />
+      />,
     );
 
     await user.click(screen.getByRole("button"));

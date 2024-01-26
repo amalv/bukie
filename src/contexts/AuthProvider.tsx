@@ -30,10 +30,10 @@ const decodeToken = (accessToken: string) => {
 
 const setTokenAndScheduleRefresh = (
   getAccessTokenSilently: (
-    options?: GetTokenSilentlyOptions
+    options?: GetTokenSilentlyOptions,
   ) => Promise<string>,
   setToken: (token: string | null) => void,
-  accessToken: string
+  accessToken: string,
 ) => {
   localStorage.setItem("auth0.token", accessToken);
   setToken(accessToken);
@@ -48,9 +48,9 @@ const setTokenAndScheduleRefresh = (
 
 const refreshToken = async (
   getAccessTokenSilently: (
-    options?: GetTokenSilentlyOptions
+    options?: GetTokenSilentlyOptions,
   ) => Promise<string>,
-  setToken: (token: string | null) => void
+  setToken: (token: string | null) => void,
 ) => {
   const accessToken = await getAccessTokenSilently();
   setTokenAndScheduleRefresh(getAccessTokenSilently, setToken, accessToken);

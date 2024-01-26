@@ -5,7 +5,7 @@ interface ErrorSnackbarProps {
   open: boolean;
   handleClose: (
     event: React.SyntheticEvent | Event,
-    reason?: SnackbarCloseReason
+    reason?: SnackbarCloseReason,
   ) => void;
   errorMessage: string;
 }
