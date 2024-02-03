@@ -1,3 +1,10 @@
+# [1.61.0](https://github.com/amalv/bukie/compare/v1.60.1...v1.61.0) (2024-02-03)
+
+
+### Features
+
+* **eslint:** add no-console, complexity, and max-depth rules ([e1be541](https://github.com/amalv/bukie/commit/e1be541b4ed8ca24438251f1ad25185ae0b726c2))
+
 ## [1.60.1](https://github.com/amalv/bukie/compare/v1.60.0...v1.60.1) (2024-01-24)
 
 
