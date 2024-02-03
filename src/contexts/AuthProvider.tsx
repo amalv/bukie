@@ -23,7 +23,6 @@ const decodeToken = (accessToken: string) => {
     const timeoutDuration = expiryTime - Date.now() - 60 * 1000; // Refresh 1 minute before expiry
     return timeoutDuration;
   } catch (error) {
-    console.error("Invalid token", error);
     return null;
   }
 };

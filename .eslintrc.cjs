@@ -18,6 +18,9 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   plugins: ["react-refresh"],
   rules: {
+    "no-console": "error",
+    complexity: ["error", { max: 10 }],
+    "max-depth": ["error", { max: 4 }],
     "react-refresh/only-export-components": [
       "warn",
       { allowConstantExport: true },
