@@ -1,3 +1,10 @@
+# [1.62.0](https://github.com/amalv/bukie/compare/v1.61.0...v1.62.0) (2024-02-10)
+
+
+### Features
+
+* add React decision ([980d627](https://github.com/amalv/bukie/commit/980d627677609d9d04fd530c6b66727be0d9c170))
+
 # [1.61.0](https://github.com/amalv/bukie/compare/v1.60.1...v1.61.0) (2024-02-03)
 
 
