@@ -1,3 +1,12 @@
+## [1.62.1](https://github.com/amalv/bukie/compare/v1.62.0...v1.62.1) (2024-02-13)
+
+
+### Bug Fixes
+
+* replace npm ci with npm install in codeclimate job ([271a48c](https://github.com/amalv/bukie/commit/271a48cfcb078e13a08415a24d8e56b193823a27))
+* replace npm ci with npm install in e2e-tests job ([c4da8fc](https://github.com/amalv/bukie/commit/c4da8fcc5a7c0186ca6ac85f446158bb9494b526))
+* update runner to ubuntu-latest in GitHub Actions workflows ([bd3751f](https://github.com/amalv/bukie/commit/bd3751fe1baf6b2a7e6077c38c1f59b98f6f50b0))
+
 # [1.62.0](https://github.com/amalv/bukie/compare/v1.61.0...v1.62.0) (2024-02-10)
 
 
