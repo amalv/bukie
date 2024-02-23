@@ -1,3 +1,10 @@
+# [1.63.0](https://github.com/amalv/bukie/compare/v1.62.1...v1.63.0) (2024-02-23)
+
+
+### Features
+
+* Replace npm with bun for faster dependency installation in CodeClimate GitHub Action ([9cb1441](https://github.com/amalv/bukie/commit/9cb1441d5291d418e0ef52d4a15aff82c9f9cf6a))
+
 ## [1.62.1](https://github.com/amalv/bukie/compare/v1.62.0...v1.62.1) (2024-02-13)
 
 
