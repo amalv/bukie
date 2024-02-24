@@ -1,3 +1,15 @@
+# [1.65.0](https://github.com/amalv/bukie/compare/v1.64.0...v1.65.0) (2024-02-24)
+
+
+### Bug Fixes
+
+* update bun setup for Github Actions ([0de6d36](https://github.com/amalv/bukie/commit/0de6d36cfdc2747d4ffb567d2b2a660aca1652a3))
+
+
+### Features
+
+* migrate npm to bun in Github Actions ([18103cc](https://github.com/amalv/bukie/commit/18103ccaaec5a984a9637be7c479bdd2a1754965))
+
 # [1.64.0](https://github.com/amalv/bukie/compare/v1.63.0...v1.64.0) (2024-02-24)
 
 
