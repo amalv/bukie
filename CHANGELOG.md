@@ -1,3 +1,16 @@
+# [1.64.0](https://github.com/amalv/bukie/compare/v1.63.0...v1.64.0) (2024-02-24)
+
+
+### Bug Fixes
+
+* add setup step for Bun in test GitHub Action ([2211017](https://github.com/amalv/bukie/commit/2211017d20f609eb8cc119373fd522ebe75fb5c3))
+* update test.yml Github Action with correct commands ([b2840c8](https://github.com/amalv/bukie/commit/b2840c82c36af9a88de499d789e748c244bee29b))
+
+
+### Features
+
+* Replace npm with bun installation in test GitHub Action ([e19b2a7](https://github.com/amalv/bukie/commit/e19b2a7ab2af3b0734bc9d0a132f21535153c53e))
+
 # [1.63.0](https://github.com/amalv/bukie/compare/v1.62.1...v1.63.0) (2024-02-23)
 
 
