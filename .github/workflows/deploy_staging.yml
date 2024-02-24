@@ -13,11 +13,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
       - name: Install dependencies
-        run: npm install
+        run: bun install
       - name: Build
-        run: npm run build
+        run: bun run build
         env:
           VITE_API_URL_STAGING: ${{ secrets.VITE_API_URL_STAGING}}
           VITE_AUTH0_DOMAIN: ${{ secrets.VITE_AUTH0_DOMAIN_STAGING }}

@@ -36,11 +36,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
       - name: Install dependencies
-        run: npm install
+        run: bun install
       - name: Build
-        run: npm run build
+        run: bun run build
         env:
           PUBLIC_BASE_URL: "/bukie/"
           VITE_API_URL_PRODUCTION: ${{ secrets.VITE_API_URL_PRODUCTION }}
