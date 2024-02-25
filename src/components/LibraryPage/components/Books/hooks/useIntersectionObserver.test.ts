@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
-import { vi } from "vitest";
 import { RefObject } from "react";
+import { vi } from "vitest";
 
 import { useIntersectionObserver } from "./useIntersectionObserver";
 
@@ -10,7 +10,7 @@ interface MockIntersectionObserver extends IntersectionObserver {
 
 class MockIntersectionObserverImpl implements MockIntersectionObserver {
   root: Element | null = null;
-  rootMargin: string = "";
+  rootMargin = "";
   thresholds: ReadonlyArray<number> = [0];
   disconnect: () => void = () => {};
   takeRecords: () => IntersectionObserverEntry[] = () => [];

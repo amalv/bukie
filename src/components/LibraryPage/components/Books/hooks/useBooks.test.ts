@@ -1,5 +1,5 @@
-import { renderHook, act } from "@testing-library/react";
 import { useQuery } from "@apollo/client";
+import { act, renderHook } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { useBooks } from "./useBooks";
@@ -21,7 +21,6 @@ global.IntersectionObserver = class IntersectionObserver {
   root = null;
   rootMargin = "";
   thresholds = [0];
-  constructor() {}
   observe() {
     return null;
   }

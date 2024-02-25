@@ -1,5 +1,5 @@
-import { getPaletteConfig } from "./paletteConfig";
 import { getComponentsConfig } from "./componentsConfig";
+import { getPaletteConfig } from "./paletteConfig";
 
 export const getThemeConfig = (darkMode: boolean) => ({
   palette: getPaletteConfig(darkMode),

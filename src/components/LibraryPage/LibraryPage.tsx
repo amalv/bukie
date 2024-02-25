@@ -2,9 +2,9 @@ import { Box, Grid } from "@mui/material";
 
 import { ErrorSnackbar } from "../shared";
 
-import { useLibraryPage } from "./hooks";
 import { Root } from "./LibraryPage.styles";
 import { Books, Search, ThemeSwitch, UserAuthentication } from "./components";
+import { useLibraryPage } from "./hooks";
 
 interface LibraryGridProps {
   search: string;

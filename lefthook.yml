@@ -1,15 +1,11 @@
 pre-commit:
   parallel: true
   commands:
-    prettier:
-      glob: "*.{ts,tsx}"
-      run: bun run prettier --write {staged_files}
-    eslint:
-      glob: "*.{ts,tsx}"
-      run: bun run eslint --fix {staged_files}
+    biome:
+      run: bun run biome check --apply {staged_files}
     tests:
       glob: "*test.{ts,tsx}"
-      run: bun run test:staged {staged_files}
+      run: bun run test --run {staged_files}
 commit-msg:
   commands:
     "lint commit message":

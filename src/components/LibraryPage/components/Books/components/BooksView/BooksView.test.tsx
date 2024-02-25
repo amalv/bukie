@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { BooksView } from "./BooksView";
 
 describe("BooksView", () => {
-  it("renders a list of books when provided", () => {
+  it("renders a list of books when provided", async () => {
     const books = [
       {
         id: "1",
@@ -34,9 +34,10 @@ describe("BooksView", () => {
       </MockedProvider>,
     );
 
-    books.forEach((book) => {
-      expect(screen.getByText(book.title)).toBeInTheDocument();
-    });
+    for (const book of books) {
+      const titleElement = await screen.findByText(book.title);
+      expect(titleElement).toBeInTheDocument();
+    }
   });
 
   it("renders a message when no books are provided", () => {

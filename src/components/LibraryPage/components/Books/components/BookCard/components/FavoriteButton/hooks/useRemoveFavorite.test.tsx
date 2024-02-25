@@ -1,6 +1,6 @@
 import { InMemoryCache, useMutation } from "@apollo/client";
-import { renderHook, act } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing";
+import { act, renderHook } from "@testing-library/react";
 import { ReactNode } from "react";
 import { vi } from "vitest";
 

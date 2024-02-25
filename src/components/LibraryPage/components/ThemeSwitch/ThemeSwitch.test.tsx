@@ -1,6 +1,6 @@
-import { vi } from "vitest";
-import { render, fireEvent, screen } from "@testing-library/react";
 import { useReactiveVar } from "@apollo/client";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { vi } from "vitest";
 
 import { ThemeSwitch } from "./ThemeSwitch";
 

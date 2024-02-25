@@ -1,6 +1,6 @@
+import { ApolloError } from "@apollo/client";
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { ApolloError } from "@apollo/client";
 import { vi } from "vitest";
 
 import { ErrorView } from "./ErrorView";

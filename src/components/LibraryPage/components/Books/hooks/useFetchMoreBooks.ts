@@ -1,9 +1,9 @@
 import {
   ApolloQueryResult,
-  FetchMoreQueryOptions,
   FetchMoreOptions,
+  FetchMoreQueryOptions,
 } from "@apollo/client";
-import { useRef, useCallback } from "react";
+import { useCallback, useRef } from "react";
 
 import { BooksData, BooksVars } from "../../../../../data/books";
 

@@ -1,5 +1,5 @@
+import { gql, useMutation } from "@apollo/client";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useMutation, gql } from "@apollo/client";
 
 import { ADD_FAVORITE_MUTATION } from "@/data/favorites";
 

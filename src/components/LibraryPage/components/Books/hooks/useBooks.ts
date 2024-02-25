@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
 import { ApolloError, useQuery } from "@apollo/client";
+import { useEffect, useRef, useState } from "react";
 
+import { useFetchMoreBooks } from "./useFetchMoreBooks";
 import { useIntersectionObserver } from "./useIntersectionObserver";
 import { getCloseSnackbarHandler, getUpdateQuery } from "./utils";
-import { useFetchMoreBooks } from "./useFetchMoreBooks";
 
-import { BOOKS_QUERY, BooksData, BooksVars } from "@/data/books";
 import { useAuth } from "@/contexts";
+import { BOOKS_QUERY, BooksData, BooksVars } from "@/data/books";
 
 const PAGE_SIZE = 50;
 
@@ -37,18 +36,14 @@ const useHandleError = (error: ApolloError | undefined) => {
   return { isErrorSnackbarOpen, handleCloseSnackbar, errorMessage };
 };
 
-const useHandleLastPageReached = (
-  search: string,
-  limit: number,
-  isAuthenticated: boolean,
-) => {
+const useHandleLastPageReached = () => {
   const lastPageReachedRef = useRef(false);
   const [lastPageReached, setLastPageReached] = useState(false);
 
   useEffect(() => {
     setLastPageReached(false);
     lastPageReachedRef.current = false;
-  }, [search, limit, isAuthenticated]);
+  }, []);
 
   useEffect(() => {
     lastPageReachedRef.current = lastPageReached;
@@ -58,7 +53,6 @@ const useHandleLastPageReached = (
 };
 
 export const useBooks = ({ search, limit }: UseBooksProps) => {
-  const { isAuthenticated } = useAuth0();
   const { token } = useAuth();
 
   const { loading, error, data, fetchMore } = useQuery<BooksData, BooksVars>(
@@ -74,7 +68,7 @@ export const useBooks = ({ search, limit }: UseBooksProps) => {
 
   const { isErrorSnackbarOpen, handleCloseSnackbar } = useHandleError(error);
   const { lastPageReached, setLastPageReached, lastPageReachedRef } =
-    useHandleLastPageReached(search, limit, isAuthenticated);
+    useHandleLastPageReached();
 
   const updateQuery = getUpdateQuery(setLastPageReached);
   const loader = useRef(null);

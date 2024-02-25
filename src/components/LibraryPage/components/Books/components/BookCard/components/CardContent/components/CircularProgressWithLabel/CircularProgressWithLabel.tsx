@@ -11,10 +11,11 @@ const CircularProgressWrapper = styled.div`
 `;
 
 const determineColor = (value: number): CircularProgressProps["color"] => {
+  if (value >= 40 && value < 70) {
+    return "warning";
+  }
   if (value >= 70) {
     return "success";
-  } else if (value >= 40) {
-    return "warning";
   }
   return "error";
 };

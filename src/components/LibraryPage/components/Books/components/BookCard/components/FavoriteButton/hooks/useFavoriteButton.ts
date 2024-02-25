@@ -1,6 +1,6 @@
 import { gql, useApolloClient } from "@apollo/client";
-import { useEffect, useCallback } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import { useCallback, useEffect } from "react";
 
 import { useFavorite } from "./useFavorite";
 

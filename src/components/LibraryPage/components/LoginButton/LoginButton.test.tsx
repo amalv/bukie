@@ -1,5 +1,5 @@
-import { render, fireEvent, screen } from "@testing-library/react";
 import { useAuth0 } from "@auth0/auth0-react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { LoginButton } from "./LoginButton";

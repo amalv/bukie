@@ -1,5 +1,5 @@
-import { createTheme } from "@mui/material";
 import { useReactiveVar } from "@apollo/client";
+import { createTheme } from "@mui/material";
 
 import { darkModeVar } from "../apolloClient";
 

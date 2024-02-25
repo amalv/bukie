@@ -1,8 +1,8 @@
-import { SnackbarCloseReason } from "@mui/material";
 import { ApolloError } from "@apollo/client";
+import { SnackbarCloseReason } from "@mui/material";
 
-import { Message } from "../Message";
 import { ErrorSnackbar } from "../../../../../shared";
+import { Message } from "../Message";
 
 const useErrorMessage = (error: ApolloError | undefined) =>
   error?.message ||

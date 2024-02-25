@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
-import { useAuth0, GetTokenSilentlyOptions } from "@auth0/auth0-react";
+import { GetTokenSilentlyOptions, useAuth0 } from "@auth0/auth0-react";
 import { jwtDecode } from "jwt-decode";
+import { useEffect, useMemo, useState } from "react";
 
 import { AuthContext } from "./AuthContext";
 
@@ -23,7 +23,7 @@ const decodeToken = (accessToken: string) => {
     const timeoutDuration = expiryTime - Date.now() - 60 * 1000; // Refresh 1 minute before expiry
     return timeoutDuration;
   } catch (error) {
-    return null;
+    throw new Error(`Failed to decode token: ${error}`);
   }
 };
 

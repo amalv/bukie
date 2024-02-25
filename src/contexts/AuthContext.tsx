@@ -1,5 +1,5 @@
-import { createContext } from "react";
 import { User } from "@auth0/auth0-react";
+import { createContext } from "react";
 
 interface AuthContextProps {
   token: string | null;

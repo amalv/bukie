@@ -1,5 +1,5 @@
-import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { Box } from "@mui/material";
+import { ChangeEvent, Dispatch, SetStateAction } from "react";
 
 import { StyledTextField } from "./SearchInput.styles";
 

@@ -1,6 +1,6 @@
 import { Grid } from "@mui/material";
 
-import { ErrorView, LoadingView, BooksView } from "./components";
+import { BooksView, ErrorView, LoadingView } from "./components";
 import { useBooks } from "./hooks";
 
 export interface BooksProps {

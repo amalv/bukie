@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import { Switch, FormControlLabel } from "@mui/material";
 import { useReactiveVar } from "@apollo/client";
 import Brightness4 from "@mui/icons-material/Brightness4";
 import Brightness7 from "@mui/icons-material/Brightness7";
+import { FormControlLabel, Switch } from "@mui/material";
+import { useEffect } from "react";
 
 import { darkModeVar } from "../../../../apolloClient";
 

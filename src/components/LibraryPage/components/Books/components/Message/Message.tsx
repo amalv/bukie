@@ -1,4 +1,4 @@
-import { Grid, Box } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 
 export const Message = ({ text }: { text: string }) => (
   <Grid item xs={12}>

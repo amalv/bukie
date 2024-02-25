@@ -1,6 +1,6 @@
 import { Box, Grid } from "@mui/material";
 
-import { FavoriteButton, CardContent } from "./components";
+import { CardContent, FavoriteButton } from "./components";
 
 import { Book } from "@/data/books";
 

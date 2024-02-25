@@ -10,9 +10,7 @@ interface LibraryPageHook {
   setError: React.Dispatch<React.SetStateAction<Error | null>>;
 }
 
-export const useLibraryPage = (
-  debounceDelay: number = 500,
-): LibraryPageHook => {
+export const useLibraryPage = (debounceDelay = 500): LibraryPageHook => {
   const [error, setError] = useState<Error | null>(null);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, debounceDelay);
