@@ -10,3 +10,7 @@ pre-commit:
     tests:
       glob: "*test.{ts,tsx}"
       run: bun run test:staged {staged_files}
+commit-msg:
+  commands:
+    "lint commit message":
+      run: bun run commitlint --edit {1}
