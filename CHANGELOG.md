@@ -1,3 +1,16 @@
+# [1.67.0](https://github.com/amalv/bukie/compare/v1.66.0...v1.67.0) (2024-02-25)
+
+
+### Bug Fixes
+
+* update test Github Action to use biome for linting and code formatting ([d543773](https://github.com/amalv/bukie/commit/d543773e664c2380f25bba7fab263ef841ab5e0e))
+
+
+### Features
+
+* add commitlint to lefthook config ([b8de25f](https://github.com/amalv/bukie/commit/b8de25f4ac0892b4a852fbb532db958dc45da9e5))
+* replace Prettier and ESLint with Biome for formatting and linting ([41d6a43](https://github.com/amalv/bukie/commit/41d6a43516271da871723454f81f8e6a2f832592))
+
 # [1.66.0](https://github.com/amalv/bukie/compare/v1.65.0...v1.66.0) (2024-02-25)
 
 
