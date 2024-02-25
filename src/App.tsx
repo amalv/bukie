@@ -1,11 +1,11 @@
-import { ThemeProvider } from "@mui/material";
-import { Auth0Provider } from "@auth0/auth0-react";
 import { ApolloProvider } from "@apollo/client";
+import { Auth0Provider } from "@auth0/auth0-react";
+import { ThemeProvider } from "@mui/material";
 
-import { LibraryPage } from "./components/";
-import { useTheme } from "./hooks";
-import { AuthProvider } from "./contexts";
 import { client } from "./apolloClient";
+import { LibraryPage } from "./components/";
+import { AuthProvider } from "./contexts";
+import { useTheme } from "./hooks";
 import { getEnvironmentDependentUrl } from "./utils/";
 
 export const App = () => {

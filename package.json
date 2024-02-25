@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "coverage": "vitest run --coverage",
     "lhci": "lhci autorun",
-    "lint": "eslint . --ext ts,tsx --max-warnings 0",
+    "lint": "bun run biome check --apply .",
+    "lint:ci": "bun run biome check .",
     "preview": "vite preview",
     "semantic-release": "semantic-release",
     "test": "vitest"
