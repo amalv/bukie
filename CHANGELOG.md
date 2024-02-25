@@ -1,3 +1,10 @@
+# [1.66.0](https://github.com/amalv/bukie/compare/v1.65.0...v1.66.0) (2024-02-25)
+
+
+### Features
+
+* replace lint-staged and husky with lefthook for pre-commit hooks ([1b84239](https://github.com/amalv/bukie/commit/1b8423968b1633fba9980549de2c7f346ce52220))
+
 # [1.65.0](https://github.com/amalv/bukie/compare/v1.64.0...v1.65.0) (2024-02-24)
 
 
