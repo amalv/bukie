@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
   "files": {
-    "ignore": ["bun.lockb", "*.yml", "coverage/*"]
+    "ignore": ["bun.lockb", "*.yml", "coverage/*", ".husky/*"]
   },
   "organizeImports": {
     "enabled": true
