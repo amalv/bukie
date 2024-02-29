@@ -9,14 +9,15 @@
 ![React](https://img.shields.io/badge/-React-61DAFB?style=flat-square&logo=react&logoColor=white)
 ![Apollo Client](https://img.shields.io/badge/-Apollo_Client-311C87?style=flat-square&logo=apollo-graphql&logoColor=white)
 ![Auth0](https://img.shields.io/badge/-Auth0-EB5424?style=flat-square&logo=auth0&logoColor=white)
-![ESLint](https://img.shields.io/badge/-ESLint-4B32C3?style=flat-square&logo=eslint&logoColor=white)
 ![Vite](https://img.shields.io/badge/-Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Bun](https://img.shields.io/badge/bun-282a36?style=flat-square&logo=bun&logoColor=fbf0df)
+![Playwright](https://img.shields.io/badge/Playwright-45ba4b?style=flat-square&logo=Playwright&logoColor=white)
 
 Bukie is a project showcasing the use of TypeScript, React, Emotion, Material UI, and Apollo Client in a real-world application. It features a curated list of science fiction books, with a search engine and filters by title and author for easy navigation.
 
 The application supports both light and dark themes, adapting to user browser preference, and offers infinite scrolling on the book list. User authentication is handled via Auth0.
 
-The project leverages Semantic Release for automated versioning and releases, and ESLint for maintaining code quality. It also benefits from the fast development and build times provided by Vite.
+The project leverages Semantic Release for automated versioning and releases, and Biome for code format and linting. It also benefits from the fast development and build times provided by Vite.
 
 ⚠️ This project is the companion to a backend project, which is an Apollo Server project that uses serverless, AWS Lambda, and Postgres as a database. The backend project must be launched first for local development. You can find it [here](https://github.com/amalv/apollo-server-lambda-postgres/).
 
@@ -42,7 +43,8 @@ The project leverages Semantic Release for automated versioning and releases, an
 
 🚦 Automated versioning and releases with Semantic Release
 
-🔧 Code linting with ESLint
+🔧 Code linting and formatting with Biome
+
 
 🚀 Fast development and build times with Vite
 
