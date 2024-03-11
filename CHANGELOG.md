@@ -1,3 +1,10 @@
+# [1.68.0](https://github.com/amalv/bukie/compare/v1.67.0...v1.68.0) (2024-03-11)
+
+
+### Features
+
+* apply updated biome linting rules to entire codebase ([1bba04d](https://github.com/amalv/bukie/commit/1bba04dd539aaf58f9e5f750bf44682ae93b6fb2))
+
 # [1.67.0](https://github.com/amalv/bukie/compare/v1.66.0...v1.67.0) (2024-02-25)
 
 
