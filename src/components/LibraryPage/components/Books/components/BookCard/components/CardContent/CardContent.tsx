@@ -9,7 +9,7 @@ import {
 } from "./CardContent.styles";
 import { BookDetails, CircularProgressWithLabel } from "./components";
 
-import { Book } from "@/data/books";
+import type { Book } from "@/data/books";
 
 interface CardContentProps {
   book: Book;

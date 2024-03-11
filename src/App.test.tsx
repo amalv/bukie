@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { describe, it, vi } from "vitest";
 
 import { App } from "./App";

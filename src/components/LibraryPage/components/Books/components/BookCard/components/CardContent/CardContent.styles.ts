@@ -1,4 +1,9 @@
-import { Card, CardActionArea, CardMedia, CardMediaProps } from "@mui/material";
+import {
+  Card,
+  CardActionArea,
+  CardMedia,
+  type CardMediaProps,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 
 export const CardWrapper = styled(Card)(

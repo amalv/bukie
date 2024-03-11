@@ -1,5 +1,5 @@
 import { Alert, Snackbar } from "@mui/material";
-import { SnackbarCloseReason } from "@mui/material/Snackbar";
+import type { SnackbarCloseReason } from "@mui/material/Snackbar";
 
 interface ErrorSnackbarProps {
   open: boolean;

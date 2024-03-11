@@ -1,4 +1,4 @@
-import { Book } from "../../../../../data/books";
+import type { Book } from "../../../../../data/books";
 
 export interface FetchMoreResult {
   books: {

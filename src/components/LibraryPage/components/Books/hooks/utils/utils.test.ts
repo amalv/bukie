@@ -1,10 +1,10 @@
 import { vi } from "vitest";
 
-import { FetchMoreResult } from "../types";
+import type { FetchMoreResult } from "../types";
 
 import { getCloseSnackbarHandler, getUpdateQuery } from "./utils";
 
-import { BooksData } from "@/data/books";
+import type { BooksData } from "@/data/books";
 
 describe("utils", () => {
   describe("getCloseSnackbarHandler", () => {

@@ -1,13 +1,13 @@
-import {
+import type {
   ApolloQueryResult,
   FetchMoreOptions,
   FetchMoreQueryOptions,
 } from "@apollo/client";
 import { useCallback, useRef } from "react";
 
-import { BooksData, BooksVars } from "../../../../../data/books";
+import type { BooksData, BooksVars } from "../../../../../data/books";
 
-import { FetchMoreResult } from "./types";
+import type { FetchMoreResult } from "./types";
 
 type FetchMoreFunction = (
   options: FetchMoreQueryOptions<BooksVars, BooksData> &

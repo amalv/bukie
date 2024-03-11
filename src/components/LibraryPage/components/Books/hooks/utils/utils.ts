@@ -1,8 +1,8 @@
-import { SnackbarCloseReason } from "@mui/material";
+import type { SnackbarCloseReason } from "@mui/material";
 
-import { FetchMoreResult } from "../types";
+import type { FetchMoreResult } from "../types";
 
-import { BooksData } from "@/data/books";
+import type { BooksData } from "@/data/books";
 
 const PAGE_SIZE = 50;
 

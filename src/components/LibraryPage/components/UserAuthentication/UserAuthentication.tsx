@@ -1,4 +1,4 @@
-import { User, useAuth0 } from "@auth0/auth0-react";
+import { type User, useAuth0 } from "@auth0/auth0-react";
 import { Avatar, CircularProgress, Menu, MenuItem } from "@mui/material";
 import { useCallback, useState } from "react";
 

@@ -2,7 +2,7 @@ import { InMemoryCache, useApolloClient } from "@apollo/client";
 import { MockedProvider } from "@apollo/client/testing";
 import { useAuth0 } from "@auth0/auth0-react";
 import { act, renderHook } from "@testing-library/react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { vi } from "vitest";
 
 import { useFavorite } from "./useFavorite";

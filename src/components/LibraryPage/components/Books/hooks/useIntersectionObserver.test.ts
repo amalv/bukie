@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import { RefObject } from "react";
+import type { RefObject } from "react";
 import { vi } from "vitest";
 
 import { useIntersectionObserver } from "./useIntersectionObserver";

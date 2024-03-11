@@ -1,5 +1,5 @@
-import { ApolloError } from "@apollo/client";
-import { SnackbarCloseReason } from "@mui/material";
+import type { ApolloError } from "@apollo/client";
+import type { SnackbarCloseReason } from "@mui/material";
 
 import { ErrorSnackbar } from "../../../../../shared";
 import { Message } from "../Message";

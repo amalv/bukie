@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 
 import { CardContent } from "./CardContent";
 
-import { Book } from "@/data/books";
+import type { Book } from "@/data/books";
 
 describe("CardContent", () => {
   it("renders correctly", () => {

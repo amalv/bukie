@@ -1,7 +1,7 @@
 import { MockedProvider } from "@apollo/client/testing";
 import { render, screen } from "@testing-library/react";
 
-import { Book } from "../../../../../../data/books";
+import type { Book } from "../../../../../../data/books";
 
 import { BookCard } from "./BookCard";
 

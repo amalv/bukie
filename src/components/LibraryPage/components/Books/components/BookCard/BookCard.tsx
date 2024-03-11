@@ -2,7 +2,7 @@ import { Box, Grid } from "@mui/material";
 
 import { CardContent, FavoriteButton } from "./components";
 
-import { Book } from "@/data/books";
+import type { Book } from "@/data/books";
 
 export const BookCard: React.FC<{ book: Book }> = ({ book }) => (
   <Grid item xs={6} sm={4} md={4} lg={3} xl={2} key={book.title}>

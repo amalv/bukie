@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useEffect, useMemo } from "react";
+import { type RefObject, useCallback, useEffect, useMemo } from "react";
 
 const ROOT_MARGIN = "20px";
 

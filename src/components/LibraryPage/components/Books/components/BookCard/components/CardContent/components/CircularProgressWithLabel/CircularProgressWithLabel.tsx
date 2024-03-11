@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import {
   Box,
   CircularProgress,
-  CircularProgressProps,
+  type CircularProgressProps,
   Typography,
 } from "@mui/material";
 

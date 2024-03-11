@@ -6,7 +6,7 @@ import { useIntersectionObserver } from "./useIntersectionObserver";
 import { getCloseSnackbarHandler, getUpdateQuery } from "./utils";
 
 import { useAuth } from "@/contexts";
-import { BOOKS_QUERY, BooksData, BooksVars } from "@/data/books";
+import { BOOKS_QUERY, type BooksData, type BooksVars } from "@/data/books";
 
 const PAGE_SIZE = 50;
 

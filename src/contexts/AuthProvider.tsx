@@ -1,4 +1,4 @@
-import { GetTokenSilentlyOptions, useAuth0 } from "@auth0/auth0-react";
+import { type GetTokenSilentlyOptions, useAuth0 } from "@auth0/auth0-react";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useMemo, useState } from "react";
 

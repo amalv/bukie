@@ -1,4 +1,4 @@
-import { User } from "@auth0/auth0-react";
+import type { User } from "@auth0/auth0-react";
 import { createContext } from "react";
 
 interface AuthContextProps {
