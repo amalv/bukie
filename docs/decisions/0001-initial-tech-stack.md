@@ -21,10 +21,9 @@ High-level tech stack choices for Bukie to ensure consistency and maintainabilit
 | Backend Framework   | Node.js (Fastify, Nest, Express) / Python / Go / Bun (Elysia) | Bun (Elysia) (0005) |
 | API Architecture    | REST / GraphQL / tRPC / Eden (Elysia)           | Eden (Elysia) (0006) |
 | Authentication      | Supabase Auth / Clerk / Auth0 / Azure AD / Custom OAuth | Clerk (0007) |
-| Database            | PostgreSQL / SQLite / MongoDB                   | PostgreSQL        |
 | Cloud Provider      | AWS / Google Cloud / Azure / Multi-cloud        | Azure             |
-| Hosting/Deployment  | Vercel / Render / Fly.io / Cloud provider       |                |
 | Infrastructure as Code | Terraform / Pulumi / CDK / none yet          |                |
+| Database            | PostgreSQL / SQLite / MongoDB                   | PostgreSQL (0010) |
 | CI/CD               | GitHub Actions with matrix builds and caches    |                |
 | Package Manager     | pnpm / npm / yarn / bun                         |                |
 
