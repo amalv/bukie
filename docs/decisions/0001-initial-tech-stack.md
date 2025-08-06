@@ -25,7 +25,7 @@ High-level tech stack choices for Bukie to ensure consistency and maintainabilit
 | Infrastructure as Code | Terraform / Pulumi / CDK / none yet          |                |
 | Database            | PostgreSQL / SQLite / MongoDB                   | PostgreSQL (0010) |
 | CI/CD               | GitHub Actions with matrix builds and caches    | GitHub Actions (0011) |
-| Package Manager     | pnpm / npm / yarn / bun                         |                |
+| Package Manager     | pnpm / npm / yarn / bun                         | pnpm (0012)    |
 
 ## ✅ Decision Outcomes
 Chosen option: Remix for frontend framework. See ADR-0002 for rationale and pros/cons.
