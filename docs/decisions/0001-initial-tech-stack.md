@@ -22,7 +22,7 @@ High-level tech stack choices for Bukie to ensure consistency and maintainabilit
 | API Architecture    | REST / GraphQL / tRPC / Eden (Elysia)           | Eden (Elysia) (0006) |
 | Authentication      | Supabase Auth / Clerk / Auth0 / Azure AD / Custom OAuth | Clerk (0007) |
 | Database            | PostgreSQL / SQLite / MongoDB                   | PostgreSQL        |
-| Cloud Provider      | AWS / Google Cloud / Azure / Multi-cloud        | Azure/Google Cloud |
+| Cloud Provider      | AWS / Google Cloud / Azure / Multi-cloud        | Azure             |
 | Hosting/Deployment  | Vercel / Render / Fly.io / Cloud provider       |                |
 | Infrastructure as Code | Terraform / Pulumi / CDK / none yet          |                |
 | CI/CD               | GitHub Actions with matrix builds and caches    |                |

@@ -12,3 +12,4 @@ This index lists all architectural decisions for Bukie. Each ADR is numbered and
 | 0005   | Backend Framework  | accepted     | Elysia (Bun) chosen for fast, modern API backend | [0005-backend-framework.md](./0005-backend-framework.md) |
 | 0006   | API Architecture   | accepted     | REST chosen for simplicity and flexibility   | [0006-api-architecture.md](./0006-api-architecture.md) |
 | 0007   | Authentication     | accepted     | Clerk chosen for secure, scalable authentication | [0007-authentication.md](./0007-authentication.md) |
+| 0008   | Cloud Provider     | accepted     | Azure chosen for hosting and managed services | [0008-cloud-provider.md](./0008-cloud-provider.md) |
