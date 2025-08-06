@@ -16,14 +16,13 @@ High-level tech stack choices for Bukie to ensure consistency and maintainabilit
 | Area                | Options                                         | Decision (ADR) |
 |---------------------|------------------------------------------------|----------------|
 | Frontend Framework  | React + Vite / Next.js / Remix / Astro          | Remix (0002)   |
-| Rendering Strategy  | SSR / SPA / Static                             |                |
-| Design System       | Tailwind / shadcn/ui / MUI / Custom             |                |
-| Backend Framework   | Node.js (Fastify, Nest, Express) / Python / Go  |                |
-| API Architecture    | REST / GraphQL / tRPC                           |                |
-| GraphQL Client      | Apollo Client / Relay / urql                    |                |
-| Authentication      | Supabase Auth / Clerk / Auth0 / Azure AD / Custom OAuth |         |
-| Database            | PostgreSQL / SQLite / MongoDB                   |                |
-| Cloud Provider      | AWS / Google Cloud / Azure / Multi-cloud        |                |
+| Rendering Strategy  | SSR / SPA / Static                             | SSR (0003)     |
+| Design System       | Tailwind / shadcn/ui / MUI / Custom             | Custom (0004)  |
+| Backend Framework   | Node.js (Fastify, Nest, Express) / Python / Go / Bun (Elysia) | Bun (Elysia) (0005) |
+| API Architecture    | REST / GraphQL / tRPC / Eden (Elysia)           | Eden (Elysia) (0006) |
+| Authentication      | Supabase Auth / Clerk / Auth0 / Azure AD / Custom OAuth | Clerk (0007) |
+| Database            | PostgreSQL / SQLite / MongoDB                   | PostgreSQL        |
+| Cloud Provider      | AWS / Google Cloud / Azure / Multi-cloud        | Azure/Google Cloud |
 | Hosting/Deployment  | Vercel / Render / Fly.io / Cloud provider       |                |
 | Infrastructure as Code | Terraform / Pulumi / CDK / none yet          |                |
 | CI/CD               | GitHub Actions with matrix builds and caches    |                |
