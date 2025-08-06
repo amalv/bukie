@@ -24,7 +24,7 @@ High-level tech stack choices for Bukie to ensure consistency and maintainabilit
 | Cloud Provider      | AWS / Google Cloud / Azure / Multi-cloud        | Azure             |
 | Infrastructure as Code | Terraform / Pulumi / CDK / none yet          |                |
 | Database            | PostgreSQL / SQLite / MongoDB                   | PostgreSQL (0010) |
-| CI/CD               | GitHub Actions with matrix builds and caches    |                |
+| CI/CD               | GitHub Actions with matrix builds and caches    | GitHub Actions (0011) |
 | Package Manager     | pnpm / npm / yarn / bun                         |                |
 
 ## ✅ Decision Outcomes

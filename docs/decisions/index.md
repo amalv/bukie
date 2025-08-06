@@ -15,3 +15,4 @@ This index lists all architectural decisions for Bukie. Each ADR is numbered and
 | 0008   | Cloud Provider     | accepted     | Azure chosen for hosting and managed services | [0008-cloud-provider.md](./0008-cloud-provider.md) |
 | 0009   | Infrastructure as Code | accepted | Bicep chosen for Azure-native automation | [0009-infrastructure-as-code.md](./0009-infrastructure-as-code.md) |
 | 0010   | Database           | accepted     | PostgreSQL chosen for reliability and scalability | [0010-database.md](./0010-database.md) |
+| 0011   | CI/CD              | accepted     | GitHub Actions chosen for automated builds and deployment | [0011-ci-cd.md](./0011-ci-cd.md) |
