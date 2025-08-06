@@ -17,3 +17,4 @@ This index lists all architectural decisions for Bukie. Each ADR is numbered and
 | 0010   | Database           | accepted     | PostgreSQL chosen for reliability and scalability | [0010-database.md](./0010-database.md) |
 | 0011   | CI/CD              | accepted     | GitHub Actions chosen for automated builds and deployment | [0011-ci-cd.md](./0011-ci-cd.md) |
 | 0012   | Package Manager     | accepted     | pnpm chosen for fast, efficient dependency management | [0012-package-manager.md](./0012-package-manager.md) |
+| 0013   | Release System      | accepted     | Semantic Release chosen for automated versioning and changelog | [0013-release-system.md](./0013-release-system.md) |
