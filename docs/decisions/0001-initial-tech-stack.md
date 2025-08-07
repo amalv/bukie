@@ -15,7 +15,7 @@ High-level tech stack choices for Bukie to ensure consistency and maintainabilit
 
 | Area                | Options                                         | Decision (ADR) |
 |---------------------|------------------------------------------------|----------------|
-| Frontend Framework  | React + Vite / Next.js / Remix / Astro          | Remix (0002)   |
+| Frontend Framework  | React + Vite / React Router / Next.js / Astro   | Next.js (0002) |
 | Rendering Strategy  | SSR / SPA / Static                             | SSR (0003)     |
 | Design System       | Tailwind / shadcn/ui / MUI / Custom             | Custom (0004)  |
 | Backend Framework   | Node.js (Fastify, Nest, Express) / Python / Go / Bun (Elysia) | Bun (Elysia) (0005) |
@@ -29,7 +29,7 @@ High-level tech stack choices for Bukie to ensure consistency and maintainabilit
  | Release System      | Semantic Release / Release Please / Manual      | Semantic Release (0013) |
 
 ## ✅ Decision Outcomes
-Chosen option: Remix for frontend framework. See ADR-0002 for rationale and pros/cons.
+Chosen option: Next.js for frontend framework. See ADR-0002 for rationale and pros/cons.
 
 ## 📋 Consequences
 - Modern, maintainable stack

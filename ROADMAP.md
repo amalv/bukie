@@ -12,9 +12,11 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 ### Tooling & Quality
 * ✅ ci: add Biome for linting and formatting
 * ✅ ci: add Lefthook for pre-commit hooks
-* ✅ ci: add Vitest for unit tests (best practice for Remix)
+* ✅ ci: add Vitest for unit tests
 * ✅ ci: add commitlint for Conventional Commits
-* 🛠️ ci: add Playwright for e2e tests
+* 🛠 ci: set up basic Next.js app (in progress)
+* ⏳ ci: deploy website to Azure (pending)
+* ⏳ ci: add Playwright for e2e tests
 * ⏳ ci: integrate CodeClimate for coding standards and code quality
 * ⏳ ci: configure all checks (Biome, Vitest, Playwright, commitlint, CodeClimate) in CI pipeline
 * ⏳ docs: document development workflow and code quality standards
@@ -26,7 +28,7 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ⏳ docs: design system documentation
 
 ### Core Features
-* ⏳ feat: hello world endpoint (Remix)
+* ⏳ feat: hello world endpoint (Next.js)
 * ⏳ feat: item page for books
 * ⏳ feat: basic search functionality
 * ⏳ feat: authentication (Clerk)
