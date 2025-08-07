@@ -4,12 +4,12 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 
 ## Milestones
 
-### v0.1.0 – Initial Release
+### Initial Release
 * feat: define initial technical architecture (#1)
 * feat: add semantic-release (#5)
 * ci: add GitHub Actions workflow for semantic-release (#6)
 
-### v0.2.0 – Tooling & Quality
+### Tooling & Quality
 * ci: add Biome for linting and formatting
 * ci: add Vitest for unit tests (best practice for Remix)
 * ci: add Playwright for e2e tests
@@ -19,13 +19,13 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ci: configure all checks (Biome, Vitest, Playwright, commitlint, CodeClimate) in CI pipeline
 * docs: document development workflow and code quality standards
 
-### v0.3.0 – Design System & Layout
+### Design System & Layout
 * feat: custom Storybook setup
 * feat: initial layout and navigation
 * feat: first UI component
 * docs: design system documentation
 
-### v0.4.0 – Core Features
+### Core Features
 * feat: hello world endpoint (Remix)
 * feat: item page for books
 * feat: basic search functionality
@@ -33,13 +33,13 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * feat: add book (CRUD: create)
 * docs: usage instructions
 
-### v0.5.0 – Extended Features
+### Extended Features
 * feat: edit and delete book (CRUD: update, delete)
 * feat: improved search and filters
 * feat: pagination for book list
 * docs: API documentation
 
-### v0.6.0 – User & UI Enhancements
+### User & UI Enhancements
 * feat: user profiles
 * feat: UI/UX improvements
 * docs: onboarding guide
@@ -72,11 +72,11 @@ Storybook and design system work will follow in the next milestone. All tasks ar
 
 ```mermaid
 graph TD
-    A[v0.1.0 Initial Release] --> B[v0.2.0 Tooling & Quality]
-    B --> C[v0.3.0 Design System & Layout]
-    C --> D[v0.4.0 Core Features]
-    D --> E[v0.5.0 Extended Features]
-    E --> F[v0.6.0 User & UI Enhancements]
+    A[Initial Release] --> B[Tooling & Quality]
+    B --> C[Design System & Layout]
+    C --> D[Core Features]
+    D --> E[Extended Features]
+    E --> F[User & UI Enhancements]
     F --> G[Future TBD]
     G --> H[v1.0.0 Public Release]
 ```
