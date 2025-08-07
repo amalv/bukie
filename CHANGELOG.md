@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/amalv/bukie/compare/v0.2.0...v0.3.0) (2025-08-07)
+
+
+### Features
+
+* add Vitest for unit testing and create initial test file ([bb69545](https://github.com/amalv/bukie/commit/bb69545f11a60ab9bfcf9132a84d013fa0d7e9bb))
+
 # [0.2.0](https://github.com/amalv/bukie/compare/v0.1.0...v0.2.0) (2025-08-07)
 
 
