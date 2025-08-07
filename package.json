@@ -10,12 +10,14 @@
     "@semantic-release/github": "^11.0.3",
     "@types/bun": "latest",
     "lefthook": "^1.12.2",
-    "semantic-release": "^24.2.7"
+    "semantic-release": "^24.2.7",
+    "vitest": "^3.2.4"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "scripts": {
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "test": "vitest"
   }
 }
