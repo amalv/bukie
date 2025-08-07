@@ -5,47 +5,47 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 ## Milestones
 
 ### Initial Release
-* feat: define initial technical architecture (#1)
-* feat: add semantic-release (#5)
-* ci: add GitHub Actions workflow for semantic-release (#6)
+* ✅ feat: define initial technical architecture (#1)
+* ✅ feat: add semantic-release (#5)
+* ✅ ci: add GitHub Actions workflow for semantic-release (#6)
 
 ### Tooling & Quality
-* ci: add Biome for linting and formatting
-* ci: add Vitest for unit tests (best practice for Remix)
-* ci: add Playwright for e2e tests
-* ci: add Lefthook for pre-commit hooks
-* ci: add commitlint for Conventional Commits
-* ci: integrate CodeClimate for coding standards and code quality
-* ci: configure all checks (Biome, Vitest, Playwright, commitlint, CodeClimate) in CI pipeline
-* docs: document development workflow and code quality standards
+* ✅ ci: add Biome for linting and formatting
+* ✅ ci: add Lefthook for pre-commit hooks
+* ✅ ci: add Vitest for unit tests (best practice for Remix)
+* ✅ ci: add commitlint for Conventional Commits
+* 🛠️ ci: add Playwright for e2e tests
+* ⏳ ci: integrate CodeClimate for coding standards and code quality
+* ⏳ ci: configure all checks (Biome, Vitest, Playwright, commitlint, CodeClimate) in CI pipeline
+* ⏳ docs: document development workflow and code quality standards
 
 ### Design System & Layout
-* feat: custom Storybook setup
-* feat: initial layout and navigation
-* feat: first UI component
-* docs: design system documentation
+* ⏳ feat: custom Storybook setup
+* ⏳ feat: initial layout and navigation
+* ⏳ feat: first UI component
+* ⏳ docs: design system documentation
 
 ### Core Features
-* feat: hello world endpoint (Remix)
-* feat: item page for books
-* feat: basic search functionality
-* feat: authentication (Clerk)
-* feat: add book (CRUD: create)
-* docs: usage instructions
+* ⏳ feat: hello world endpoint (Remix)
+* ⏳ feat: item page for books
+* ⏳ feat: basic search functionality
+* ⏳ feat: authentication (Clerk)
+* ⏳ feat: add book (CRUD: create)
+* ⏳ docs: usage instructions
 
 ### Extended Features
-* feat: edit and delete book (CRUD: update, delete)
-* feat: improved search and filters
-* feat: pagination for book list
-* docs: API documentation
+* ⏳ feat: edit and delete book (CRUD: update, delete)
+* ⏳ feat: improved search and filters
+* ⏳ feat: pagination for book list
+* ⏳ docs: API documentation
 
 ### User & UI Enhancements
-* feat: user profiles
-* feat: UI/UX improvements
-* docs: onboarding guide
+* ⏳ feat: user profiles
+* ⏳ feat: UI/UX improvements
+* ⏳ docs: onboarding guide
 
 ### Future (TBD)
-* Additional features and improvements will be planned and tracked as issues. Only the first milestones are detailed; more will be added as the project evolves.
+* ⏳ Additional features and improvements will be planned and tracked as issues. Only the first milestones are detailed; more will be added as the project evolves.
 
 ### v1.0.0 – Public Release
 * docs: finalize documentation
