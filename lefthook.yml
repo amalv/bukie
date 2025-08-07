@@ -4,3 +4,5 @@ pre-commit:
     biome:
       run: bunx biome check {staged_files}
       glob: "*.{js,ts,jsx,tsx,json}"
+    vitest:
+      run: bun test
