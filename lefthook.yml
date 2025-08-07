@@ -6,3 +6,8 @@ pre-commit:
       glob: "*.{js,ts,jsx,tsx,json}"
     vitest:
       run: bun test
+
+commit-msg:
+  commands:
+    commitlint:
+      run: bunx commitlint --edit {1}
