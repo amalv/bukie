@@ -25,8 +25,9 @@ High-level tech stack choices for Bukie to ensure consistency and maintainabilit
 | Infrastructure as Code | Terraform / Pulumi / CDK / Bicep             | Bicep (0009)   |
 | Database            | PostgreSQL / SQLite / MongoDB                   | PostgreSQL (0010) |
 | CI/CD               | GitHub Actions with matrix builds and caches    | GitHub Actions (0011) |
- | Package Manager     | pnpm / npm / yarn / bun                         | bun (0012)     |
- | Release System      | Semantic Release / Release Please / Manual      | Semantic Release (0013) |
+| Package Manager     | pnpm / npm / yarn / bun                         | bun (0012)     |
+| Release System      | Semantic Release / Release Please / Manual      | Semantic Release (0013) |
+| Code Quality        | Biome / Super-Linter / Qlty.sh / CodeQL         | Qlty.sh (0014) |
 
 ## ✅ Decision Outcomes
 Chosen option: Next.js for frontend framework. See ADR-0002 for rationale and pros/cons.
