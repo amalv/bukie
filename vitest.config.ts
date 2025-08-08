@@ -8,5 +8,9 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     exclude: ["tests/**", "tests-examples/**", "node_modules/**"],
+    coverage: {
+      provider: "v8",
+      reporter: ["lcov", "text"],
+    },
   },
 });

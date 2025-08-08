@@ -1,0 +1,14 @@
+[plugins.biome]
+enabled = true
+mode = "monitor"
+
+[plugins.maintainability]
+enabled = true
+mode = "block"
+
+[plugins.coverage]
+enabled = true
+mode = "block"
+
+[plugins.format]
+enabled = false

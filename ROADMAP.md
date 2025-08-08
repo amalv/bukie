@@ -14,15 +14,13 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ ci: add Lefthook for pre-commit hooks
 * ✅ ci: add Vitest for unit tests
 * ✅ ci: add commitlint for Conventional Commits
-* 🛠 ci: set up basic Next.js app (in progress)
-* ⏳ ci: deploy website to Azure (pending)
-* ⏳ ci: add Playwright for e2e tests
-* ⏳ ci: integrate CodeClimate for coding standards and code quality
-* ⏳ ci: configure all checks (Biome, Vitest, Playwright, commitlint, CodeClimate) in CI pipeline
-* ⏳ docs: document development workflow and code quality standards
+* ✅ ci: set up basic Next.js app
+* ✅ ci: deploy website to Vercel
+* ✅ ci: add Playwright for e2e tests
+* ✅ ci: integrate Qlty.sh for code quality, maintainability, and coverage gates
 
 ### Design System & Layout
-* ⏳ feat: custom Storybook setup
+* 🛠️ feat: custom Storybook setup
 * ⏳ feat: initial layout and navigation
 * ⏳ feat: first UI component
 * ⏳ docs: design system documentation
@@ -56,17 +54,11 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 
 ## 📅 Next Steps
 
-The next milestone is focused on tooling and code quality:
-* Add Biome for linting and formatting
-* Add Vitest for unit tests (best practice for Remix)
-* Add Playwright for e2e tests
-* Add Lefthook for pre-commit hooks
-* Add commitlint for Conventional Commits
-* Integrate CodeClimate for coding standards and code quality
-* Configure all checks in the CI pipeline
-* Document the development workflow
-
-Storybook and design system work will follow in the next milestone. All tasks are tracked as issues in [GitHub Issues](../../issues).
+The next milestone is focused on design system and UI tooling:
+* Set up a custom Storybook configuration for component development and documentation
+* Begin initial layout and navigation work
+* Start building the first UI component
+* Document the design system and component workflow
 
 ---
 
