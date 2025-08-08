@@ -1,3 +1,10 @@
+# [0.5.0](https://github.com/amalv/bukie/compare/v0.4.0...v0.5.0) (2025-08-08)
+
+
+### Features
+
+* add Playwright E2E tests and configuration files ([917562c](https://github.com/amalv/bukie/commit/917562c481d1a7ebb3e43aa42d9c8698c900d473))
+
 # [0.4.0](https://github.com/amalv/bukie/compare/v0.3.0...v0.4.0) (2025-08-08)
 
 
