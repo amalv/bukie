@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest",
-  "lint": "bunx @biomejs/biome check --no-errors-on-unmatched .",
-  "lint:fix": "bunx @biomejs/biome check --write --no-errors-on-unmatched ."
+    "lint": "bunx @biomejs/biome check --no-errors-on-unmatched .",
+    "lint:fix": "bunx @biomejs/biome check --write --no-errors-on-unmatched .",
+    "release": "semantic-release"
   },
   "dependencies": {
     "react": "19.1.0",
