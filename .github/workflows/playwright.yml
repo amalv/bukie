@@ -12,6 +12,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+      - name: Install unzip
+        run: apt-get update && apt-get install -y unzip
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
