@@ -1,3 +1,20 @@
+# [0.6.0](https://github.com/amalv/bukie/compare/v0.5.0...v0.6.0) (2025-08-09)
+
+
+### Bug Fixes
+
+* add unzip installation step to Playwright workflow ([97107d9](https://github.com/amalv/bukie/commit/97107d9d8174971090339cfe1b4d42703a3db03f))
+* set HOME environment variable for Playwright test execution ([f0125c4](https://github.com/amalv/bukie/commit/f0125c4bd161bcf7a4332f380959e05c8d4c9e7c))
+* update Playwright container image to v1.54.2-noble ([41891e2](https://github.com/amalv/bukie/commit/41891e2687b4dd767e5a4fb1be97a0749f449299))
+
+
+### Features
+
+* add Playwright test script to package.json ([36de48a](https://github.com/amalv/bukie/commit/36de48a6cc0d30700092c3baf7a0f67d4919a673))
+* add Storybook testing workflow and Vitest configuration ([c70d799](https://github.com/amalv/bukie/commit/c70d7999474c30436e298e2db30f9d65a96187b3))
+* **storybook:** initialize Storybook with Next.js config and example stories ([b5f3d31](https://github.com/amalv/bukie/commit/b5f3d31f9859c9c3e3b354fa547831147bcc877e))
+* update Playwright workflow to include container image and remove browser installation step ([7fe9c05](https://github.com/amalv/bukie/commit/7fe9c052ee21cc0b25c0fe700aec9cc22b0f38ef))
+
 # [0.5.0](https://github.com/amalv/bukie/compare/v0.4.0...v0.5.0) (2025-08-08)
 
 
