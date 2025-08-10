@@ -20,8 +20,8 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ ci: integrate Qlty.sh for code quality, maintainability, and coverage gates
 
 ### Design System & Layout
-* 🛠️ feat: custom Storybook setup
-* ⏳ feat: initial layout and navigation
+* ✅ feat: custom Storybook setup
+* 🛠️ feat: minimal app shell
 * ⏳ feat: first UI component
 * ⏳ docs: design system documentation
 
@@ -56,7 +56,7 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 
 The next milestone is focused on design system and UI tooling:
 * Set up a custom Storybook configuration for component development and documentation
-* Begin initial layout and navigation work
+* Build a minimal app shell: SSR page with header "Bukie" only
 * Start building the first UI component
 * Document the design system and component workflow
 
