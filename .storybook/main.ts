@@ -1,4 +1,5 @@
 import type { StorybookConfig } from "@storybook/nextjs-vite";
+import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 
 const config: StorybookConfig = {
   "stories": [
@@ -18,6 +19,11 @@ const config: StorybookConfig = {
   },
   "staticDirs": [
     "..\\public"
-  ]
+  ],
+  // Ensure Vanilla Extract .css.ts files are processed by Vite in Storybook
+  viteFinal: async (config) => {
+    config.plugins = [...(config.plugins ?? []), vanillaExtractPlugin()];
+    return config;
+  }
 };
 export default config;
