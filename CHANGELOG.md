@@ -1,3 +1,10 @@
+# [0.8.0](https://github.com/amalv/bukie/compare/v0.7.0...v0.8.0) (2025-08-10)
+
+
+### Features
+
+* integrate Vanilla Extract for CSS styling and refactor page layout ([21372ea](https://github.com/amalv/bukie/commit/21372ea10aa9a4c4141ffcc3e045b5870d5d593d))
+
 # [0.7.0](https://github.com/amalv/bukie/compare/v0.6.0...v0.7.0) (2025-08-10)
 
 
