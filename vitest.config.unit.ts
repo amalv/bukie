@@ -1,10 +1,11 @@
 /// <reference types="vitest/config" />
 import react from "@vitejs/plugin-react";
+import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 import { defineConfig } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), react()],
+  plugins: [tsconfigPaths(), react(), vanillaExtractPlugin()],
   test: {
     environment: "jsdom",
     globals: true,
