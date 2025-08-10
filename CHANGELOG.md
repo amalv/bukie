@@ -1,3 +1,16 @@
+# [0.7.0](https://github.com/amalv/bukie/compare/v0.6.0...v0.7.0) (2025-08-10)
+
+
+### Bug Fixes
+
+* **vitest:** generate lcov coverage report for Qlty.sh integration ([c888a95](https://github.com/amalv/bukie/commit/c888a954011e389440050956d409c65a0f8c006c))
+
+
+### Features
+
+* add initial Qlty configuration files for code quality checks ([87020a9](https://github.com/amalv/bukie/commit/87020a90330f9728537b8b0fa5c03e5b4ffed148))
+* add Qlty.sh integration for code quality and maintainability checks ([bb038fe](https://github.com/amalv/bukie/commit/bb038fedff21dedd31de8a7bbdb21179a9908e6e))
+
 # [0.6.0](https://github.com/amalv/bukie/compare/v0.5.0...v0.6.0) (2025-08-09)
 
 
