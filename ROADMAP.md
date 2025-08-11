@@ -23,8 +23,8 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ feat: custom Storybook setup
 * ✅ feat: minimal app shell
 * ✅ feat: design tokens in Storybook (Material 3–inspired: 8pt spacing, rem typography, basic color roles)
-* 🛠️ feat: 12‑column grid primitives (Container/Grid/Column) aligned to Material breakpoints + stories
-* ⏳ docs: design system documentation
+* ✅ feat: 12‑column grid primitives (Container/Grid/Column) aligned to Material breakpoints + stories
+* ✅ docs: design system documentation
 
 ### Core Features
 * ⏳ feat: hello world endpoint (Next.js)
