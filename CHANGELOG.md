@@ -1,3 +1,10 @@
+# [0.10.0](https://github.com/amalv/bukie/compare/v0.9.0...v0.10.0) (2025-08-11)
+
+
+### Features
+
+* **design-system:** 12‑column grid primitives + docs and tests ([a73d86e](https://github.com/amalv/bukie/commit/a73d86e6e5ca4e6d8086b28575fd3676842c30f6))
+
 # [0.9.0](https://github.com/amalv/bukie/compare/v0.8.0...v0.9.0) (2025-08-11)
 
 
