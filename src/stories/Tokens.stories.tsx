@@ -147,7 +147,7 @@ export const Typography: StoryObj = {
       // line height
       const lh = tokens.typography.lineHeight.normal;
       const lm = /^var\((--[^)]+)\)/.exec(lh);
-      next["lineHeight"] = lm
+      next.lineHeight = lm
         ? getComputedStyle(el).getPropertyValue(lm[1]).trim()
         : lh;
       setResolved(next);
