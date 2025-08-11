@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { lightThemeClass, tokens } from "../design/tokens.css";
 import { swatch } from "./tokens.css";
 
+// Shared token keys to avoid duplication
+const SPACING_KEYS = ["0", "0_5", "1", "1_5", "2", "3", "4", "6", "8"] as const;
+const TYPOGRAPHY_KEYS = ["xs", "sm", "md", "lg", "xl"] as const;
+
 const Stack: React.FC<{ gap?: string; children: React.ReactNode }> = ({
   gap = tokens.spacing["1"],
   children,
@@ -86,7 +90,7 @@ export const Spacing: StoryObj = {
     useEffect(() => {
       if (!ref.current) return;
       const el = ref.current;
-      const keys = ["0", "0_5", "1", "1_5", "2", "3", "4", "6", "8"] as const;
+      const keys = SPACING_KEYS;
       const next: Record<string, string> = {};
       for (const k of keys) {
         const v = tokens.spacing[k];
@@ -98,30 +102,28 @@ export const Spacing: StoryObj = {
     return (
       <div ref={ref}>
         <Stack>
-          {(["0", "0_5", "1", "1_5", "2", "3", "4", "6", "8"] as const).map(
-            (k) => (
+          {SPACING_KEYS.map((k) => (
+            <div
+              key={k}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: tokens.spacing["1"],
+              }}
+            >
               <div
-                key={k}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: tokens.spacing["1"],
+                  width: tokens.spacing[k],
+                  height: tokens.spacing[k],
+                  background: tokens.color.primary,
+                  opacity: 0.3,
                 }}
-              >
-                <div
-                  style={{
-                    width: tokens.spacing[k],
-                    height: tokens.spacing[k],
-                    background: tokens.color.primary,
-                    opacity: 0.3,
-                  }}
-                />
-                <code>
-                  spacing[{k}] = {resolved[k] ?? tokens.spacing[k]}
-                </code>
-              </div>
-            ),
-          )}
+              />
+              <code>
+                spacing[{k}] = {resolved[k] ?? tokens.spacing[k]}
+              </code>
+            </div>
+          ))}
         </Stack>
       </div>
     );
@@ -135,7 +137,7 @@ export const Typography: StoryObj = {
     useEffect(() => {
       if (!ref.current) return;
       const el = ref.current;
-      const keys = ["xs", "sm", "md", "lg", "xl"] as const;
+      const keys = TYPOGRAPHY_KEYS;
       const next: Record<string, string> = {};
       for (const k of keys) {
         const v = tokens.typography[k];
@@ -145,7 +147,7 @@ export const Typography: StoryObj = {
       // line height
       const lh = tokens.typography.lineHeight.normal;
       const lm = /^var\((--[^)]+)\)/.exec(lh);
-      next.lineHeight = lm
+      next["lineHeight"] = lm
         ? getComputedStyle(el).getPropertyValue(lm[1]).trim()
         : lh;
       setResolved(next);
@@ -153,12 +155,12 @@ export const Typography: StoryObj = {
     return (
       <div ref={ref}>
         <Stack>
-          {(["xs", "sm", "md", "lg", "xl"] as const).map((k) => (
+          {TYPOGRAPHY_KEYS.map((k) => (
             <div
               key={k}
               style={{
                 fontSize: tokens.typography[k],
-                lineHeight: String(tokens.typography.lineHeight.normal),
+                lineHeight: tokens.typography.lineHeight.normal,
               }}
             >
               The quick brown fox — {k} ({resolved[k] ?? tokens.typography[k]})
