@@ -21,8 +21,9 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 
 ### Design System & Layout
 * ✅ feat: custom Storybook setup
-* 🛠️ feat: minimal app shell
-* ⏳ feat: first UI component
+* ✅ feat: minimal app shell
+* ✅ feat: design tokens in Storybook (Material 3–inspired: 8pt spacing, rem typography, basic color roles)
+* 🛠️ feat: 12‑column grid primitives (Container/Grid/Column) aligned to Material breakpoints + stories
 * ⏳ docs: design system documentation
 
 ### Core Features
@@ -54,10 +55,8 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 
 ## 📅 Next Steps
 
-The next milestone is focused on design system and UI tooling:
-* Set up a custom Storybook configuration for component development and documentation
-* Build a minimal app shell: SSR page with header "Bukie" only
-* Start building the first UI component
+The next milestone is focused on incremental design system foundations:
+* Add minimal 12‑column grid primitives aligned to Material breakpoints with a responsive story (in progress)
 * Document the design system and component workflow
 
 ---
