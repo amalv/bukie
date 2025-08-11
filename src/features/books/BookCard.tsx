@@ -13,6 +13,7 @@ export function BookCard({ book }: BookCardProps) {
         width={120}
         height={180}
         className={s.image}
+        unoptimized
         priority
       />
       <h3 className={s.title}>{book.title}</h3>
