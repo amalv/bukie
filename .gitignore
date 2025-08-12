@@ -1,5 +1,4 @@
 .data/
-drizzle/
 *.db
 *.sqlite
 *.sqlite-journal
