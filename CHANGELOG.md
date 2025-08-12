@@ -1,3 +1,12 @@
+# [0.13.0](https://github.com/amalv/bukie/compare/v0.12.0...v0.13.0) (2025-08-12)
+
+
+### Features
+
+* **db:** add Drizzle ORM with SQLite and seed from mocks ([380ad3a](https://github.com/amalv/bukie/commit/380ad3a4e843a5f7e000b13729d50364f1ef2339))
+* **db:** add Drizzle SQLite, migrations, reseed, and books CRUD ([5b33141](https://github.com/amalv/bukie/commit/5b3314121a59d51b12a18bd4ff42bd76ea350409))
+* **db:** make book inserts idempotent to handle parallel test runs ([7d28c17](https://github.com/amalv/bukie/commit/7d28c176007cdf9c45d337ad19ae2bcab1311ac5))
+
 # [0.12.0](https://github.com/amalv/bukie/compare/v0.11.0...v0.12.0) (2025-08-12)
 
 
