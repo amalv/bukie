@@ -1,3 +1,11 @@
+# [0.12.0](https://github.com/amalv/bukie/compare/v0.11.0...v0.12.0) (2025-08-12)
+
+
+### Features
+
+* **api:** implement books CRUD API routes and refactor tests to AAA style ([8d25ac2](https://github.com/amalv/bukie/commit/8d25ac2610835eb8484c994436724e889aebcd15))
+* **roadmap:** update milestones to reflect completed API mocking and initial book list features ([ce178a1](https://github.com/amalv/bukie/commit/ce178a181275369d719cdc86c71e81a25d5f8e06))
+
 # [0.11.0](https://github.com/amalv/bukie/compare/v0.10.0...v0.11.0) (2025-08-12)
 
 
