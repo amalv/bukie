@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { books } from "../../../../mocks/books";
+import { getBooks } from "@/features/books/data";
 
 export async function GET() {
-  return NextResponse.json(books);
+  const data = await getBooks();
+  return NextResponse.json(data);
 }
