@@ -1,4 +1,5 @@
 import { Column, Container, Grid } from "@/design/layout/grid";
+import { tokens } from "@/design/tokens.css";
 import { BookCard } from "./BookCard";
 import { BookCardSkeleton } from "./BookCard.skeleton";
 import type { Book } from "./types";
@@ -36,7 +37,9 @@ export function BookList({ books, loading, error }: BookListProps) {
   if (error) {
     return (
       <Container>
-        <div style={{ color: "#B3261E", padding: "2rem" }}>{error}</div>
+        <div style={{ color: tokens.color.error, padding: "2rem" }}>
+          {error}
+        </div>
       </Container>
     );
   }
