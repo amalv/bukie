@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { getBooks } from "@/features/books/data";
+import { deleteBook, findBookById, updateBook } from "@/features/books/repo";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const books = await getBooks();
-  const book = books.find((b) => b.id === id);
+  const book = await findBookById(id);
   if (!book) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -19,10 +18,15 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const data = await request.json();
-  // TODO: Update in DB in future
-  // For now, just echo back
-  return NextResponse.json({ success: true, id, update: data });
+  const body = (await request.json()) as Partial<{
+    title: string;
+    author: string;
+    cover: string;
+  }>;
+  const updated = await updateBook(id, body);
+  if (!updated)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(updated);
 }
 
 export async function DELETE(
@@ -30,7 +34,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  // TODO: Delete from DB in future
-  // For now, just echo back
-  return NextResponse.json({ success: true, id });
+  const ok = await deleteBook(id);
+  if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return new NextResponse(null, { status: 204 });
 }

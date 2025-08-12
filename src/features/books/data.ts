@@ -1,7 +1,9 @@
-import { books } from "../../../mocks/books";
+import { db, ensureDb } from "@/db/client";
+import { booksTable } from "@/db/schema";
 import type { Book } from "./types";
 
 export async function getBooks(): Promise<Book[]> {
-  // Simulate async in case we later fetch from DB/API
-  return books;
+  await ensureDb();
+  const rows = db.select().from(booksTable).all();
+  return rows as Book[];
 }
