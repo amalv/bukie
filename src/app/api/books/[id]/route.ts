@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { getBooks } from "@/features/books/data";
+import { findBookById } from "@/features/books/repo";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const books = await getBooks();
-  const book = books.find((b) => b.id === id);
+  const book = await findBookById(id);
   if (!book) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
