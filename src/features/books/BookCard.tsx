@@ -14,7 +14,6 @@ export function BookCard({ book }: BookCardProps) {
         height={180}
         className={s.image}
         unoptimized
-        priority
       />
       <h3 className={s.title}>{book.title}</h3>
       <p className={s.author}>{book.author}</p>
