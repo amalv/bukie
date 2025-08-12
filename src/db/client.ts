@@ -52,7 +52,9 @@ export async function ensureDb(): Promise<void> {
     const CHUNK = 25;
     for (let i = 0; i < insertValues.length; i += CHUNK) {
       const batch = insertValues.slice(i, i + CHUNK);
-      db.insert(booksTable).values(batch).run();
+      // In parallel test runs, multiple workers may attempt to seed at once.
+      // Make inserts idempotent by ignoring duplicates on the primary key.
+      db.insert(booksTable).values(batch).onConflictDoNothing().run();
     }
   }
 }
