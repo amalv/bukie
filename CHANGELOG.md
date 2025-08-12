@@ -1,3 +1,12 @@
+# [0.11.0](https://github.com/amalv/bukie/compare/v0.10.0...v0.11.0) (2025-08-12)
+
+
+### Features
+
+* **books:** add MSW mock API and initial BookList UI ([ef9fe38](https://github.com/amalv/bukie/commit/ef9fe38fe6792419e19bca4a554e525ab5d7d3ff))
+* **books:** wire /api/books route and render BookList on home; fix images ([e042348](https://github.com/amalv/bukie/commit/e042348ffadad42925386822ce51a979e4816413))
+* **roadmap:** add API mocking milestones for initial book list implementation ([371906b](https://github.com/amalv/bukie/commit/371906bb8ee0b8979cae2a2c88ae19a3a7b7aae4))
+
 # [0.10.0](https://github.com/amalv/bukie/compare/v0.9.0...v0.10.0) (2025-08-11)
 
 
