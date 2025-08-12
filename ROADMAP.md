@@ -26,6 +26,13 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ feat: 12‑column grid primitives (Container/Grid/Column) aligned to Material breakpoints + stories
 * ✅ docs: design system documentation
 
+### API Mocking & Initial Book List
+* ⏳ feat: mock API for books using MSW or similar
+* ⏳ feat: seed mock API with 50 sample books
+* ⏳ feat: fetch and display book data on initial page (no UI/UX yet)
+* ⏳ feat: implement book card component in Storybook
+* ⏳ feat: render book cards in grid layout
+
 ### Core Features
 * ⏳ feat: hello world endpoint (Next.js)
 * ⏳ feat: item page for books
