@@ -27,24 +27,31 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ docs: design system documentation
 
 ### API Mocking & Initial Book List
-* ⏳ feat: mock API for books using MSW or similar
-* ⏳ feat: seed mock API with 50 sample books
-* ⏳ feat: fetch and display book data on initial page (no UI/UX yet)
-* ⏳ feat: implement book card component in Storybook
-* ⏳ feat: render book cards in grid layout
+* ✅ feat: mock API for books using MSW or similar
+* ✅ feat: seed mock API with 50 sample books
+* ✅ feat: fetch and display book data on initial page (no UI/UX yet)
+* ✅ feat: implement book card component in Storybook
+* ✅ feat: render book cards in grid layout
 
-### Core Features
-* ⏳ feat: hello world endpoint (Next.js)
-* ⏳ feat: item page for books
-* ⏳ feat: basic search functionality
-* ⏳ feat: authentication (Clerk)
-* ⏳ feat: add book (CRUD: create)
+### Backend API & Database Integration
+* ✅ feat: set up backend API routes for books (CRUD)
+* 🛠️ feat: connect to database (PostgreSQL, SQLite, etc.)
+* ⏳ feat: replace mock data with real queries
+* ⏳ feat: update book list UI to load from backend
+* ⏳ feat: add basic API endpoint tests
+* ⏳ docs: document backend API and setup
+
+### Core Features (DB-backed)
+* ⏳ feat: item page for books (SSR from backend)
+* ⏳ feat: basic search functionality (query DB)
+* ⏳ feat: authentication (Clerk or similar)
+* ⏳ feat: add book (CRUD: create, DB-backed)
 * ⏳ docs: usage instructions
 
-### Extended Features
-* ⏳ feat: edit and delete book (CRUD: update, delete)
-* ⏳ feat: improved search and filters
-* ⏳ feat: pagination for book list
+### Extended Features (DB-backed)
+* ⏳ feat: edit and delete book (CRUD: update, delete, DB-backed)
+* ⏳ feat: improved search and filters (DB queries)
+* ⏳ feat: pagination for book list (DB queries)
 * ⏳ docs: API documentation
 
 ### User & UI Enhancements
