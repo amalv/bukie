@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { BookList } from "@/features/books/BookList";
 import { getBooks } from "@/features/books/data";
 
