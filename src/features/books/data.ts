@@ -4,5 +4,5 @@ import type { Book } from "./types";
 
 export async function getBooks(): Promise<Book[]> {
   await ensureDb();
-  return listBooks() as unknown as Book[];
+  return listBooks();
 }

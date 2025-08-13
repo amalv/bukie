@@ -1,26 +1,13 @@
 import { eq } from "drizzle-orm";
-import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
 import type { Book } from "@/features/books/types";
 import { db as sqliteDb } from "./client";
 import { getDbEnv } from "./env";
+import { getPgDb } from "./pg";
 import { booksTable as booksSqlite } from "./schema";
 import { booksTablePg } from "./schema.pg";
 
-let pgSql: ReturnType<typeof postgres> | undefined;
-let pgDb: ReturnType<typeof drizzlePostgres> | undefined;
-
 function getPgClient() {
-  if (pgDb) return pgDb;
-  const env = getDbEnv();
-  if (!env.postgresUrl) {
-    throw new Error(
-      "DATABASE_URL/POSTGRES_URL must be set for postgres driver",
-    );
-  }
-  pgSql = postgres(env.postgresUrl, { max: 1 });
-  pgDb = drizzlePostgres(pgSql);
-  return pgDb;
+  return getPgDb();
 }
 
 export async function listBooks(): Promise<Book[]> {
@@ -28,10 +15,10 @@ export async function listBooks(): Promise<Book[]> {
   if (env.driver === "postgres") {
     const db = getPgClient();
     const rows = await db.select().from(booksTablePg);
-    return rows as unknown as Book[];
+    return rows as Book[];
   }
   const rows = sqliteDb.select().from(booksSqlite).all();
-  return rows as unknown as Book[];
+  return rows as Book[];
 }
 
 export async function getBook(id: string): Promise<Book | undefined> {
@@ -43,14 +30,14 @@ export async function getBook(id: string): Promise<Book | undefined> {
       .from(booksTablePg)
       .where(eq(booksTablePg.id, id))
       .limit(1);
-    return rows[0] as unknown as Book | undefined;
+    return rows[0] as Book | undefined;
   }
   const row = sqliteDb
     .select()
     .from(booksSqlite)
     .where(eq(booksSqlite.id, id))
     .get();
-  return row as unknown as Book | undefined;
+  return row as Book | undefined;
 }
 
 export async function createBookRow(
@@ -69,7 +56,7 @@ export async function createBookRow(
         cover: input.cover,
       })
       .returning();
-    return created as unknown as Book;
+    return created as Book;
   }
   sqliteDb
     .insert(booksSqlite)
@@ -85,7 +72,7 @@ export async function createBookRow(
     .from(booksSqlite)
     .where(eq(booksSqlite.id, id))
     .get();
-  return created as unknown as Book;
+  return created as Book;
 }
 
 export async function updateBookRow(
@@ -106,7 +93,7 @@ export async function updateBookRow(
       .set(setters)
       .where(eq(booksTablePg.id, id))
       .returning();
-    return updated as unknown as Book | undefined;
+    return updated as Book | undefined;
   }
   sqliteDb.update(booksSqlite).set(setters).where(eq(booksSqlite.id, id)).run();
   const updated = sqliteDb
@@ -114,7 +101,7 @@ export async function updateBookRow(
     .from(booksSqlite)
     .where(eq(booksSqlite.id, id))
     .get();
-  return updated as unknown as Book | undefined;
+  return updated as Book | undefined;
 }
 
 export async function deleteBookRow(id: string): Promise<boolean> {

@@ -15,14 +15,11 @@ export function getDbEnv(): DbEnv {
     process.env.DATABASE_URL_UNPOOLED ||
     process.env.POSTGRES_URL ||
     process.env.POSTGRES_URL_NON_POOLING ||
-    (process.env as Record<string, string | undefined>)["database_url"] ||
-    (process.env as Record<string, string | undefined>)[
-      "database_url_unpooled"
-    ] ||
-    (process.env as Record<string, string | undefined>)["postgres_url"] ||
-    (process.env as Record<string, string | undefined>)[
-      "postgres_url_non_pooling"
-    ];
+    (process.env as Record<string, string | undefined>).database_url ||
+    (process.env as Record<string, string | undefined>).database_url_unpooled ||
+    (process.env as Record<string, string | undefined>).postgres_url ||
+    (process.env as Record<string, string | undefined>)
+      .postgres_url_non_pooling;
 
   const driver: DbDriver =
     vercelEnv === "production" || vercelEnv === "preview"

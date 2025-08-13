@@ -95,8 +95,11 @@ export function getDb() {
         "DATABASE_URL/POSTGRES_URL must be set for postgres driver",
       );
     }
-    // Use postgres-js (serverless-friendly) driver
-    const sql = postgres(env.postgresUrl, { max: 1 });
+    // Use postgres-js (serverless-friendly). Allow overriding pool size via DB_POOL_MAX
+    const max = Number(
+      process.env.DB_POOL_MAX ?? (process.env.VERCEL ? "1" : "1"),
+    );
+    const sql = postgres(env.postgresUrl, { max });
     const dbPg = drizzlePostgres(sql);
 
     if (debug) {

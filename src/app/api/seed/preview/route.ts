@@ -13,9 +13,8 @@ export async function POST() {
       { status: 500 },
     );
   }
-  const flag = (process.env as Record<string, string | undefined>)[
-    "NEXT_PUBLIC_PREVIEW_SEED"
-  ];
+  const flag = (process.env as Record<string, string | undefined>)
+    .NEXT_PUBLIC_PREVIEW_SEED;
   if (flag !== TOKEN) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
