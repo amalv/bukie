@@ -1,3 +1,22 @@
+# [0.14.0](https://github.com/amalv/bukie/compare/v0.13.0...v0.14.0) (2025-08-13)
+
+
+### Bug Fixes
+
+* **api:** update seed endpoint token variable for consistency in preview environment ([724ba60](https://github.com/amalv/bukie/commit/724ba60bfecba422e8540d69369bfde2d94f9182))
+
+
+### Features
+
+* **api:** create seeding endpoint for Postgres with token protection ([56f6cf6](https://github.com/amalv/bukie/commit/56f6cf67470a7b4a0d49ccf45af6a7c5f79d519f))
+* **api:** implement debug endpoint for database environment information ([53a694a](https://github.com/amalv/bukie/commit/53a694a7803a983f1f85f4f4b5289bb08336b987))
+* **db:** enhance database client with detailed logging for Postgres connections ([a63f2f4](https://github.com/amalv/bukie/commit/a63f2f4879ec40d2a165cbfe7da30f453fb4129f))
+* **db:** enhance Postgres URL handling with additional environment variable support ([84b3974](https://github.com/amalv/bukie/commit/84b3974928ce82255aca42d3437a3813634f49e2))
+* **db:** env-based provider (Postgres preview/prod, SQLite dev) ([984cb9f](https://github.com/amalv/bukie/commit/984cb9fd3402c874a3ebd60e142a595c1714e496))
+* **db:** implement PostgreSQL client with configurable pool size and refactor provider ([64e2411](https://github.com/amalv/bukie/commit/64e2411cbdd860c1dba04648c0f4b8ec24760cdf))
+* **docs:** add comprehensive database and API architecture documentation ([e5d085f](https://github.com/amalv/bukie/commit/e5d085fc37f91ea764d4720c0b1803856fb8d302))
+* **page:** add dynamic export to enable server-side rendering ([dcea3dd](https://github.com/amalv/bukie/commit/dcea3ddca15d3456161801dde2824f6035ec26e6))
+
 # [0.13.0](https://github.com/amalv/bukie/compare/v0.12.0...v0.13.0) (2025-08-12)
 
 

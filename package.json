@@ -1,9 +1,9 @@
 {
   "name": "bukie",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "private": true,
   "scripts": {
-  "build": "next build",
+    "build": "next build",
     "build-storybook": "storybook build",
     "dev": "next dev",
     "db:generate": "bunx drizzle-kit generate",
