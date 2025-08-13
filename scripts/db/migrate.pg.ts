@@ -15,7 +15,7 @@ const db = drizzlePostgres(sql);
 
 async function main() {
   try {
-    await migrate(db, { migrationsFolder: "drizzle" });
+  await migrate(db, { migrationsFolder: "drizzle/pg" });
   } finally {
     await sql.end({ timeout: 5_000 });
   }

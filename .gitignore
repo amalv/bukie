@@ -63,3 +63,4 @@ storybook-static
 
 # Copilot
 .github/copilot-instructions.md
+.vercel
