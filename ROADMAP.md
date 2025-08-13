@@ -5,9 +5,9 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 ## Milestones
 
 ### Initial Release
-* ✅ feat: define initial technical architecture (#1)
-* ✅ feat: add semantic-release (#5)
-* ✅ ci: add GitHub Actions workflow for semantic-release (#6)
+* ✅ feat: define initial technical architecture
+* ✅ feat: add semantic-release
+* ✅ ci: add GitHub Actions workflow for semantic-release
 
 ### Tooling & Quality
 * ✅ ci: add Biome for linting and formatting
@@ -39,11 +39,11 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ feat: replace mock data with real DB queries
 * ✅ feat: update book list UI to load from backend (SSR)
 * ✅ test: add basic API endpoint tests (AAA style)
-* ⏳ docs: document backend API and setup
-* ⏳ feat(db-postgres): add Postgres client and env-based DB provider selection for preview/prod
+* ✅ docs: document backend API and setup
+* ✅ feat(db-postgres): add Postgres client and env-based DB provider selection for preview/prod
 
 ### Core Features (DB-backed)
-* ⏳ feat: item page for books (SSR from backend)
+* 🛠️ feat: item page for books (SSR from backend)
 * ⏳ feat: basic search functionality (query DB)
 * ⏳ feat: authentication (Clerk or similar)
 * ⏳ feat: add book (CRUD: create, DB-backed)
@@ -69,10 +69,9 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * feat: all core features stable
 
 ## 📅 Next Steps
-
-The next milestone is focused on incremental design system foundations:
-* Add minimal 12‑column grid primitives aligned to Material breakpoints with a responsive story (in progress)
-* Document the design system and component workflow
+The next milestone is focused on Core Features (DB‑backed):
+* Build the item page for books (SSR from backend) 🛠️
+* Prepare basic search foundation (indexing and query shape)
 
 ---
 
