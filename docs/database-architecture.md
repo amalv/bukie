@@ -105,6 +105,6 @@ Set `DEBUG_DB=1` to print which driver and target are used (without secrets) at 
 
 - `GET /api/debug/db` — returns a safe JSON payload with the active driver and target (host/db, pooled flag or sqlite path). No secrets are returned.
 - `POST /api/seed/preview` — seeds the books table in Postgres with mock data. Protected by a simple token:
-  - Set `SEED_TOKEN` (server) and `NEXT_PUBLIC_SEED_AUTH` (client/runtime) to the same secret value.
+  - Set `SEED_TOKEN` (server) and `NEXT_PUBLIC_PREVIEW_SEED` (client/runtime) to the same secret value.
   - Call the endpoint only in Preview.
 ```

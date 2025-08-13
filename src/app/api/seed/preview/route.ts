@@ -13,10 +13,10 @@ export async function POST() {
       { status: 500 },
     );
   }
-  const auth = (process.env as Record<string, string | undefined>)[
-    "NEXT_PUBLIC_SEED_AUTH"
+  const flag = (process.env as Record<string, string | undefined>)[
+    "NEXT_PUBLIC_PREVIEW_SEED"
   ];
-  if (auth !== TOKEN) {
+  if (flag !== TOKEN) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
