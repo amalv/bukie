@@ -2,10 +2,16 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-const url = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
+const url =
+  process.env.DATABASE_URL ??
+  process.env.DATABASE_URL_UNPOOLED ??
+  process.env.POSTGRES_URL ??
+  process.env.POSTGRES_URL_NON_POOLING;
 if (!url) {
   // eslint-disable-next-line no-console
-  console.error("DATABASE_URL/POSTGRES_URL is required for Postgres migrations");
+  console.error(
+    "DATABASE_URL (or *_UNPOOLED/POSTGRES_URL[_NON_POOLING]) is required for Postgres migrations",
+  );
   process.exit(1);
 }
 
