@@ -69,6 +69,26 @@ export async function ensureDb(): Promise<void> {
 // Factory that returns a Drizzle client for the active driver.
 export function getDb() {
   const env = getDbEnv();
+  const nodeEnv = process.env.NODE_ENV ?? "development";
+  const vercelEnv = process.env.VERCEL_ENV; // development | preview | production
+  const debug =
+    process.env.DEBUG_DB === "1" ||
+    nodeEnv === "development" ||
+    vercelEnv === "preview";
+
+  function describePgUrl(url: string): string {
+    try {
+      const u = new URL(url);
+      // Identify pooled endpoint via host suffix and show db name
+      const pooled = u.hostname.includes("-pooler");
+      const host = u.hostname;
+      const db = u.pathname.replace(/^\//, "");
+      return `${host}/${db} (${pooled ? "pooled" : "unpooled"})`;
+    } catch {
+      return "<invalid-pg-url>";
+    }
+  }
+
   if (env.driver === "postgres") {
     if (!env.postgresUrl) {
       throw new Error(
@@ -79,11 +99,25 @@ export function getDb() {
     const sql = postgres(env.postgresUrl, { max: 1 });
     const dbPg = drizzlePostgres(sql);
 
+    if (debug) {
+      // eslint-disable-next-line no-console
+      console.info(
+        "[DB] driver=postgres env=%s vercel=%s target=%s",
+        nodeEnv,
+        vercelEnv ?? "-",
+        describePgUrl(env.postgresUrl),
+      );
+    }
+
     return {
       kind: "postgres" as const,
       db: dbPg,
       schema: { books: booksTablePg },
     };
+  }
+  if (debug) {
+    // eslint-disable-next-line no-console
+    console.info("[DB] driver=sqlite env=%s path=%s", nodeEnv, DB_PATH);
   }
   return { kind: "sqlite" as const, db, schema: { books: booksTable } };
 }
