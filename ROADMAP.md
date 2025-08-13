@@ -35,11 +35,12 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 
 ### Backend API & Database Integration
 * ✅ feat: set up backend API routes for books (CRUD)
-* 🛠️ feat: connect to database (PostgreSQL, SQLite, etc.)
-* ⏳ feat: replace mock data with real queries
-* ⏳ feat: update book list UI to load from backend
-* ⏳ feat: add basic API endpoint tests
+* ✅ feat: Drizzle + SQLite with migrations, seed scripts, and books CRUD
+* ✅ feat: replace mock data with real DB queries
+* ✅ feat: update book list UI to load from backend (SSR)
+* ✅ test: add basic API endpoint tests (AAA style)
 * ⏳ docs: document backend API and setup
+* ⏳ feat(db-postgres): add Postgres client and env-based DB provider selection for preview/prod
 
 ### Core Features (DB-backed)
 * ⏳ feat: item page for books (SSR from backend)
