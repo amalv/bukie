@@ -1,10 +1,14 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
+import { migrate as migrateSqlite } from "drizzle-orm/better-sqlite3/migrator";
+import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { books as mockBooks } from "../../mocks/books";
+import { getDbEnv } from "./env";
 import { booksTable } from "./schema";
+import { booksTablePg } from "./schema.pg";
 
 const DATA_DIR = join(process.cwd(), ".data");
 const DB_PATH = join(DATA_DIR, "dev.sqlite");
@@ -18,12 +22,15 @@ function ensureDataDir() {
 ensureDataDir();
 
 const sqlite = new Database(DB_PATH);
-export const db = drizzle(sqlite);
+export const db = drizzleSqlite(sqlite);
 
 export async function ensureDb(): Promise<void> {
+  const env = getDbEnv();
+  if (env.driver !== "sqlite") return; // only manage local sqlite
+
   // Run migrations (idempotent)
   try {
-    migrate(db, { migrationsFolder: "drizzle" });
+    migrateSqlite(db, { migrationsFolder: "drizzle" });
   } catch {
     // If no migrations folder yet, fall back to ensuring table exists
     sqlite.exec(
@@ -57,4 +64,26 @@ export async function ensureDb(): Promise<void> {
       db.insert(booksTable).values(batch).onConflictDoNothing().run();
     }
   }
+}
+
+// Factory that returns a Drizzle client for the active driver.
+export function getDb() {
+  const env = getDbEnv();
+  if (env.driver === "postgres") {
+    if (!env.postgresUrl) {
+      throw new Error(
+        "DATABASE_URL/POSTGRES_URL must be set for postgres driver",
+      );
+    }
+    // Use postgres-js (serverless-friendly) driver
+    const sql = postgres(env.postgresUrl, { max: 1 });
+    const dbPg = drizzlePostgres(sql);
+
+    return {
+      kind: "postgres" as const,
+      db: dbPg,
+      schema: { books: booksTablePg },
+    };
+  }
+  return { kind: "sqlite" as const, db, schema: { books: booksTable } };
 }
