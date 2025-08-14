@@ -14,7 +14,29 @@ export default defineConfig({
     exclude: ["src/stories/**", "tests/**", "tests-examples/**", "node_modules/**"],
     coverage: {
       provider: "v8",
-      reporter: ["lcov", "text"]
+      reporter: ["lcov", "text"],
+      // Only measure coverage for app source files and ignore build/config/test scaffolding
+      all: true,
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        // Top-level and tool configs
+        "**/vitest.config*.ts",
+        "**/next.config.ts",
+        "**/playwright.config.ts",
+        "**/commitlint.config.ts",
+        "**/drizzle.config*.ts",
+        "**/lefthook.yml",
+        // Generated or non-source folders
+        "drizzle/**",
+        "scripts/**",
+        "public/**",
+        "docs/**",
+        "tests/**",
+        "tests-examples/**",
+        "src/stories/**",
+        "**/*.stories.*",
+        "**/.storybook/**"
+      ]
     }
   }
 });
