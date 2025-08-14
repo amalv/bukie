@@ -1,3 +1,10 @@
+# [0.16.0](https://github.com/amalv/bukie/compare/v0.15.0...v0.16.0) (2025-08-14)
+
+
+### Features
+
+* **books:** add ssr item page and link from list ([2bc061f](https://github.com/amalv/bukie/commit/2bc061f254d9615410a7ce77a0faab889dd04a05))
+
 # [0.15.0](https://github.com/amalv/bukie/compare/v0.14.0...v0.15.0) (2025-08-14)
 
 
