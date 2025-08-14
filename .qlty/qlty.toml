@@ -73,9 +73,11 @@ name = "checkov"
 [[plugin]]
 name = "markdownlint"
 mode = "comment"
+enabled = false
 
 [[plugin]]
 name = "prettier"
+enabled = false
 
 [[plugin]]
 name = "radarlint-js"

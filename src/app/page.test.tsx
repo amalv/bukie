@@ -1,17 +1,24 @@
+import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { lightThemeClass } from "@/design/tokens.css";
-import { BookList } from "@/features/books/BookList";
+import * as data from "@/features/books/data";
+import Page from "./page";
 
-describe("Home page UI", () => {
-  it("renders a grid of books (basic UI smoke)", () => {
-    render(
-      <div className={lightThemeClass}>
-        <BookList books={[{ id: "1", title: "A", author: "B", cover: "x" }]} />
-      </div>,
-    );
+describe("Page", () => {
+  it("renders BookList with books", async () => {
+    vi.spyOn(data, "getBooks").mockResolvedValue([
+      { id: "1", title: "A", author: "B", cover: "x" },
+    ]);
+    const Comp = await Page();
+    render(Comp);
     expect(screen.getByText("A")).toBeInTheDocument();
     expect(screen.getByText("B")).toBeInTheDocument();
+  });
+
+  it("renders error state when fetch fails", async () => {
+    vi.spyOn(data, "getBooks").mockRejectedValue(new Error("fail"));
+    const Comp = await Page();
+    render(Comp);
+    expect(screen.getByText(/failed to load books/i)).toBeInTheDocument();
   });
 });
