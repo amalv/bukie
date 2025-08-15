@@ -1,3 +1,12 @@
+# [0.17.0](https://github.com/amalv/bukie/compare/v0.16.0...v0.17.0) (2025-08-15)
+
+
+### Features
+
+* **books:** add empty/footer stories and use named style imports in BookList ([c693a1d](https://github.com/amalv/bukie/commit/c693a1d5baf67f2555966ef9099146589b37ba1d))
+* **books:** add footer slot to BookList and polish BookCard styles ([76a077b](https://github.com/amalv/bukie/commit/76a077b80d5d29c90371d14d426afb4b1001533e))
+* **books:** style BookList states and add footer slot; polish BookCard interactions ([7774810](https://github.com/amalv/bukie/commit/77748101c931c66bedd9b3124d98480375018836))
+
 # [0.16.0](https://github.com/amalv/bukie/compare/v0.15.0...v0.16.0) (2025-08-14)
 
 
