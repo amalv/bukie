@@ -57,12 +57,10 @@ export async function POST(req: Request) {
     let inserted = 0;
     for (let i = 0; i < values.length; i += CHUNK) {
       const batch = values.slice(i, i + CHUNK);
-      await db
-        .insert(booksTablePg)
-        .values(batch)
-        // @ts-expect-error drizzle type narrow on pg
-        .onConflictDoNothing();
-      inserted += batch.length;
+      for (const row of batch) {
+        await db.insert(booksTablePg).values(row).onConflictDoNothing();
+        inserted += 1;
+      }
     }
 
     return NextResponse.json({ ok: true, inserted, reset });
