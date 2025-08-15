@@ -15,12 +15,13 @@ export const card = style({
   height: 420,
   overflow: "hidden",
   transition:
-    "box-shadow 150ms ease, transform 150ms ease, border-color 150ms ease",
+    "box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease",
   selectors: {
     "&:hover, &:focus-within": {
-      boxShadow: tokens.elevation["2"],
-      transform: "translateY(-1px)",
-      borderColor: "rgba(0,0,0,0.12)",
+      boxShadow: tokens.elevation["3"],
+      transform: "translateY(-2px)",
+      // Darken border on hover to create a subtle black outline
+      borderColor: "rgba(0,0,0,0.5)",
     },
   },
 });
@@ -39,9 +40,9 @@ export const image = style({
   objectFit: "cover",
   objectPosition: "top",
   display: "block",
-  transition: "transform 200ms ease",
+  transition: "transform 300ms ease",
   selectors: {
-    [`${card}:hover &`]: { transform: "scale(1.02)" },
+    [`${card}:hover &`]: { transform: "scale(1.05)" },
   },
 });
 
@@ -82,6 +83,10 @@ export const title = style({
   display: "-webkit-box",
   WebkitBoxOrient: "vertical" as unknown as undefined,
   WebkitLineClamp: 2 as unknown as undefined,
+  transition: "color 200ms ease",
+  selectors: {
+    [`${card}:hover &`]: { color: tokens.color.primary },
+  },
 });
 
 export const author = style({
@@ -98,9 +103,7 @@ export const link = style({
   textDecoration: "none",
   outline: "none",
   selectors: {
-    "&:hover, &:focus-visible": {
-      textDecoration: "underline",
-    },
+    "&:focus-visible": { color: tokens.color.primary },
   },
 });
 
@@ -140,4 +143,8 @@ export const body = style({
   display: "flex",
   flexDirection: "column",
   gap: tokens.spacing["1"],
+  transition: "transform 200ms ease",
+  selectors: {
+    [`${card}:hover &`]: { transform: "translateY(-1px)" },
+  },
 });
