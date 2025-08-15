@@ -1,5 +1,4 @@
-import "@testing-library/jest-dom";
-import { render, screen } from "@testing-library/react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import RootLayout from "./layout";
 
@@ -10,13 +9,13 @@ vi.mock("next/font/google", () => ({
 
 describe("RootLayout", () => {
   it("renders children and applies global styles", () => {
-    render(
+    const html = renderToStaticMarkup(
       <RootLayout>
         <div data-testid="child">Hello</div>
       </RootLayout>,
     );
-    expect(screen.getByTestId("child")).toBeInTheDocument();
-    expect(document.body.className).toMatch(/font-geist-sans/);
-    expect(document.body.className).toMatch(/font-geist-mono/);
+    expect(html).toContain('data-testid="child"');
+    expect(html).toMatch(/font-geist-sans/);
+    expect(html).toMatch(/font-geist-mono/);
   });
 });
