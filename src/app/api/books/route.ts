@@ -3,8 +3,17 @@ import { getBooks } from "@/features/books/data";
 import { createBook } from "@/features/books/repo";
 
 export async function GET() {
-  const data = await getBooks();
-  return NextResponse.json(data);
+  try {
+    const data = await getBooks();
+    return NextResponse.json(data);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[/api/books] GET failed", err);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
 }
 
 export async function POST(request: Request) {

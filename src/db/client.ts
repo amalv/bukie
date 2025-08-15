@@ -19,10 +19,16 @@ function ensureDataDir() {
   }
 }
 
-ensureDataDir();
+let sqlite: InstanceType<typeof Database> | undefined;
+let dbSqlite: ReturnType<typeof drizzleSqlite> | undefined;
 
-const sqlite = new Database(DB_PATH);
-export const db = drizzleSqlite(sqlite);
+function getSqliteDbInternal() {
+  if (dbSqlite) return dbSqlite;
+  ensureDataDir();
+  sqlite = new Database(DB_PATH);
+  dbSqlite = drizzleSqlite(sqlite);
+  return dbSqlite;
+}
 
 export async function ensureDb(): Promise<void> {
   const env = getDbEnv();
@@ -30,10 +36,12 @@ export async function ensureDb(): Promise<void> {
 
   // Run migrations (idempotent)
   try {
-    migrateSqlite(db, { migrationsFolder: "drizzle" });
+    migrateSqlite(getSqliteDbInternal(), { migrationsFolder: "drizzle" });
   } catch {
     // If no migrations folder yet, fall back to ensuring table exists
-    sqlite.exec(
+    const s = sqlite ?? new Database(DB_PATH);
+    sqlite = s;
+    s.exec(
       `CREATE TABLE IF NOT EXISTS books (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
@@ -47,7 +55,8 @@ export async function ensureDb(): Promise<void> {
   }
 
   // Seed if empty
-  const hasAny = db
+  const sqliteDb = getSqliteDbInternal();
+  const hasAny = sqliteDb
     .select({ id: booksTable.id })
     .from(booksTable)
     .limit(1)
@@ -67,7 +76,7 @@ export async function ensureDb(): Promise<void> {
       const batch = insertValues.slice(i, i + CHUNK);
       // In parallel test runs, multiple workers may attempt to seed at once.
       // Make inserts idempotent by ignoring duplicates on the primary key.
-      db.insert(booksTable).values(batch).onConflictDoNothing().run();
+      sqliteDb.insert(booksTable).values(batch).onConflictDoNothing().run();
     }
   }
 }
@@ -128,5 +137,14 @@ export function getDb() {
     // eslint-disable-next-line no-console
     console.info("[DB] driver=sqlite env=%s path=%s", nodeEnv, DB_PATH);
   }
-  return { kind: "sqlite" as const, db, schema: { books: booksTable } };
+  return {
+    kind: "sqlite" as const,
+    db: getSqliteDbInternal(),
+    schema: { books: booksTable },
+  };
+}
+
+// Explicit getter for modules that need raw sqlite (e.g., provider)
+export function getSqliteDb() {
+  return getSqliteDbInternal();
 }

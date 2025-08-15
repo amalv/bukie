@@ -8,6 +8,13 @@
       "when": 1755085084381,
       "tag": "0000_slim_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1755287622651,
+      "tag": "0001_graceful_zaladane",
+      "breakpoints": true
     }
   ]
 }
