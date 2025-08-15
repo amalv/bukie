@@ -11,6 +11,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
+// AVIF often looks over-compressed at the same numeric quality as WebP.
+// Lowering AVIF quality by a small offset maintains visual parity while saving bytes.
+const AVIF_QUALITY_OFFSET = 30;
+
 type Options = {
   root: string;
   webp: boolean;
@@ -77,7 +81,13 @@ async function convertOne(input: string, outPath: string, format: "webp" | "avif
   const pipeline = sharp(input).rotate();
   if (opts.maxWidth) pipeline.resize({ width: opts.maxWidth, withoutEnlargement: true });
   if (format === "webp") pipeline.webp({ quality: opts.quality, effort: 4 });
-  if (format === "avif") pipeline.avif({ quality: Math.round(Math.min(100, Math.max(30, opts.quality - 30))), effort: 4 });
+  if (format === "avif")
+    pipeline.avif({
+      quality: Math.round(
+        Math.min(100, Math.max(30, opts.quality - AVIF_QUALITY_OFFSET)),
+      ),
+      effort: 4,
+    });
   await ensureDir(outPath);
   await pipeline.toFile(outPath);
 }
