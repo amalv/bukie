@@ -13,37 +13,44 @@ export function BookCard({ book }: BookCardProps) {
         <Link
           href={`/books/${book.id}`}
           aria-label={`View details for ${book.title}`}
-          className={s.link}
+          className={s.mediaLink}
         >
           <Image
             src={book.cover}
             alt={`Cover of ${book.title} by ${book.author}`}
-            width={120}
-            height={180}
+            width={400}
+            height={600}
             className={s.image}
-            unoptimized
+            // Keep unoptimized in dev/test for stability; enable optimization in prod for raster images
+            unoptimized={
+              process.env.NODE_ENV !== "production" ||
+              book.cover.includes(".svg")
+            }
+            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 22vw, 200px"
           />
         </Link>
         <div className={s.mediaOverlay} />
         {book.genre ? <span className={s.badge}>{book.genre}</span> : null}
       </div>
-      <h3 className={s.title}>
-        <Link href={`/books/${book.id}`} className={s.link}>
-          {book.title}
-        </Link>
-      </h3>
-      <p className={s.author}>{book.author}</p>
-      {(book.rating != null || book.year != null) && (
-        <div className={s.meta}>
-          {typeof book.rating === "number" ? (
-            <>
-              <span className={s.stars}>{renderStars(book.rating)}</span>
-              <span>{book.rating.toFixed(1)}</span>
-            </>
-          ) : null}
-          {book.year != null ? <span>• {book.year}</span> : null}
-        </div>
-      )}
+      <div className={s.body}>
+        <h3 className={s.title}>
+          <Link href={`/books/${book.id}`} className={s.link}>
+            {book.title}
+          </Link>
+        </h3>
+        <p className={s.author}>by {book.author}</p>
+        {(book.rating != null || book.year != null) && (
+          <div className={s.meta}>
+            {typeof book.rating === "number" ? (
+              <>
+                <span className={s.stars}>{renderStars(book.rating)}</span>
+                <span>{book.rating.toFixed(1)}</span>
+              </>
+            ) : null}
+            {book.year != null ? <span>{book.year}</span> : null}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -63,7 +70,6 @@ function renderStars(value: number) {
 }
 
 function Star({ variant }: { variant: "full" | "half" | "empty" }) {
-  // Single path star; use fill/clip to represent half/empty
   const fill = variant === "empty" ? "none" : "currentColor";
   const defs = variant === "half";
   return (

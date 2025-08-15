@@ -38,7 +38,10 @@ export async function ensureDb(): Promise<void> {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         author TEXT NOT NULL,
-        cover TEXT NOT NULL
+        cover TEXT NOT NULL,
+        genre TEXT,
+        rating REAL,
+        year INTEGER
       )`,
     );
   }
@@ -55,6 +58,9 @@ export async function ensureDb(): Promise<void> {
       title: b.title,
       author: b.author,
       cover: b.cover,
+      genre: b.genre,
+      rating: b.rating,
+      year: b.year,
     }));
     const CHUNK = 25;
     for (let i = 0; i < insertValues.length; i += CHUNK) {

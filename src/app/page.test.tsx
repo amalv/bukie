@@ -12,7 +12,7 @@ describe("Page", () => {
     const Comp = await Page();
     render(Comp);
     expect(screen.getByText("A")).toBeInTheDocument();
-    expect(screen.getByText("B")).toBeInTheDocument();
+    expect(screen.getByText(/by\s*B/)).toBeInTheDocument();
   });
 
   it("renders error state when fetch fails", async () => {

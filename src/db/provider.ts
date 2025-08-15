@@ -54,6 +54,9 @@ export async function createBookRow(
         title: input.title,
         author: input.author,
         cover: input.cover,
+        genre: input.genre,
+        rating: input.rating as number | null | undefined,
+        year: input.year as number | null | undefined,
       })
       .returning();
     return created as Book;
@@ -65,6 +68,9 @@ export async function createBookRow(
       title: input.title,
       author: input.author,
       cover: input.cover,
+      genre: input.genre,
+      rating: input.rating as number | null | undefined,
+      year: input.year as number | null | undefined,
     })
     .run();
   const created = sqliteDb
@@ -84,6 +90,9 @@ export async function updateBookRow(
   if (patch.title !== undefined) setters.title = patch.title;
   if (patch.author !== undefined) setters.author = patch.author;
   if (patch.cover !== undefined) setters.cover = patch.cover;
+  if (patch.genre !== undefined) setters.genre = patch.genre;
+  if (patch.rating !== undefined) setters.rating = patch.rating;
+  if (patch.year !== undefined) setters.year = patch.year;
   if (Object.keys(setters).length === 0) return getBook(id);
 
   if (env.driver === "postgres") {

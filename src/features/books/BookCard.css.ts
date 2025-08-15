@@ -4,14 +4,16 @@ import { tokens } from "@/design/tokens.css";
 export const card = style({
   border: `1px solid rgba(0,0,0,0.08)`,
   borderRadius: tokens.radius.md,
-  padding: tokens.spacing["2"],
+  padding: 0,
   boxShadow: tokens.elevation["1"],
   background: tokens.color.surface,
   display: "flex",
   flexDirection: "column",
-  alignItems: "center",
+  alignItems: "stretch",
   gap: tokens.spacing["1"],
-  minHeight: 240,
+  // Fix card height so all cards align uniformly across rows
+  height: 420,
+  overflow: "hidden",
   transition:
     "box-shadow 150ms ease, transform 150ms ease, border-color 150ms ease",
   selectors: {
@@ -25,15 +27,18 @@ export const card = style({
 
 export const media = style({
   position: "relative",
-  width: 120,
-  height: 180,
+  width: "100%",
+  // Slightly taller media area to match reference composition
+  height: 280,
 });
 
 export const image = style({
-  borderRadius: tokens.radius.sm,
+  borderRadius: 0,
   width: "100%",
   height: "100%",
   objectFit: "cover",
+  objectPosition: "top",
+  display: "block",
   transition: "transform 200ms ease",
   selectors: {
     [`${card}:hover &`]: { transform: "scale(1.02)" },
@@ -43,19 +48,24 @@ export const image = style({
 export const mediaOverlay = style({
   position: "absolute",
   inset: 0,
-  borderRadius: tokens.radius.sm,
-  background:
-    "linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.3) 100%)",
+  borderRadius: 0,
+  background: "transparent",
   pointerEvents: "none",
+  selectors: {
+    [`${card}:hover &`]: {
+      background: "rgba(0,0,0,0.10)",
+    },
+  },
 });
 
 export const badge = style({
   position: "absolute",
   top: tokens.spacing["1"],
   right: tokens.spacing["1"],
-  background: tokens.color.primary,
-  color: tokens.color.onPrimary,
-  borderRadius: tokens.radius.sm,
+  background: "rgba(255,255,255,0.9)",
+  color: tokens.color.onSurface,
+  borderRadius: tokens.radius.md,
+  border: `1px solid rgba(0,0,0,0.08)`,
   padding: `${tokens.spacing["0_5"]} ${tokens.spacing["1"]}`,
   fontSize: tokens.typography.xs,
   lineHeight: tokens.typography.lineHeight.tight,
@@ -63,11 +73,15 @@ export const badge = style({
 });
 
 export const title = style({
-  margin: `${tokens.spacing["1_5"]} 0 ${tokens.spacing["0_5"]}`,
-  fontSize: tokens.typography.md,
+  margin: `${tokens.spacing["1"]} 0 ${tokens.spacing["0_5"]}`,
+  fontSize: tokens.typography.lg,
   lineHeight: tokens.typography.lineHeight.normal,
   color: tokens.color.onSurface,
-  textAlign: "center",
+  textAlign: "left",
+  overflow: "hidden",
+  display: "-webkit-box",
+  WebkitBoxOrient: "vertical" as unknown as undefined,
+  WebkitLineClamp: 2 as unknown as undefined,
 });
 
 export const author = style({
@@ -76,7 +90,7 @@ export const author = style({
   opacity: 0.7,
   fontSize: tokens.typography.sm,
   lineHeight: tokens.typography.lineHeight.normal,
-  textAlign: "center",
+  textAlign: "left",
 });
 
 export const link = style({
@@ -90,10 +104,18 @@ export const link = style({
   },
 });
 
+// Block-level link for the media area to eliminate inline spacing artifacts
+export const mediaLink = style({
+  display: "block",
+  width: "100%",
+  height: "100%",
+});
+
 export const meta = style({
   marginTop: tokens.spacing["1"],
   display: "flex",
   alignItems: "center",
+  justifyContent: "space-between",
   gap: tokens.spacing["1"],
   color: tokens.color.onSurface,
   opacity: 0.85,
@@ -110,5 +132,12 @@ export const starIcon = style({
   width: 12,
   height: 12,
   display: "inline-block",
-  color: tokens.color.primary,
+  color: "#F59E0B",
+});
+
+export const body = style({
+  padding: tokens.spacing["2"],
+  display: "flex",
+  flexDirection: "column",
+  gap: tokens.spacing["1"],
 });

@@ -3,6 +3,7 @@ import { createVanillaExtractPlugin } from "@vanilla-extract/next-plugin";
 
 const nextConfig: NextConfig = {
   images: {
+    formats: ["image/webp"],
     remotePatterns: [
       {
         protocol: "https",
