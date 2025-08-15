@@ -9,6 +9,9 @@ const book = {
   title: "The Answer",
   author: "Adams",
   cover: "/42.jpg",
+  genre: "Sci-Fi",
+  rating: 4.5,
+  year: 1979,
 };
 
 describe("BookCard", () => {
@@ -26,5 +29,17 @@ describe("BookCard", () => {
 
     const img = screen.getByAltText(/cover of the answer by adams/i);
     expect(img).toBeInTheDocument();
+  });
+
+  it("renders optional badge, rating and year when provided", () => {
+    render(
+      <div className={lightThemeClass}>
+        <BookCard book={book} />
+      </div>,
+    );
+
+    expect(screen.getByText(/sci-fi/i)).toBeInTheDocument();
+    expect(screen.getByText("4.5")).toBeInTheDocument();
+    expect(screen.getByText(/1979/)).toBeInTheDocument();
   });
 });
