@@ -11,6 +11,7 @@ export function BookCard({ book }: BookCardProps) {
       <Link
         href={`/books/${book.id}`}
         aria-label={`View details for ${book.title}`}
+        className={s.link}
       >
         <Image
           src={book.cover}
@@ -22,7 +23,9 @@ export function BookCard({ book }: BookCardProps) {
         />
       </Link>
       <h3 className={s.title}>
-        <Link href={`/books/${book.id}`}>{book.title}</Link>
+        <Link href={`/books/${book.id}`} className={s.link}>
+          {book.title}
+        </Link>
       </h3>
       <p className={s.author}>{book.author}</p>
     </div>

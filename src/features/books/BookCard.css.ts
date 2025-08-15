@@ -12,6 +12,15 @@ export const card = style({
   alignItems: "center",
   gap: tokens.spacing["1"],
   minHeight: 240,
+  transition:
+    "box-shadow 150ms ease, transform 150ms ease, border-color 150ms ease",
+  selectors: {
+    "&:hover, &:focus-within": {
+      boxShadow: tokens.elevation["2"],
+      transform: "translateY(-1px)",
+      borderColor: "rgba(0,0,0,0.12)",
+    },
+  },
 });
 
 export const image = style({
@@ -34,4 +43,15 @@ export const author = style({
   opacity: 0.7,
   fontSize: tokens.typography.sm,
   lineHeight: tokens.typography.lineHeight.normal,
+});
+
+export const link = style({
+  color: "inherit",
+  textDecoration: "none",
+  outline: "none",
+  selectors: {
+    "&:hover, &:focus-visible": {
+      textDecoration: "underline",
+    },
+  },
 });

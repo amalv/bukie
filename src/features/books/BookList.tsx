@@ -1,16 +1,18 @@
 import { Column, Container, Grid } from "@/design/layout/grid";
-import { tokens } from "@/design/tokens.css";
 import { BookCard } from "./BookCard";
 import { BookCardSkeleton } from "./BookCard.skeleton";
+import { emptyBox, errorBox, footer as footerClass } from "./BookList.css";
 import type { Book } from "./types";
 
 export type BookListProps = {
   books?: Book[];
   loading?: boolean;
   error?: string;
+  /** Optional footer slot for pagination controls or extra actions */
+  footer?: React.ReactNode;
 };
 
-export function BookList({ books, loading, error }: BookListProps) {
+export function BookList({ books, loading, error, footer }: BookListProps) {
   if (loading) {
     const skeletonKeys = [
       "sk-1",
@@ -37,9 +39,16 @@ export function BookList({ books, loading, error }: BookListProps) {
   if (error) {
     return (
       <Container>
-        <div style={{ color: tokens.color.error, padding: "2rem" }}>
+        <div role="alert" className={errorBox}>
           {error}
         </div>
+      </Container>
+    );
+  }
+  if (!loading && (!books || books.length === 0)) {
+    return (
+      <Container>
+        <div className={emptyBox}>No books found.</div>
       </Container>
     );
   }
@@ -52,6 +61,7 @@ export function BookList({ books, loading, error }: BookListProps) {
           </Column>
         ))}
       </Grid>
+      {footer ? <div className={footerClass}>{footer}</div> : null}
     </Container>
   );
 }
