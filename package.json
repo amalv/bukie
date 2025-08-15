@@ -17,7 +17,7 @@
     "lint": "bunx @biomejs/biome check --no-errors-on-unmatched .",
     "lint:fix": "bunx @biomejs/biome check --write --no-errors-on-unmatched .",
     "release": "semantic-release",
-    "start": "next start",
+    "start": "bun run db:migrate:pg || true && next start",
     "storybook": "storybook dev -p 6006",
     "test": "bunx vitest --config vitest.config.unit.ts",
     "test:playwright": "bunx playwright test",
