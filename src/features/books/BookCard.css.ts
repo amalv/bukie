@@ -73,6 +73,11 @@ export const badge = style({
   boxShadow: tokens.elevation["1"],
 });
 
+const clampWebkitProps: Record<string, string | number> = {
+  WebkitBoxOrient: "vertical",
+  WebkitLineClamp: 2,
+};
+
 export const title = style({
   margin: `${tokens.spacing["1"]} 0 ${tokens.spacing["0_5"]}`,
   fontSize: tokens.typography.lg,
@@ -81,8 +86,8 @@ export const title = style({
   textAlign: "left",
   overflow: "hidden",
   display: "-webkit-box",
-  WebkitBoxOrient: "vertical" as unknown as undefined,
-  WebkitLineClamp: 2 as unknown as undefined,
+  // Vendor-prefixed clamp for WebKit: assign via spread to avoid TS complaining about unknown keys
+  ...clampWebkitProps,
   transition: "color 200ms ease",
   selectors: {
     [`${card}:hover &`]: { color: tokens.color.primary },
@@ -135,7 +140,7 @@ export const starIcon = style({
   width: 12,
   height: 12,
   display: "inline-block",
-  color: "#F59E0B",
+  color: tokens.color.star,
 });
 
 export const body = style({
