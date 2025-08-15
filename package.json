@@ -3,7 +3,7 @@
   "version": "0.16.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "bun run db:migrate:pg && bun run db:seed:pg && next build",
     "build-storybook": "storybook build",
     "dev": "next dev",
     "db:generate": "bunx drizzle-kit generate",
@@ -12,6 +12,7 @@
     "db:migrate:pg": "bun ./scripts/db/migrate.pg.ts",
     "db:init:pg": "bun ./scripts/db/init.pg.ts",
     "db:seed": "bun ./scripts/db/seed.ts",
+    "db:seed:pg": "bun ./scripts/db/seed.pg.ts",
     "db:reset": "bun ./scripts/db/reset.ts",
     "db:reseed": "bun run db:reset && bun run db:migrate && bun run db:seed",
     "lint": "bunx @biomejs/biome check --no-errors-on-unmatched .",
