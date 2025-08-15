@@ -8,9 +8,11 @@ export type BookListProps = {
   books?: Book[];
   loading?: boolean;
   error?: string;
+  /** Optional footer slot for pagination controls or extra actions */
+  footer?: React.ReactNode;
 };
 
-export function BookList({ books, loading, error }: BookListProps) {
+export function BookList({ books, loading, error, footer }: BookListProps) {
   if (loading) {
     const skeletonKeys = [
       "sk-1",
@@ -52,6 +54,9 @@ export function BookList({ books, loading, error }: BookListProps) {
           </Column>
         ))}
       </Grid>
+      {footer ? (
+        <div style={{ marginTop: tokens.spacing["3"] }}>{footer}</div>
+      ) : null}
     </Container>
   );
 }
