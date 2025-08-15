@@ -35,4 +35,21 @@ describe("BookList", () => {
     const skeletons = container.getElementsByClassName(skel.skeleton);
     expect(skeletons.length).toBe(8);
   });
+
+  it("renders empty state when no books are provided", () => {
+    render(wrap(<BookList books={[]} />));
+    expect(screen.getByText(/no books found/i)).toBeInTheDocument();
+  });
+
+  it("renders footer slot when provided", () => {
+    render(
+      wrap(
+        <BookList
+          books={[{ id: "1", title: "A", author: "Auth A", cover: "/a.jpg" }]}
+          footer={<div data-testid="footer">Footer</div>}
+        />,
+      ),
+    );
+    expect(screen.getByTestId("footer")).toBeInTheDocument();
+  });
 });

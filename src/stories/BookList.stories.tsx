@@ -23,3 +23,18 @@ export const ErrorState = () => (
     <BookList error="Failed to load books. Please try again." />
   </div>
 );
+
+export const Empty = () => (
+  <div className={lightThemeClass}>
+    <BookList books={[]} />
+  </div>
+);
+
+export const WithFooter = () => (
+  <div className={lightThemeClass}>
+    <BookList
+      books={books.slice(0, 4)}
+      footer={<div style={{ padding: "1rem" }}>Pagination coming soon…</div>}
+    />
+  </div>
+);
