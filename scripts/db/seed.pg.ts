@@ -11,6 +11,21 @@ async function main() {
     return;
   }
   const db = getPgDb();
+  const vercelEnv = process.env.VERCEL_ENV ?? "-"; // preview | production | development/-
+  const force = process.env.SEED_ON_BUILD === "1";
+
+  // In production, avoid reseeding unless forced or empty.
+  if (vercelEnv === "production" && !force) {
+    const rows = await db
+      .select({ id: booksTablePg.id })
+      .from(booksTablePg)
+      .limit(1);
+    if (rows.length > 0) {
+      // eslint-disable-next-line no-console
+      console.info("[seed:pg] skipping (production and table not empty)");
+      return;
+    }
+  }
 
   // Idempotent upsert-ish: we ignore conflicts on id
   const values = mockBooks.map((b) => ({
@@ -31,7 +46,12 @@ async function main() {
     }
   }
   // eslint-disable-next-line no-console
-  console.info("[seed:pg] inserted=%d (conflicts ignored)", values.length);
+  console.info(
+    "[seed:pg] env=%s inserted=%d (conflicts ignored)%s",
+    vercelEnv,
+    values.length,
+    force ? " [forced]" : "",
+  );
 }
 
 main().catch((e) => {
