@@ -27,7 +27,12 @@ async function main() {
     }
   }
 
-  // Idempotent upsert-ish: we ignore conflicts on id
+  // In preview, reset the table so seeds reflect the latest mock data
+  if (vercelEnv === "preview") {
+    await db.delete(booksTablePg);
+  }
+
+  // Idempotent upsert-ish: we ignore conflicts on id (prod empty or preview after reset)
   const values = mockBooks.map((b) => ({
     id: b.id,
     title: b.title,
