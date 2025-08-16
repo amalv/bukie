@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "bun run db:migrate:pg && bun run db:seed:pg && next build",
+    "build:ci": "next build",
     "build-storybook": "storybook build",
     "dev": "next dev",
     "db:generate": "bunx drizzle-kit generate",
@@ -19,6 +20,7 @@
     "lint:fix": "bunx @biomejs/biome check --write --no-errors-on-unmatched .",
     "release": "semantic-release",
     "start": "bun run db:migrate:pg || true && next start",
+    "start:ci": "next start",
     "storybook": "storybook dev -p 6006",
     "test": "bunx vitest --config vitest.config.unit.ts",
     "test:playwright": "bunx playwright test",

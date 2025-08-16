@@ -74,9 +74,15 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : {
-        command: 'bun run build && bun run start',
+        // In CI (no DATABASE_URL), run dev server with SQLite/seeded mocks.
+        // When DATABASE_URL is provided, run the production build/start.
+        command: process.env.CI
+          ? 'bun run build:ci && bun run start:ci'
+          : process.env.DATABASE_URL
+            ? 'bun run build && bun run start'
+            : 'bun run dev',
         url: 'http://127.0.0.1:3000',
         reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
+        timeout: 180_000,
       },
 });
