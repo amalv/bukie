@@ -1,5 +1,5 @@
 import { getDbEnv } from "@/db/env";
-import { getPgDb } from "@/db/pg";
+import { closePg, getPgDb } from "@/db/pg";
 import { books as mockBooks } from "@/../mocks/books";
 import { booksTablePg } from "@/db/schema.pg";
 
@@ -59,8 +59,15 @@ async function main() {
   );
 }
 
-main().catch((e) => {
-  // eslint-disable-next-line no-console
-  console.error("[seed:pg] failed", e);
-  process.exit(1);
-});
+main()
+  .then(async () => {
+    // Ensure Postgres connections are closed so the process can exit cleanly
+    await closePg().catch(() => {});
+    process.exit(0);
+  })
+  .catch(async (e) => {
+    // eslint-disable-next-line no-console
+    console.error("[seed:pg] failed", e);
+    await closePg().catch(() => {});
+    process.exit(1);
+  });
