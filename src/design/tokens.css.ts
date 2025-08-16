@@ -33,6 +33,8 @@ export const tokens = createThemeContract({
     onBackground: null,
     error: null,
     onError: null,
+    // Accent color for rating stars and similar UI affordances
+    star: null,
   },
   radius: {
     sm: null,
@@ -89,6 +91,7 @@ export const lightThemeClass = createTheme(tokens, {
     onBackground: "#1C1B1F",
     error: "#B3261E",
     onError: "#FFFFFF",
+    star: "#F59E0B", // amber-500
   },
   radius: {
     sm: "4px",

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { Book } from "@/features/books/types";
-import { db as sqliteDb } from "./client";
+import { getSqliteDb } from "./client";
 import { getDbEnv } from "./env";
 import { getPgDb } from "./pg";
 import { booksTable as booksSqlite } from "./schema";
@@ -17,7 +17,7 @@ export async function listBooks(): Promise<Book[]> {
     const rows = await db.select().from(booksTablePg);
     return rows as Book[];
   }
-  const rows = sqliteDb.select().from(booksSqlite).all();
+  const rows = getSqliteDb().select().from(booksSqlite).all();
   return rows as Book[];
 }
 
@@ -32,7 +32,7 @@ export async function getBook(id: string): Promise<Book | undefined> {
       .limit(1);
     return rows[0] as Book | undefined;
   }
-  const row = sqliteDb
+  const row = getSqliteDb()
     .select()
     .from(booksSqlite)
     .where(eq(booksSqlite.id, id))
@@ -54,20 +54,26 @@ export async function createBookRow(
         title: input.title,
         author: input.author,
         cover: input.cover,
+        genre: input.genre,
+        rating: input.rating as number | null | undefined,
+        year: input.year as number | null | undefined,
       })
       .returning();
     return created as Book;
   }
-  sqliteDb
+  getSqliteDb()
     .insert(booksSqlite)
     .values({
       id,
       title: input.title,
       author: input.author,
       cover: input.cover,
+      genre: input.genre,
+      rating: input.rating as number | null | undefined,
+      year: input.year as number | null | undefined,
     })
     .run();
-  const created = sqliteDb
+  const created = getSqliteDb()
     .select()
     .from(booksSqlite)
     .where(eq(booksSqlite.id, id))
@@ -84,6 +90,9 @@ export async function updateBookRow(
   if (patch.title !== undefined) setters.title = patch.title;
   if (patch.author !== undefined) setters.author = patch.author;
   if (patch.cover !== undefined) setters.cover = patch.cover;
+  if (patch.genre !== undefined) setters.genre = patch.genre;
+  if (patch.rating !== undefined) setters.rating = patch.rating;
+  if (patch.year !== undefined) setters.year = patch.year;
   if (Object.keys(setters).length === 0) return getBook(id);
 
   if (env.driver === "postgres") {
@@ -95,8 +104,12 @@ export async function updateBookRow(
       .returning();
     return updated as Book | undefined;
   }
-  sqliteDb.update(booksSqlite).set(setters).where(eq(booksSqlite.id, id)).run();
-  const updated = sqliteDb
+  getSqliteDb()
+    .update(booksSqlite)
+    .set(setters)
+    .where(eq(booksSqlite.id, id))
+    .run();
+  const updated = getSqliteDb()
     .select()
     .from(booksSqlite)
     .where(eq(booksSqlite.id, id))
@@ -114,7 +127,7 @@ export async function deleteBookRow(id: string): Promise<boolean> {
       .returning({ id: booksTablePg.id });
     return deleted.length > 0;
   }
-  const result = sqliteDb
+  const result = getSqliteDb()
     .delete(booksSqlite)
     .where(eq(booksSqlite.id, id))
     .run() as unknown as { changes: number };

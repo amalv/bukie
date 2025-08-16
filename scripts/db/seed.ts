@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { Database } from "bun:sqlite";
+import { books as mockBooks } from "../../mocks/books";
 
 const DATA_DIR = join(process.cwd(), ".data");
 const DB_PATH = join(DATA_DIR, "dev.sqlite");
@@ -14,29 +15,40 @@ db.run(
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     author TEXT NOT NULL,
-    cover TEXT NOT NULL
+  cover TEXT NOT NULL,
+  genre TEXT,
+  rating REAL,
+  year INTEGER
   )`
 );
 
-const row = db.query("SELECT COUNT(*) as c FROM books").get() as { c: number } | undefined;
-const count = row ? Number((row as any).c) : 0;
-if (count > 0) {
-  console.log("[db:seed] books already present, skipping");
-  process.exit(0);
-}
+// Clean slate to ensure exact dataset
+db.run("DELETE FROM books");
 
-const books = Array.from({ length: 50 }, (_, i) => ({
-  id: String(i + 1),
-  title: `Book Title ${i + 1}`,
-  author: `Author ${i + 1}`,
-  cover: `https://placehold.co/120x180.png?text=${encodeURIComponent("Book "+(i+1))}`,
+const books = mockBooks.map((b) => ({
+  id: b.id,
+  title: b.title,
+  author: b.author,
+  cover: b.cover,
+  genre: b.genre,
+  rating: b.rating,
+  year: b.year,
 }));
 
 const insert = db.prepare(
-  "INSERT INTO books (id, title, author, cover) VALUES (?, ?, ?, ?)"
+  "INSERT INTO books (id, title, author, cover, genre, rating, year) VALUES (?, ?, ?, ?, ?, ?, ?)"
 );
 const tx = db.transaction((rows: typeof books) => {
-  for (const r of rows) insert.run(r.id, r.title, r.author, r.cover);
+  for (const r of rows)
+    insert.run(
+      r.id,
+      r.title,
+      r.author,
+      r.cover,
+      r.genre ?? null,
+      r.rating ?? null,
+      r.year ?? null,
+    );
 });
 
 tx(books);

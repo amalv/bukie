@@ -14,7 +14,10 @@ export function BookDetails({ book }: BookDetailsProps) {
           width={180}
           height={270}
           className={s.cover}
-          unoptimized
+          unoptimized={
+            process.env.NODE_ENV !== "production" || book.cover.includes(".svg")
+          }
+          sizes="(max-width: 640px) 40vw, 180px"
         />
         <section className={s.meta}>
           <h1 id="book-title" className={s.title}>
