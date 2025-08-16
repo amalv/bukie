@@ -1,3 +1,24 @@
+# [0.18.0](https://github.com/amalv/bukie/compare/v0.17.0...v0.18.0) (2025-08-16)
+
+
+### Bug Fixes
+
+* **books:** use star token and clarify WebKit line clamp typing ([e08d694](https://github.com/amalv/bukie/commit/e08d69421ab0c6a62adb0970072d481b6e796c0f))
+* **build:** update CI commands for Playwright to handle database configurations ([34e8ecd](https://github.com/amalv/bukie/commit/34e8ecd018da3145b76c1191088989833e22f2d4))
+* **db:** avoid SQLite side effects in serverless ([517dcb0](https://github.com/amalv/bukie/commit/517dcb0e31e0d84be7ab2f610c393377b40ae83d))
+* **db:** close Postgres after seeding to avoid hanging build ([0f6abab](https://github.com/amalv/bukie/commit/0f6ababbe95d4d23b4da5d1a0ad9050839564b6d))
+* **db:** ensure table reset in preview environment for accurate seeding ([52c8a07](https://github.com/amalv/bukie/commit/52c8a07cb73ab22d20ed4a375f489cf3d2f2f9f1))
+* **db:** optimize batch insertion logic in seed route ([b48054d](https://github.com/amalv/bukie/commit/b48054d5242aced8e33e86758a302d896021c1b1))
+* **db:** prevent reseeding in production if the table is not empty ([8fcd526](https://github.com/amalv/bukie/commit/8fcd5264cb0d3ae6f5dac00c88a52074c3813258))
+* **db:** update sqlite migrator to use getSqliteDb() after client refactor ([57dc71a](https://github.com/amalv/bukie/commit/57dc71abfe2e2291f7b2e9b76245e36ea14cef7e))
+
+
+### Features
+
+* **books:** enhance BookCard hover effects and transition timings ([f8e3d69](https://github.com/amalv/bukie/commit/f8e3d6974c9cb914c2eebabe664f45bc67a18894))
+* **books:** redesign BookCard with badge, rating, and year using Vanilla Extract ([5b59745](https://github.com/amalv/bukie/commit/5b59745ad74601479e352ce02cfdcca3edef762a))
+* **books:** switch covers to WebP-only and optimize image handling ([681f7d8](https://github.com/amalv/bukie/commit/681f7d829af29292ae11210e487edcf7c35f7502))
+
 # [0.17.0](https://github.com/amalv/bukie/compare/v0.16.0...v0.17.0) (2025-08-15)
 
 
