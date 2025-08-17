@@ -87,6 +87,10 @@ export const author = style({
   opacity: 0.8,
 });
 
+export const authorTextSpacing = style({
+  marginLeft: 6,
+});
+
 export const meta = style({
   display: "flex",
   flexDirection: "column",
@@ -132,6 +136,10 @@ export const icon = style({
   display: "inline-block",
   color: tokens.color.onSurface,
   opacity: 0.8,
+});
+
+export const iconTextSpacing = style({
+  marginLeft: 4,
 });
 
 export const srOnly = style({

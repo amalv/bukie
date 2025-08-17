@@ -1,6 +1,6 @@
 import { BookOpen, Calendar, User } from "lucide-react";
 import Image from "next/image";
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 import * as s from "./BookDetails.css";
 import type { Book } from "./types";
 
@@ -60,7 +60,9 @@ export function BookDetails({ book }: BookDetailsProps) {
                   </h1>
                   <p className={s.author}>
                     <User className={s.icon} aria-hidden="true" />
-                    <span style={{ marginLeft: 6 }}>by {book.author}</span>
+                    <span className={s.authorTextSpacing}>
+                      by {book.author}
+                    </span>
                   </p>
                 </div>
                 {book.genre ? (
@@ -77,7 +79,7 @@ export function BookDetails({ book }: BookDetailsProps) {
                         className={s.srOnly}
                       >{`Rating: ${book.rating.toFixed(1)} out of 5`}</span>
                       {renderStars(book.rating)}
-                      <span style={{ marginLeft: 4 }}>
+                      <span className={s.iconTextSpacing}>
                         {book.rating.toFixed(1)}
                       </span>
                     </span>
@@ -85,13 +87,13 @@ export function BookDetails({ book }: BookDetailsProps) {
                   {book.year != null ? (
                     <span>
                       <Calendar className={s.icon} aria-hidden="true" />
-                      <span style={{ marginLeft: 4 }}>{book.year}</span>
+                      <span className={s.iconTextSpacing}>{book.year}</span>
                     </span>
                   ) : null}
                   {pages != null ? (
                     <span>
                       <BookOpen className={s.icon} aria-hidden="true" />
-                      <span style={{ marginLeft: 4 }}>{pages} pages</span>
+                      <span className={s.iconTextSpacing}>{pages} pages</span>
                     </span>
                   ) : null}
                 </div>
@@ -168,12 +170,13 @@ function renderStars(value: number) {
 function Star({ variant }: { variant: "full" | "half" | "empty" }) {
   const fill = variant === "empty" ? "none" : "currentColor";
   const showDefs = variant === "half";
+  const gradId = useId();
   return (
     <svg viewBox="0 0 24 24" className={s.starIcon} aria-hidden="true">
       {showDefs ? (
         <defs>
           <linearGradient
-            id="halfGradDetails"
+            id={gradId}
             x1="0"
             y1="0"
             x2="24"
@@ -187,7 +190,7 @@ function Star({ variant }: { variant: "full" | "half" | "empty" }) {
       ) : null}
       <path
         d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-        fill={variant === "half" ? "url(#halfGradDetails)" : fill}
+        fill={variant === "half" ? `url(#${gradId})` : fill}
         stroke="currentColor"
         strokeWidth="1"
       />
