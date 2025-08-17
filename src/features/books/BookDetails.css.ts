@@ -4,6 +4,13 @@ import { tokens } from "@/design/tokens.css";
 export const page = style({
   display: "block",
   padding: tokens.spacing["3"],
+  background: tokens.color.background,
+  color: tokens.color.onBackground,
+});
+
+export const container = style({
+  margin: "0 auto",
+  maxWidth: 1200,
 });
 
 export const layout = style({
@@ -19,10 +26,37 @@ export const layout = style({
   },
 });
 
+export const backLink = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: tokens.spacing["1"],
+  marginBottom: tokens.spacing["2"],
+  color: tokens.color.onSurface,
+  opacity: 0.9,
+  textDecoration: "none",
+  selectors: {
+    "&:hover, &:focus-visible": { color: tokens.color.primary },
+  },
+});
+
+export const headerRow = style({
+  display: "flex",
+  alignItems: "flex-start",
+  justifyContent: "space-between",
+  gap: tokens.spacing["2"],
+  marginBottom: tokens.spacing["2"],
+});
+
 export const media = style({
   position: "relative",
   width: 180,
   height: 270,
+  "@media": {
+    "screen and (min-width: 768px)": {
+      width: 360,
+      height: 540,
+    },
+  },
 });
 
 export const cover = style({
@@ -53,10 +87,9 @@ export const meta = style({
   gap: tokens.spacing["1"],
 });
 
+// header row defined earlier
+
 export const badge = style({
-  position: "absolute",
-  top: tokens.spacing["1"],
-  right: tokens.spacing["1"],
   background: "rgba(255,255,255,0.9)",
   color: tokens.color.onSurface,
   borderRadius: tokens.radius.md,
@@ -98,3 +131,62 @@ export const srOnly = style({
   whiteSpace: "nowrap",
   border: 0,
 });
+
+export const sectionCard = style({
+  background: tokens.color.surface,
+  color: tokens.color.onSurface,
+  borderRadius: tokens.radius.lg,
+  border: `1px solid rgba(0,0,0,0.08)`,
+  boxShadow: tokens.elevation["1"],
+});
+
+export const sectionBody = style({
+  padding: tokens.spacing["3"],
+  "@media": {
+    "screen and (min-width: 768px)": {
+      padding: tokens.spacing["4"],
+    },
+  },
+});
+
+export const sectionTitle = style({
+  margin: `0 0 ${tokens.spacing["2"]}`,
+  fontSize: tokens.typography.lg,
+  lineHeight: tokens.typography.lineHeight.normal,
+  color: tokens.color.onSurface,
+});
+
+export const detailsGrid = style({
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: tokens.spacing["2"],
+  "@media": {
+    "screen and (min-width: 768px)": {
+      gridTemplateColumns: "1fr 1fr",
+    },
+  },
+});
+
+export const label = style({
+  fontWeight: 600,
+  marginBottom: tokens.spacing["0_5"],
+});
+
+export const muted = style({
+  opacity: 0.8,
+});
+
+export const sections = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: tokens.spacing["3"],
+  marginTop: tokens.spacing["3"],
+  gridColumn: "1 / -1",
+  "@media": {
+    "screen and (min-width: 768px)": {
+      gridColumn: "2 / 3",
+    },
+  },
+});
+
+// backLink defined earlier

@@ -6,49 +6,113 @@ import type { Book } from "./types";
 export type BookDetailsProps = { book: Book };
 
 export function BookDetails({ book }: BookDetailsProps) {
+  // Optional fields may be missing; use values when present
+  const about = book.description;
+  const pages = book.pages;
+  const publisher = book.publisher;
+  const isbn = book.isbn;
+
   return (
     <article className={s.page} aria-labelledby="book-title">
-      <div className={s.layout}>
-        <div className={s.media}>
-          <Image
-            src={book.cover}
-            alt={`Cover of ${book.title} by ${book.author}`}
-            width={180}
-            height={270}
-            className={s.cover}
-            unoptimized={
-              process.env.NODE_ENV !== "production" ||
-              book.cover.includes(".svg")
-            }
-            sizes="(max-width: 640px) 40vw, 180px"
-          />
-          {book.genre ? <span className={s.badge}>{book.genre}</span> : null}
-        </div>
-        <section className={s.meta}>
-          <h1 id="book-title" className={s.title}>
-            {book.title}
-          </h1>
-          <p className={s.author}>
-            <span>by </span>
-            <span>{book.author}</span>
-          </p>
-          {(book.rating != null || book.year != null) && (
-            <div className={s.info}>
-              {typeof book.rating === "number" ? (
-                <span className={s.stars}>
-                  <span
-                    className={s.srOnly}
-                  >{`Rating: ${book.rating.toFixed(1)} out of 5`}</span>
-                  {renderStars(book.rating)}
-                  <span style={{ marginLeft: 4 }}>
-                    {book.rating.toFixed(1)}
-                  </span>
-                </span>
+      <div className={s.container}>
+        <a href="/" className={s.backLink}>
+          ← Back to Library
+        </a>
+        <div className={s.layout}>
+          <div className={s.media}>
+            <Image
+              src={book.cover}
+              alt={`Cover of ${book.title} by ${book.author}`}
+              width={180}
+              height={270}
+              className={s.cover}
+              unoptimized={
+                process.env.NODE_ENV !== "production" ||
+                book.cover.includes(".svg")
+              }
+              sizes="(max-width: 640px) 40vw, 180px"
+            />
+          </div>
+          <section className={s.meta}>
+            <div className={s.headerRow}>
+              <div>
+                <h1 id="book-title" className={s.title}>
+                  {book.title}
+                </h1>
+                <p className={s.author}>
+                  <span>by </span>
+                  <span>{book.author}</span>
+                </p>
+              </div>
+              {book.genre ? (
+                <span className={s.badge}>{book.genre}</span>
               ) : null}
-              {book.year != null ? <span>{book.year}</span> : null}
             </div>
-          )}
-        </section>
+            {(book.rating != null || book.year != null) && (
+              <div className={s.info}>
+                {typeof book.rating === "number" ? (
+                  <span className={s.stars}>
+                    <span
+                      className={s.srOnly}
+                    >{`Rating: ${book.rating.toFixed(1)} out of 5`}</span>
+                    {renderStars(book.rating)}
+                    <span style={{ marginLeft: 4 }}>
+                      {book.rating.toFixed(1)}
+                    </span>
+                  </span>
+                ) : null}
+                {book.year != null ? <span>{book.year}</span> : null}
+              </div>
+            )}
+          </section>
+          <div className={s.sections}>
+            {about ? (
+              <section className={s.sectionCard}>
+                <div className={s.sectionBody}>
+                  <h2 className={s.sectionTitle}>About this book</h2>
+                  <p className={s.muted}>{about}</p>
+                </div>
+              </section>
+            ) : null}
+            <section className={s.sectionCard}>
+              <div className={s.sectionBody}>
+                <h2 className={s.sectionTitle}>Book Details</h2>
+                <div className={s.detailsGrid}>
+                  <div>
+                    <div className={s.label}>Author:</div>
+                    <div className={s.muted}>{book.author}</div>
+                  </div>
+                  <div>
+                    <div className={s.label}>Genre:</div>
+                    <div className={s.muted}>{book.genre ?? "—"}</div>
+                  </div>
+                  <div>
+                    <div className={s.label}>Publication Year:</div>
+                    <div className={s.muted}>{book.year ?? "—"}</div>
+                  </div>
+                  {pages != null ? (
+                    <div>
+                      <div className={s.label}>Pages:</div>
+                      <div className={s.muted}>{pages}</div>
+                    </div>
+                  ) : null}
+                  {publisher ? (
+                    <div>
+                      <div className={s.label}>Publisher:</div>
+                      <div className={s.muted}>{publisher}</div>
+                    </div>
+                  ) : null}
+                  {isbn ? (
+                    <div>
+                      <div className={s.label}>ISBN:</div>
+                      <div className={s.muted}>{isbn}</div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
       </div>
     </article>
   );

@@ -9,4 +9,12 @@ export type Book = {
   rating?: number;
   /** Optional published year */
   year?: number;
+  /** Optional long description */
+  description?: string;
+  /** Optional number of pages */
+  pages?: number;
+  /** Optional publisher name */
+  publisher?: string;
+  /** Optional ISBN */
+  isbn?: string;
 };
