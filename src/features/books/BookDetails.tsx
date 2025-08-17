@@ -5,12 +5,26 @@ import type { Book } from "./types";
 
 export type BookDetailsProps = { book: Book };
 
+// Temporary mock details for richer UI until DB fields are added
+const DETAILS_MOCK: Record<
+  string,
+  Partial<Pick<Book, "description" | "pages" | "publisher" | "isbn">>
+> = {
+  "1": {
+    description:
+      "Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived. To see how things would be if you had made other choices... Would you have done anything different, if you had the chance to undo your regrets?",
+    pages: 288,
+    publisher: "Canongate Books",
+    isbn: "978-1786892737",
+  },
+};
+
 export function BookDetails({ book }: BookDetailsProps) {
-  // Optional fields may be missing; use values when present
-  const about = book.description;
-  const pages = book.pages;
-  const publisher = book.publisher;
-  const isbn = book.isbn;
+  const mock = DETAILS_MOCK[book.id] ?? {};
+  const about = book.description ?? mock.description;
+  const pages = book.pages ?? mock.pages;
+  const publisher = book.publisher ?? mock.publisher;
+  const isbn = book.isbn ?? mock.isbn;
 
   return (
     <article className={s.page} aria-labelledby="book-title">
@@ -33,84 +47,99 @@ export function BookDetails({ book }: BookDetailsProps) {
               sizes="(max-width: 640px) 40vw, 180px"
             />
           </div>
-          <section className={s.meta}>
-            <div className={s.headerRow}>
-              <div>
-                <h1 id="book-title" className={s.title}>
-                  {book.title}
-                </h1>
-                <p className={s.author}>
-                  <span>by </span>
-                  <span>{book.author}</span>
-                </p>
-              </div>
-              {book.genre ? (
-                <span className={s.badge}>{book.genre}</span>
-              ) : null}
-            </div>
-            {(book.rating != null || book.year != null) && (
-              <div className={s.info}>
-                {typeof book.rating === "number" ? (
-                  <span className={s.stars}>
-                    <span
-                      className={s.srOnly}
-                    >{`Rating: ${book.rating.toFixed(1)} out of 5`}</span>
-                    {renderStars(book.rating)}
-                    <span style={{ marginLeft: 4 }}>
-                      {book.rating.toFixed(1)}
-                    </span>
-                  </span>
+          <div className={s.rightCol}>
+            <section className={s.meta}>
+              <div className={s.headerRow}>
+                <div>
+                  <h1 id="book-title" className={s.title}>
+                    {book.title}
+                  </h1>
+                  <p className={s.author}>
+                    <UserIcon />
+                    <span style={{ marginLeft: 6 }}>by {book.author}</span>
+                  </p>
+                </div>
+                {book.genre ? (
+                  <span className={s.badge}>{book.genre}</span>
                 ) : null}
-                {book.year != null ? <span>{book.year}</span> : null}
               </div>
-            )}
-          </section>
-          <div className={s.sections}>
-            {about ? (
+              {(typeof book.rating === "number" ||
+                book.year != null ||
+                pages != null) && (
+                <div className={s.info}>
+                  {typeof book.rating === "number" ? (
+                    <span className={s.stars}>
+                      <span
+                        className={s.srOnly}
+                      >{`Rating: ${book.rating.toFixed(1)} out of 5`}</span>
+                      {renderStars(book.rating)}
+                      <span style={{ marginLeft: 4 }}>
+                        {book.rating.toFixed(1)}
+                      </span>
+                    </span>
+                  ) : null}
+                  {book.year != null ? (
+                    <span>
+                      <CalendarIcon />
+                      <span style={{ marginLeft: 4 }}>{book.year}</span>
+                    </span>
+                  ) : null}
+                  {pages != null ? (
+                    <span>
+                      <BookOpenIcon />
+                      <span style={{ marginLeft: 4 }}>{pages} pages</span>
+                    </span>
+                  ) : null}
+                </div>
+              )}
+            </section>
+            <div className={s.sections}>
+              {about ? (
+                <section className={s.sectionCard}>
+                  <div className={s.sectionBody}>
+                    <h2 className={s.sectionTitle}>About this book</h2>
+                    <p className={s.muted}>{about}</p>
+                  </div>
+                </section>
+              ) : null}
               <section className={s.sectionCard}>
                 <div className={s.sectionBody}>
-                  <h2 className={s.sectionTitle}>About this book</h2>
-                  <p className={s.muted}>{about}</p>
+                  <h2 className={s.sectionTitle}>Book Details</h2>
+                  <div className={s.detailsGrid}>
+                    <div>
+                      <div className={s.label}>Author:</div>
+                      <div className={s.muted}>{book.author}</div>
+                    </div>
+                    <div>
+                      <div className={s.label}>Genre:</div>
+                      <div className={s.muted}>{book.genre ?? "—"}</div>
+                    </div>
+                    <div>
+                      <div className={s.label}>Publication Year:</div>
+                      <div className={s.muted}>{book.year ?? "—"}</div>
+                    </div>
+                    {pages != null ? (
+                      <div>
+                        <div className={s.label}>Pages:</div>
+                        <div className={s.muted}>{pages}</div>
+                      </div>
+                    ) : null}
+                    {publisher ? (
+                      <div>
+                        <div className={s.label}>Publisher:</div>
+                        <div className={s.muted}>{publisher}</div>
+                      </div>
+                    ) : null}
+                    {isbn ? (
+                      <div>
+                        <div className={s.label}>ISBN:</div>
+                        <div className={s.muted}>{isbn}</div>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </section>
-            ) : null}
-            <section className={s.sectionCard}>
-              <div className={s.sectionBody}>
-                <h2 className={s.sectionTitle}>Book Details</h2>
-                <div className={s.detailsGrid}>
-                  <div>
-                    <div className={s.label}>Author:</div>
-                    <div className={s.muted}>{book.author}</div>
-                  </div>
-                  <div>
-                    <div className={s.label}>Genre:</div>
-                    <div className={s.muted}>{book.genre ?? "—"}</div>
-                  </div>
-                  <div>
-                    <div className={s.label}>Publication Year:</div>
-                    <div className={s.muted}>{book.year ?? "—"}</div>
-                  </div>
-                  {pages != null ? (
-                    <div>
-                      <div className={s.label}>Pages:</div>
-                      <div className={s.muted}>{pages}</div>
-                    </div>
-                  ) : null}
-                  {publisher ? (
-                    <div>
-                      <div className={s.label}>Publisher:</div>
-                      <div className={s.muted}>{publisher}</div>
-                    </div>
-                  ) : null}
-                  {isbn ? (
-                    <div>
-                      <div className={s.label}>ISBN:</div>
-                      <div className={s.muted}>{isbn}</div>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </section>
+            </div>
           </div>
         </div>
       </div>
@@ -134,10 +163,10 @@ function renderStars(value: number) {
 
 function Star({ variant }: { variant: "full" | "half" | "empty" }) {
   const fill = variant === "empty" ? "none" : "currentColor";
-  const defs = variant === "half";
+  const showDefs = variant === "half";
   return (
     <svg viewBox="0 0 24 24" className={s.starIcon} aria-hidden="true">
-      {defs ? (
+      {showDefs ? (
         <defs>
           <linearGradient
             id="halfGradDetails"
@@ -157,6 +186,39 @@ function Star({ variant }: { variant: "full" | "half" | "empty" }) {
         fill={variant === "half" ? "url(#halfGradDetails)" : fill}
         stroke="currentColor"
         strokeWidth="1"
+      />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className={s.icon} aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5Zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5Z"
+      />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className={s.icon} aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M7 2h2v2h6V2h2v2h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3V2Zm13 8H4v9h16v-9Z"
+      />
+    </svg>
+  );
+}
+
+function BookOpenIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className={s.icon} aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M21 4H12a3 3 0 0 0-3 3v12a4 4 0 0 1 3-1h9v-2h-9a2 2 0 0 0-2 2V7a1 1 0 0 1 1-1h10V4Zm-18 0h7v2H3v14h7v2H2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"
       />
     </svg>
   );

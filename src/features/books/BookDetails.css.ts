@@ -26,6 +26,12 @@ export const layout = style({
   },
 });
 
+export const rightCol = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: tokens.spacing["3"],
+});
+
 export const backLink = style({
   display: "inline-flex",
   alignItems: "center",
@@ -120,6 +126,14 @@ export const starIcon = style({
   color: tokens.color.star,
 });
 
+export const icon = style({
+  width: 16,
+  height: 16,
+  display: "inline-block",
+  color: tokens.color.onSurface,
+  opacity: 0.8,
+});
+
 export const srOnly = style({
   position: "absolute",
   width: 1,
@@ -181,10 +195,9 @@ export const sections = style({
   flexDirection: "column",
   gap: tokens.spacing["3"],
   marginTop: tokens.spacing["3"],
-  gridColumn: "1 / -1",
   "@media": {
     "screen and (min-width: 768px)": {
-      gridColumn: "2 / 3",
+      marginTop: 0,
     },
   },
 });
