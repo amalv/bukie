@@ -22,7 +22,10 @@ const DETAILS_MOCK: Record<
 
 export function BookDetails({ book }: BookDetailsProps) {
   const mock = DETAILS_MOCK[book.id] ?? {};
-  const about = book.description ?? mock.description;
+  const about =
+    book.description ??
+    mock.description ??
+    "Full details for this book will be available soon.";
   const pages = book.pages ?? mock.pages;
   const publisher = book.publisher ?? mock.publisher;
   const isbn = book.isbn ?? mock.isbn;
