@@ -1,3 +1,4 @@
+import { BookOpen, Calendar, User } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import * as s from "./BookDetails.css";
@@ -55,7 +56,7 @@ export function BookDetails({ book }: BookDetailsProps) {
                     {book.title}
                   </h1>
                   <p className={s.author}>
-                    <UserIcon />
+                    <User className={s.icon} aria-hidden="true" />
                     <span style={{ marginLeft: 6 }}>by {book.author}</span>
                   </p>
                 </div>
@@ -80,13 +81,13 @@ export function BookDetails({ book }: BookDetailsProps) {
                   ) : null}
                   {book.year != null ? (
                     <span>
-                      <CalendarIcon />
+                      <Calendar className={s.icon} aria-hidden="true" />
                       <span style={{ marginLeft: 4 }}>{book.year}</span>
                     </span>
                   ) : null}
                   {pages != null ? (
                     <span>
-                      <BookOpenIcon />
+                      <BookOpen className={s.icon} aria-hidden="true" />
                       <span style={{ marginLeft: 4 }}>{pages} pages</span>
                     </span>
                   ) : null}
@@ -186,39 +187,6 @@ function Star({ variant }: { variant: "full" | "half" | "empty" }) {
         fill={variant === "half" ? "url(#halfGradDetails)" : fill}
         stroke="currentColor"
         strokeWidth="1"
-      />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className={s.icon} aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5Zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5Z"
-      />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className={s.icon} aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M7 2h2v2h6V2h2v2h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3V2Zm13 8H4v9h16v-9Z"
-      />
-    </svg>
-  );
-}
-
-function BookOpenIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className={s.icon} aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M21 4H12a3 3 0 0 0-3 3v12a4 4 0 0 1 3-1h9v-2h-9a2 2 0 0 0-2 2V7a1 1 0 0 1 1-1h10V4Zm-18 0h7v2H3v14h7v2H2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"
       />
     </svg>
   );
