@@ -9,6 +9,6 @@ test.describe("Book item page", () => {
     const firstCardLink = page.locator('a[href="/books/1"]');
     await firstCardLink.first().click();
     await expect(page).toHaveURL(/\/books\/1$/);
-    await expect(page.getByRole("heading")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 });
