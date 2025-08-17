@@ -12,3 +12,10 @@ mode = "block"
 
 [plugins.format]
 enabled = false
+
+# Disable formatters that error on non-UTF8 streams in CI
+[plugins.prettier]
+enabled = false
+
+[plugins.markdownlint]
+enabled = false
