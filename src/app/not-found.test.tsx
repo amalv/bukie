@@ -11,4 +11,9 @@ describe("NotFound", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/could not be found/i)).toBeInTheDocument();
   });
+
+  it("renders fallback text", () => {
+    render(<NotFound />);
+    expect(screen.getByText(/not found/i)).toBeInTheDocument();
+  });
 });

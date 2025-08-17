@@ -21,3 +21,25 @@ describe("resolveSpanClasses", () => {
     classes.forEach((c) => expect(typeof c).toBe("string"));
   });
 });
+
+describe("resolveSpanClasses - branches", () => {
+  it("handles base-only object and no props gracefully", () => {
+    const classesBase = resolveSpanClasses({ base: 1 });
+    expect(classesBase.length).toBe(1);
+
+    const classesEmpty = resolveSpanClasses({});
+    expect(classesEmpty.length).toBe(0);
+  });
+
+  it("clamps values below 1 and above 12 across breakpoints", () => {
+    const classes = resolveSpanClasses({
+      base: 0,
+      sm: 99,
+      md: -5,
+      lg: 13,
+      xl: 2,
+    });
+    expect(Array.isArray(classes)).toBe(true);
+    expect(classes.length).toBeGreaterThan(0);
+  });
+});

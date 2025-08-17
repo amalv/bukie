@@ -55,4 +55,30 @@ describe("Book dynamic page", () => {
       screen.getByAltText(/cover of ninety-nine by anon/i),
     ).toBeInTheDocument();
   });
+
+  describe("not found branch", () => {
+    // Mock next/navigation notFound to throw a recognizable error
+    vi.mock("next/navigation", () => ({
+      notFound: () => {
+        const err = new Error("NOT_FOUND_TRIGGERED");
+        // @ts-ignore attach marker
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        err.__notFound = true;
+        throw err;
+      },
+    }));
+
+    it("invokes notFound when book is missing", async () => {
+      vi.spyOn(repo, "findBookById").mockResolvedValue(undefined);
+
+      const input: { params: Promise<{ id: string }> } = {
+        params: Promise.resolve({ id: "missing" }),
+      };
+
+      await expect(() => Page(input)).rejects.toMatchObject({
+        message: "NOT_FOUND_TRIGGERED",
+      });
+    });
+  });
 });
