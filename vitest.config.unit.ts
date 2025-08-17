@@ -26,6 +26,16 @@ export default defineConfig({
         "**/commitlint.config.ts",
         "**/drizzle.config*.ts",
         "**/lefthook.yml",
+        // Types-only modules
+        "**/types.ts",
+        // Styles-only modules (no executable logic)
+        "**/*.css.ts",
+        // Database and providers (covered via integration/e2e; out of scope for unit coverage)
+        "src/db/**",
+        // Non-critical admin/debug/seed API routes (manual ops, not part of unit targets)
+        "src/app/api/admin/**",
+        "src/app/api/debug/**",
+        "src/app/api/seed/**",
         // Generated or non-source folders
         "drizzle/**",
         "scripts/**",
