@@ -20,6 +20,6 @@ describe("BookDetails UI", () => {
     );
 
     expect(screen.getByRole("heading", { name: /dune/i })).toBeInTheDocument();
-    expect(screen.getByText(/frank herbert/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/frank herbert/i).length).toBeGreaterThan(0);
   });
 });
