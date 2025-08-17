@@ -1,3 +1,19 @@
+# [0.19.0](https://github.com/amalv/bukie/compare/v0.18.0...v0.19.0) (2025-08-17)
+
+
+### Bug Fixes
+
+* **book-details:** align sections to the right and use consistent icons ([63ea42f](https://github.com/amalv/bukie/commit/63ea42f65d1915ac746d6f0b8854f4775b61299d))
+* **book-details:** use unique gradient id via useId and replace inline spacing with VE classes ([d60ef6e](https://github.com/amalv/bukie/commit/d60ef6ecbac155c89af07736960ff98320346ec5))
+
+
+### Features
+
+* **book-details:** show About section for all books with a friendly default copy ([0d3d97b](https://github.com/amalv/bukie/commit/0d3d97b8112bdb3d81f4322a1464aa296d12f9ee))
+* **book-details:** use lucide-react icons ([a7e4c69](https://github.com/amalv/bukie/commit/a7e4c692b98d9b5c43830c1f2715178e9b1c9584))
+* **books:** add About and Details sections to BookDetails with tokens-based panels ([a8db6f9](https://github.com/amalv/bukie/commit/a8db6f938f9425ce5e85191adf4f5ce98436f135))
+* **books:** enhance BookDetails with badge, stars, and year (Vanilla Extract) ([230fda1](https://github.com/amalv/bukie/commit/230fda16c47e52f9d48f0848a10c75cc4af2b1d1))
+
 # [0.18.0](https://github.com/amalv/bukie/compare/v0.17.0...v0.18.0) (2025-08-16)
 
 
