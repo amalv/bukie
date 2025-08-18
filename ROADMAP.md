@@ -25,6 +25,8 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ feat: design tokens in Storybook (Material 3–inspired: 8pt spacing, rem typography, basic color roles)
 * ✅ feat: 12‑column grid primitives (Container/Grid/Column) aligned to Material breakpoints + stories
 * ✅ docs: design system documentation
+* ✅ feat: redesign BookCard to rich, responsive design (genre badge, rating, year) using Vanilla Extract
+* ✅ feat: modernize BookList spacing/responsiveness and add optional footer slot to prepare pagination
 
 ### API Mocking & Initial Book List
 * ✅ feat: mock API for books using MSW or similar
@@ -43,7 +45,8 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ feat(db-postgres): add Postgres client and env-based DB provider selection for preview/prod
 
 ### Core Features (DB-backed)
-* 🛠️ feat: item page for books (SSR from backend)
+* ✅ feat: item page for books (SSR from backend)
+* ✅ feat: redesign Book Details page (tokens, accessibility, SEO metadata)
 * ⏳ feat: basic search functionality (query DB)
 * ⏳ feat: authentication (Clerk or similar)
 * ⏳ feat: add book (CRUD: create, DB-backed)
@@ -70,8 +73,8 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 
 ## 📅 Next Steps
 The next milestone is focused on Core Features (DB‑backed):
-* Build the item page for books (SSR from backend) 🛠️
-* Prepare basic search foundation (indexing and query shape)
+* Prepare basic search foundation (indexing and DB query shape)
+* Start add‑book flow (create endpoint + server-rendered form, DB-backed)
 
 ---
 
