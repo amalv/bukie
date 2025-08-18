@@ -1,3 +1,12 @@
+# [0.20.0](https://github.com/amalv/bukie/compare/v0.19.0...v0.20.0) (2025-08-18)
+
+
+### Features
+
+* **books:** scaffold cover fetching script and helpers ([91900a1](https://github.com/amalv/bukie/commit/91900a16037d1f60e1f280e27d63f876bb568c6a))
+* **books:** update cover image paths to include versioning ([a10b82d](https://github.com/amalv/bukie/commit/a10b82db7423437c0053824c46adcd630b23df78))
+* **covers:** fetch, optimize and sync local cover images ([a425454](https://github.com/amalv/bukie/commit/a4254540c9d8f5ec6f43389be2441b39586049f0))
+
 # [0.19.0](https://github.com/amalv/bukie/compare/v0.18.0...v0.19.0) (2025-08-17)
 
 
