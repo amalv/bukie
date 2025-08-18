@@ -48,7 +48,7 @@ export function BookList({ books, loading, error, footer }: BookListProps) {
   if (!loading && (!books || books.length === 0)) {
     return (
       <Container>
-        <div className={emptyBox}>No books found.</div>
+        <output className={emptyBox}>No books found.</output>
       </Container>
     );
   }
