@@ -51,10 +51,10 @@ Examples (PowerShell):
 
 ```powershell
 # Fetch a single book by id (first placeholder in mocks is 39)
-+bun run covers:fetch:node -- --id=39 --concurrency=1 --no-optimize
+bun run covers:fetch:node -- --id=39 --concurrency=1 --no-optimize
 
 # Fetch the first two placeholder books
-+bun run covers:fetch:node -- --limit=2 --concurrency=1 --no-optimize
+bun run covers:fetch:node -- --limit=2 --concurrency=1 --no-optimize
 
 # Refresh all 50 seeded books using slug filenames (overwrites if found)
 bun run covers:fetch:node -- --limit=50 --concurrency=4 --seo-filenames --force

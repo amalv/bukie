@@ -54,14 +54,23 @@ function slugify(input: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+let sharpSingleton: any | undefined;
+async function getSharpOnce(): Promise<any> {
+  if (!sharpSingleton) {
+    const mod = (await import("sharp")) as any;
+    sharpSingleton = mod.default ?? mod;
+  }
+  return sharpSingleton;
+}
+
 async function downloadCover(url: string, baseName: string, optimize: boolean): Promise<string> {
   const res = await fetch(url, { redirect: "follow" });
   if (!res.ok) throw new Error(`download failed: ${res.status} ${res.statusText}`);
   const buf = Buffer.from(await res.arrayBuffer());
   let rel = "";
   if (optimize) {
-  const { default: sharp } = await import("sharp");
-  const webp = await sharp(buf).webp({ quality: 80 }).toBuffer();
+    const sharp = await getSharpOnce();
+    const webp = await sharp(buf).webp({ quality: 80 }).toBuffer();
     const outPath = `public/covers/${baseName}.webp`;
     await mkdir(outPath.substring(0, outPath.lastIndexOf("/")), { recursive: true });
     await writeFile(outPath, webp);

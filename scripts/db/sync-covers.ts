@@ -1,7 +1,7 @@
 /**
- * Sync DB to the first 50 mock books and set cover paths to slugified JPGs.
+ * Sync DB to the first 50 mock books and set cover paths to slugified WebP/JPG/PNG (prefers WebP, then JPG, then PNG).
  * - Deletes any DB rows not in the mock set (ids 1..50).
- * - Updates cover to "/covers/<id>-<title-slug>.jpg" for kept rows.
+ * - Updates cover to "/covers/<id>-<title-slug>.<ext>" for kept rows, choosing ext by precedence.
  *
  * Run with Node/tsx (Windows-friendly):
  *   bunx tsx ./scripts/db/sync-covers.ts
