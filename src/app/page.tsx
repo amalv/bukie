@@ -4,11 +4,17 @@ import Link from "next/link";
 import { BookList } from "@/features/books/BookList";
 import { getBooks } from "@/features/books/data";
 
-type PageProps = { searchParams?: { q?: string } };
+type SearchParams = { [key: string]: string | string[] | undefined };
 
-export default async function Page({ searchParams }: PageProps) {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: Promise<SearchParams>;
+}) {
   try {
-    const q = searchParams?.q ?? "";
+    const resolved = searchParams ? await searchParams : undefined;
+    const rawQ = resolved?.q;
+    const q = Array.isArray(rawQ) ? (rawQ[0] ?? "") : (rawQ ?? "");
     const books = await getBooks(q);
     return (
       <main>
