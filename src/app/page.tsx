@@ -1,17 +1,38 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { BookList } from "@/features/books/BookList";
 import { getBooks } from "@/features/books/data";
 
-async function fetchBooks() {
-  return getBooks();
-}
+type PageProps = { searchParams?: { q?: string } };
 
-export default async function Page() {
+export default async function Page({ searchParams }: PageProps) {
   try {
-    const books = await fetchBooks();
+    const q = searchParams?.q ?? "";
+    const books = await getBooks(q);
     return (
       <main>
+        <form method="get" style={{ padding: "1rem" }}>
+          <label htmlFor="q" style={{ marginRight: 8 }}>
+            Search
+          </label>
+          <input
+            id="q"
+            name="q"
+            type="search"
+            defaultValue={q}
+            placeholder="Search books, authors..."
+            aria-label="Search books"
+          />
+          <button type="submit" style={{ marginLeft: 8 }}>
+            Search
+          </button>
+          {q ? (
+            <Link href="/" style={{ marginLeft: 8 }} aria-label="Clear search">
+              Clear
+            </Link>
+          ) : null}
+        </form>
         <BookList books={books} />
       </main>
     );
