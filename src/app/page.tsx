@@ -9,10 +9,10 @@ type SearchParams = { [key: string]: string | string[] | undefined };
 export default async function Page({
   searchParams,
 }: {
-  searchParams?: Promise<SearchParams>;
+  searchParams: Promise<SearchParams>;
 }) {
   try {
-    const resolved = searchParams ? await searchParams : undefined;
+    const resolved = await searchParams;
     const rawQ = resolved?.q;
     const q = Array.isArray(rawQ) ? (rawQ[0] ?? "") : (rawQ ?? "");
     const books = await getBooks(q);
@@ -28,7 +28,6 @@ export default async function Page({
             type="search"
             defaultValue={q}
             placeholder="Search books, authors..."
-            aria-label="Search books"
           />
           <button type="submit" style={{ marginLeft: 8 }}>
             Search
