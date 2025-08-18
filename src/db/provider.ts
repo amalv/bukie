@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, ilike, like, or } from "drizzle-orm";
 import type { Book } from "@/features/books/types";
 import { getSqliteDb } from "./client";
 import { getDbEnv } from "./env";
@@ -18,6 +18,37 @@ export async function listBooks(): Promise<Book[]> {
     return rows as Book[];
   }
   const rows = getSqliteDb().select().from(booksSqlite).all();
+  return rows as Book[];
+}
+
+/**
+ * Search books by title OR author (case-insensitive best-effort across providers).
+ */
+export async function searchBooks(query: string): Promise<Book[]> {
+  const q = query.trim();
+  if (!q) return listBooks();
+  const env = getDbEnv();
+  if (env.driver === "postgres") {
+    const db = getPgClient();
+    const rows = await db
+      .select()
+      .from(booksTablePg)
+      .where(
+        or(
+          ilike(booksTablePg.title, `%${q}%`),
+          ilike(booksTablePg.author, `%${q}%`),
+        ),
+      );
+    return rows as Book[];
+  }
+  // SQLite LIKE is case-insensitive for ASCII by default; good enough for our sample data.
+  const rows = getSqliteDb()
+    .select()
+    .from(booksSqlite)
+    .where(
+      or(like(booksSqlite.title, `%${q}%`), like(booksSqlite.author, `%${q}%`)),
+    )
+    .all();
   return rows as Book[];
 }
 
