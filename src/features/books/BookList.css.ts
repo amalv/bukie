@@ -11,9 +11,12 @@ export const errorBox = style({
 
 export const emptyBox = style({
   color: tokens.color.onSurface,
-  opacity: 0.75,
+  background: tokens.color.surface,
+  border: `1px dashed rgba(0,0,0,0.12)`,
+  borderRadius: tokens.radius.md,
   padding: tokens.spacing["3"],
   textAlign: "center",
+  boxShadow: tokens.elevation["0"],
 });
 
 export const footer = style({

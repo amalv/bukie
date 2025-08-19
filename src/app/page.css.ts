@@ -45,6 +45,11 @@ export const searchBox = style({
   maxWidth: "640px",
 });
 
+// Wraps the input so clicking the whole area focuses it (label semantics)
+export const labelWrap = style({
+  position: "relative",
+  display: "block",
+});
 export const input = style({
   width: "100%",
   appearance: "none",
@@ -94,6 +99,13 @@ export const clearLink = style({
   },
 });
 
+export const searchMeta = style({
+  marginTop: tokens.spacing["1"],
+  textAlign: "center",
+  color: tokens.color.onSurface,
+  opacity: 0.75,
+  fontSize: tokens.typography.sm,
+});
 export const srOnly = style({
   position: "absolute",
   width: 1,

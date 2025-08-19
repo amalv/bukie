@@ -48,6 +48,8 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ feat: item page for books (SSR from backend)
 * ✅ feat: redesign Book Details page (tokens, accessibility, SEO metadata)
 * ⏳ feat: basic search functionality (query DB)
+* ⏳ feat: search UX polish (styled input, result count, better empty state)
+* ⏳ fix: search input focus when clicking container/icon
 * ⏳ feat: authentication (Clerk or similar)
 * ⏳ feat: add book (CRUD: create, DB-backed)
 * ⏳ docs: usage instructions
