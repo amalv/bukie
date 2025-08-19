@@ -9,7 +9,7 @@ describe("Page", () => {
     vi.spyOn(data, "getBooks").mockResolvedValue([
       { id: "1", title: "A", author: "B", cover: "x" },
     ]);
-    const Comp = await Page();
+    const Comp = await Page({ searchParams: Promise.resolve({ q: "" }) });
     render(Comp);
     expect(screen.getByText("A")).toBeInTheDocument();
     expect(screen.getByText(/by\s*B/)).toBeInTheDocument();
@@ -17,7 +17,7 @@ describe("Page", () => {
 
   it("renders error state when fetch fails", async () => {
     vi.spyOn(data, "getBooks").mockRejectedValue(new Error("fail"));
-    const Comp = await Page();
+    const Comp = await Page({ searchParams: Promise.resolve({ q: "" }) });
     render(Comp);
     expect(screen.getByText(/failed to load books/i)).toBeInTheDocument();
   });
