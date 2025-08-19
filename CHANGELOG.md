@@ -1,3 +1,12 @@
+# [0.21.0](https://github.com/amalv/bukie/compare/v0.20.0...v0.21.0) (2025-08-19)
+
+
+### Features
+
+* **search:** add DB search predicate and data-layer API for title/author (SQLite + Postgres) ([18967aa](https://github.com/amalv/bukie/commit/18967aa254cb9d007e61b0c5c150d93161441799))
+* **search:** polish SSR search UI and UX ([2f9d09a](https://github.com/amalv/bukie/commit/2f9d09a57d52f38bc591ef02ea486078c016c6fd))
+* **search:** ssr home page accepts ?q= and renders filtered results ([39da551](https://github.com/amalv/bukie/commit/39da5512f6306100e68683acfde9a409a60d0ebc))
+
 # [0.20.0](https://github.com/amalv/bukie/compare/v0.19.0...v0.20.0) (2025-08-18)
 
 
