@@ -7,7 +7,8 @@ export async function setTheme(theme: "light" | "dark") {
   c.set("theme", theme, {
     httpOnly: false,
     sameSite: "lax",
-    secure: true,
+    // Only mark secure in production so it works over HTTP in local dev
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
   });

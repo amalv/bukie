@@ -39,10 +39,22 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${themeClass}`}
       >
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-        >{`(()=>{try{var m=document.cookie.match(/(?:^|; )theme=([^;]+)/);var p=m?decodeURIComponent(m[1]):null;var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var c=p||(d?'dark':'light');document.documentElement.setAttribute('data-theme',c);}catch(e){}})();`}</Script>
+        <Script id="theme-init" strategy="beforeInteractive">{`
+          (function initTheme(){
+            try {
+              // Read theme cookie if present
+              var match = document.cookie.match(/(?:^|; )theme=([^;]+)/);
+              var cookiePref = match ? decodeURIComponent(match[1]) : null;
+              // Detect system preference
+              var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+              // Choose theme: cookie wins, else system
+              var theme = cookiePref || (prefersDark ? 'dark' : 'light');
+              document.documentElement.setAttribute('data-theme', theme);
+            } catch (_) {
+              // noop
+            }
+          })();
+          `}</Script>
         <header className={headerStyles.header}>
           <Container>
             <div className={headerStyles.inner}>
