@@ -1,11 +1,12 @@
 import { style } from "@vanilla-extract/css";
+import { tokens } from "@/design/tokens.css";
 
 export const header = style({
-  background: "#fff",
-  color: "#222",
+  background: tokens.color.surface,
+  color: tokens.color.onSurface,
   fontSize: "2rem",
   fontWeight: "bold",
-  padding: "2rem",
+  padding: tokens.spacing["3"],
   textAlign: "center",
-  borderBottom: "1px solid #eee",
+  borderBottom: `1px solid ${tokens.color.outline}`,
 });

@@ -1,6 +1,11 @@
-# Design Tokens
+# Design Tokens (KISS)
 
-Design tokens are the foundation of the Bukie design system. They provide consistent values for color, typography, spacing, radii, elevation, and breakpoints, enabling scalable theming and layout.
+Design tokens are just named values (like variables) for your UI: colors, spacing, type sizes, radii, and shadows. Instead of hardcoding `#fff` or `16px` everywhere, you use tokens. This keeps the UI consistent, makes themes easy (light/dark), and avoids hunt-and-replace when you tweak the design.
+
+Keep it simple:
+- One source of truth: tokens live in `src/design/tokens.css.ts`.
+- Use semantic names: `background`, `onSurface`, `primary` instead of raw hex.
+- No magic numbers in components: always import and use tokens.
 
 ## Color Roles
 - `primary`, `onPrimary`, `secondary`, `onSecondary`, `surface`, `onSurface`, `background`, `onBackground`, `error`, `onError`
@@ -28,4 +33,18 @@ Design tokens are the foundation of the Bukie design system. They provide consis
 - Mirrored in grid and theme contract
 
 ## Usage
-Tokens are imported from `src/design/tokens.css.ts` and used in Vanilla Extract styles and components.
+Tokens are imported from `src/design/tokens.css.ts` and used in Vanilla Extract styles/components.
+
+Example:
+
+```ts
+import { tokens } from "@/design/tokens.css";
+
+export const card = style({
+	background: tokens.color.surface,
+	color: tokens.color.onSurface,
+	padding: tokens.spacing["2"],
+	borderRadius: tokens.radius.md,
+	boxShadow: tokens.elevation["1"],
+});
+```

@@ -100,10 +100,10 @@ export const meta = style({
 // header row defined earlier
 
 export const badge = style({
-  background: "rgba(255,255,255,0.9)",
+  background: tokens.color.surface,
   color: tokens.color.onSurface,
   borderRadius: tokens.radius.md,
-  border: `1px solid rgba(0,0,0,0.08)`,
+  border: `1px solid ${tokens.color.outline}`,
   padding: `${tokens.spacing["0_5"]} ${tokens.spacing["1"]}`,
   fontSize: tokens.typography.xs,
   lineHeight: tokens.typography.lineHeight.tight,
@@ -158,7 +158,7 @@ export const sectionCard = style({
   background: tokens.color.surface,
   color: tokens.color.onSurface,
   borderRadius: tokens.radius.lg,
-  border: `1px solid rgba(0,0,0,0.08)`,
+  border: `1px solid ${tokens.color.outline}`,
   boxShadow: tokens.elevation["1"],
 });
 

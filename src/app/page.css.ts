@@ -53,7 +53,7 @@ export const labelWrap = style({
 export const input = style({
   width: "100%",
   appearance: "none",
-  border: `1px solid rgba(0,0,0,0.12)`,
+  border: `1px solid ${tokens.color.outline}`,
   background: tokens.color.surface,
   color: tokens.color.onSurface,
   borderRadius: tokens.radius.lg,
@@ -93,7 +93,7 @@ export const clearLink = style({
   borderRadius: tokens.radius.sm,
   selectors: {
     "&:hover, &:focus-visible": {
-      background: "rgba(0,0,0,0.04)",
+      background: tokens.color.overlay,
       outline: "none",
     },
   },

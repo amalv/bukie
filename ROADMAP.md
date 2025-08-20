@@ -61,6 +61,7 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ⏳ docs: API documentation
 
 ### User & UI Enhancements
+* ⏳ feat(design-system): dark/light mode theming (SSR-safe, no FOUC, accessible toggle)
 * ⏳ feat: user profiles
 * ⏳ feat: UI/UX improvements
 * ⏳ docs: onboarding guide
