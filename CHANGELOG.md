@@ -1,3 +1,16 @@
+# [0.22.0](https://github.com/amalv/bukie/compare/v0.21.0...v0.22.0) (2025-08-20)
+
+
+### Bug Fixes
+
+* **theming:** make theme cookie secure only in production ([45da390](https://github.com/amalv/bukie/commit/45da390b7791bf2dd738b9ad16c2f8d36059fb13))
+
+
+### Features
+
+* **design-system:** add dark/light mode theming with SSR-safe toggle ([d19e14a](https://github.com/amalv/bukie/commit/d19e14a51237c22e4e5d83350b6da53c98ab6181))
+* **theming:** polish hero search + icon brand ([45ec515](https://github.com/amalv/bukie/commit/45ec515cb0e7b2d951f3780a697cbe5e94892c3d))
+
 # [0.21.0](https://github.com/amalv/bukie/compare/v0.20.0...v0.21.0) (2025-08-19)
 
 
