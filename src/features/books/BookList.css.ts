@@ -4,7 +4,7 @@ import { tokens } from "@/design/tokens.css";
 export const errorBox = style({
   color: tokens.color.error,
   background: tokens.color.surface,
-  border: `1px solid rgba(0,0,0,0.08)`,
+  border: `1px solid ${tokens.color.outline}`,
   borderRadius: tokens.radius.md,
   padding: tokens.spacing["3"],
 });
@@ -12,7 +12,7 @@ export const errorBox = style({
 export const emptyBox = style({
   color: tokens.color.onSurface,
   background: tokens.color.surface,
-  border: `1px dashed rgba(0,0,0,0.12)`,
+  border: `1px dashed ${tokens.color.outline}`,
   borderRadius: tokens.radius.md,
   padding: tokens.spacing["3"],
   textAlign: "center",
@@ -23,4 +23,8 @@ export const footer = style({
   marginTop: tokens.spacing["3"],
   display: "flex",
   justifyContent: "center",
+});
+
+export const gridTop = style({
+  marginTop: tokens.spacing["4"],
 });

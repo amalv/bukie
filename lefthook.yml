@@ -5,8 +5,9 @@ pre-commit:
       run: bunx biome check --no-errors-on-unmatched {staged_files}
       glob: "*.{js,ts,jsx,tsx,json}"
     vitest:
-      glob: "*.{test,spec}.{js,jsx,ts,tsx}"
       run: bun run test -- {staged_files}
+      # Only run unit tests from src/ in pre-commit; exclude E2E tests under tests/
+      glob: "src/**/*.{test,spec}.{js,jsx,ts,tsx}"
 commit-msg:
   commands:
     commitlint:
