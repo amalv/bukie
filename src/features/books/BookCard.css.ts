@@ -2,7 +2,7 @@ import { style } from "@vanilla-extract/css";
 import { tokens } from "@/design/tokens.css";
 
 export const card = style({
-  border: `1px solid rgba(0,0,0,0.08)`,
+  border: `1px solid ${tokens.color.outline}`,
   borderRadius: tokens.radius.md,
   padding: 0,
   boxShadow: tokens.elevation["1"],
@@ -20,8 +20,8 @@ export const card = style({
     "&:hover, &:focus-within": {
       boxShadow: tokens.elevation["3"],
       transform: "translateY(-2px)",
-      // Darken border on hover to create a subtle black outline
-      borderColor: "rgba(0,0,0,0.5)",
+      // Emphasize border on hover for both themes
+      borderColor: tokens.color.primary,
     },
   },
 });
@@ -54,7 +54,7 @@ export const mediaOverlay = style({
   pointerEvents: "none",
   selectors: {
     [`${card}:hover &`]: {
-      background: "rgba(0,0,0,0.10)",
+      background: tokens.color.overlay,
     },
   },
 });
@@ -63,10 +63,10 @@ export const badge = style({
   position: "absolute",
   top: tokens.spacing["1"],
   right: tokens.spacing["1"],
-  background: "rgba(255,255,255,0.9)",
+  background: tokens.color.surface,
   color: tokens.color.onSurface,
   borderRadius: tokens.radius.md,
-  border: `1px solid rgba(0,0,0,0.08)`,
+  border: `1px solid ${tokens.color.outline}`,
   padding: `${tokens.spacing["0_5"]} ${tokens.spacing["1"]}`,
   fontSize: tokens.typography.xs,
   lineHeight: tokens.typography.lineHeight.tight,

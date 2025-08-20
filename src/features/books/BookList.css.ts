@@ -24,3 +24,7 @@ export const footer = style({
   display: "flex",
   justifyContent: "center",
 });
+
+export const gridTop = style({
+  marginTop: tokens.spacing["4"],
+});

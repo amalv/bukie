@@ -1,7 +1,12 @@
 import { Column, Container, Grid } from "@/design/layout/grid";
 import { BookCard } from "./BookCard";
 import { BookCardSkeleton } from "./BookCard.skeleton";
-import { emptyBox, errorBox, footer as footerClass } from "./BookList.css";
+import {
+  emptyBox,
+  errorBox,
+  footer as footerClass,
+  gridTop,
+} from "./BookList.css";
 import type { Book } from "./types";
 
 export type BookListProps = {
@@ -80,7 +85,7 @@ export function BookList({ books, loading, error, footer, q }: BookListProps) {
     );
   }
   return (
-    <Container>
+    <Container className={gridTop}>
       <Grid gap="lg">
         {books?.map((b) => (
           <Column key={b.id} span={{ base: 12, sm: 6, md: 3 }}>

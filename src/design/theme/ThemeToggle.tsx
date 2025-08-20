@@ -1,7 +1,9 @@
 "use client";
 
+import { Moon, Sun } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { setTheme } from "./actions";
+import * as s from "./toggle.css";
 
 export function ThemeToggle() {
   const [mode, setMode] = useState<"light" | "dark">("light");
@@ -12,8 +14,8 @@ export function ThemeToggle() {
     if (current === "dark" || current === "light") setMode(current);
   }, []);
 
-  function apply(mode: "light" | "dark") {
-    document.documentElement.setAttribute("data-theme", mode);
+  function apply(next: "light" | "dark") {
+    document.documentElement.setAttribute("data-theme", next);
   }
 
   function onToggle() {
@@ -23,25 +25,24 @@ export function ThemeToggle() {
     startTransition(() => setTheme(next));
   }
 
+  const label =
+    mode === "dark" ? "Switch to light mode" : "Switch to dark mode";
+
   return (
     <button
       type="button"
       aria-pressed={mode === "dark"}
-      aria-label={
-        mode === "dark" ? "Switch to light mode" : "Switch to dark mode"
-      }
+      aria-label={label}
       onClick={onToggle}
       disabled={isPending}
-      style={{
-        font: "inherit",
-        padding: "0.5rem 0.75rem",
-        borderRadius: 8,
-        border: "1px solid currentColor",
-        background: "transparent",
-        cursor: "pointer",
-      }}
+      className={s.button}
     >
-      {mode === "dark" ? "Dark" : "Light"}
+      <span className={s.srOnly}>{label}</span>
+      {mode === "dark" ? (
+        <Sun className={s.icon} />
+      ) : (
+        <Moon className={s.icon} />
+      )}
     </button>
   );
 }

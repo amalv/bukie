@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { cookies } from "next/headers";
 import Script from "next/script";
+import { IconBook } from "@/design/icons/Book";
+import { Container } from "@/design/layout/grid";
 import { darkThemeClass, lightThemeClass } from "@/design/tokens.css";
 import { ThemeToggle } from "../design/theme/ThemeToggle";
 import * as headerStyles from "./header.css";
@@ -42,8 +44,15 @@ export default async function RootLayout({
           strategy="beforeInteractive"
         >{`(()=>{try{var m=document.cookie.match(/(?:^|; )theme=([^;]+)/);var p=m?decodeURIComponent(m[1]):null;var d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var c=p||(d?'dark':'light');document.documentElement.setAttribute('data-theme',c);}catch(e){}})();`}</Script>
         <header className={headerStyles.header}>
-          <div>Bukie</div>
-          <ThemeToggle />
+          <Container>
+            <div className={headerStyles.inner}>
+              <div className={headerStyles.brand}>
+                <IconBook className={headerStyles.brandIcon} aria-hidden />
+                Bukie
+              </div>
+              <ThemeToggle />
+            </div>
+          </Container>
         </header>
         {children}
       </body>

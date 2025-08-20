@@ -23,8 +23,11 @@ export default async function Page({
         <section className={s.hero}>
           <Container>
             <header className={s.header}>
-              <h1 className={s.title}>My Book Collection</h1>
-              <p className={s.subtitle}>Discover your next great read</p>
+              <h1 className={s.title}>Discover Your Next Great Read</h1>
+              <p className={s.subtitle}>
+                Explore curated collections, read reviews, and find books that
+                match your taste
+              </p>
               <SearchForm defaultValue={q} />
               {q ? (
                 <p className={s.searchMeta}>

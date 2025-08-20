@@ -17,7 +17,7 @@ export function SearchForm({ defaultValue = "" }: Props) {
     <div className={s.searchRow}>
       <div className={s.searchBox}>
         <div>
-          <form method="get" aria-label="Search books">
+          <form method="get" aria-label="Search books" className={s.form}>
             <label htmlFor="q" className={s.labelWrap}>
               <span className={s.srOnly}>Search books</span>
               <svg
