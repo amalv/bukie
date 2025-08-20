@@ -6,9 +6,12 @@ import { test, expect } from "@playwright/test";
 test.describe("Book item page", () => {
   test("navigates from home to item and shows content", async ({ page }) => {
     await page.goto("/");
-    const firstCardLink = page.locator('a[href="/books/1"]');
-    await firstCardLink.first().click();
-    await expect(page).toHaveURL(/\/books\/1$/);
+    const firstCardLink = page.locator('a[href="/books/1"]').first();
+    await firstCardLink.waitFor({ state: "visible" });
+    await Promise.all([
+      page.waitForURL(/\/books\/1$/),
+      firstCardLink.click(),
+    ]);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 });
