@@ -6,9 +6,11 @@ import Page from "./page";
 
 describe("Page", () => {
   it("renders BookList with books", async () => {
-    vi.spyOn(data, "getBooks").mockResolvedValue([
-      { id: "1", title: "A", author: "B", cover: "x" },
-    ]);
+    vi.spyOn(data, "getBooksPage").mockResolvedValue({
+      items: [{ id: "1", title: "A", author: "B", cover: "x" }],
+      nextCursor: undefined,
+      hasNext: false,
+    });
     const Comp = await Page({ searchParams: Promise.resolve({ q: "" }) });
     render(Comp);
     expect(screen.getByText("A")).toBeInTheDocument();
@@ -16,7 +18,7 @@ describe("Page", () => {
   });
 
   it("renders error state when fetch fails", async () => {
-    vi.spyOn(data, "getBooks").mockRejectedValue(new Error("fail"));
+    vi.spyOn(data, "getBooksPage").mockRejectedValue(new Error("fail"));
     const Comp = await Page({ searchParams: Promise.resolve({ q: "" }) });
     render(Comp);
     expect(screen.getByText(/failed to load books/i)).toBeInTheDocument();

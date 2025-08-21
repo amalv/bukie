@@ -1,10 +1,15 @@
 import { style } from "@vanilla-extract/css";
-import { tokens } from "@/design/tokens.css";
+import { darkThemeClass, lightThemeClass, tokens } from "@/design/tokens.css";
 
 export const header = style({
   background: tokens.color.background,
   color: tokens.color.onSurface,
   borderBottom: `1px solid ${tokens.color.outline}`,
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  zIndex: 100,
 });
 
 export const inner = style({
@@ -29,4 +34,31 @@ export const brandIcon = style({
   width: 20,
   height: 20,
   display: "inline-block",
+  selectors: {
+    // Light mode cyan-600 approx
+    [`${lightThemeClass} &`]: { color: "oklch(0.55 0.15 200)" },
+    // Dark mode sky-500-ish for contrast
+    [`${darkThemeClass} &`]: { color: "oklch(0.6 0.15 200)" },
+  },
+});
+
+// Spacer to offset the fixed header height so content isn't hidden beneath it
+export const offset = style({
+  height: 56,
+});
+
+export const footer = style({
+  marginTop: tokens.spacing["4"],
+  background: tokens.color.background,
+  color: tokens.color.onSurface,
+  borderTop: `1px solid ${tokens.color.outline}`,
+});
+
+export const footerInner = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: tokens.spacing["1"],
+  minHeight: 80,
+  textAlign: "center",
 });

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { BookOpen } from "lucide-react";
 import { cookies } from "next/headers";
 import Script from "next/script";
-import { IconBook } from "@/design/icons/Book";
 import { Container } from "@/design/layout/grid";
 import { darkThemeClass, lightThemeClass } from "@/design/tokens.css";
 import { ThemeToggle } from "../design/theme/ThemeToggle";
@@ -59,14 +59,24 @@ export default async function RootLayout({
           <Container>
             <div className={headerStyles.inner}>
               <div className={headerStyles.brand}>
-                <IconBook className={headerStyles.brandIcon} aria-hidden />
+                <BookOpen className={headerStyles.brandIcon} aria-hidden />
                 Bukie
               </div>
               <ThemeToggle />
             </div>
           </Container>
         </header>
+        {/* offset for fixed header */}
+        <div className={headerStyles.offset} aria-hidden />
         {children}
+        <footer className={headerStyles.footer}>
+          <Container>
+            <div className={headerStyles.footerInner}>
+              <BookOpen className={headerStyles.brandIcon} aria-hidden />
+              Bukie
+            </div>
+          </Container>
+        </footer>
       </body>
     </html>
   );

@@ -5,13 +5,18 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Book item page", () => {
   test("navigates from home to item and shows content", async ({ page }) => {
+    // Arrange
     await page.goto("/");
-    const firstCardLink = page.locator('a[href="/books/1"]').first();
+
+    // Act: click the first visible book card link (accessible label on image link)
+    const firstCardLink = page.getByRole("link", { name: /view details for/i }).first();
     await firstCardLink.waitFor({ state: "visible" });
     await Promise.all([
-      page.waitForURL(/\/books\/1$/),
+      page.waitForURL(/\/books\/\d+$/),
       firstCardLink.click(),
     ]);
+
+    // Assert
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 });
