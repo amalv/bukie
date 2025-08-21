@@ -1,3 +1,10 @@
+# [0.23.0](https://github.com/amalv/bukie/compare/v0.22.0...v0.23.0) (2025-08-21)
+
+
+### Features
+
+* **pagination:** add SSR-first cursor pagination with client append ([256a63d](https://github.com/amalv/bukie/commit/256a63dd01fadad72716ef9154de976ae77de833))
+
 # [0.22.0](https://github.com/amalv/bukie/compare/v0.21.0...v0.22.0) (2025-08-20)
 
 
