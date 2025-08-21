@@ -1,4 +1,9 @@
-import { eq, ilike, like, or } from "drizzle-orm";
+import { and, desc, eq, ilike, like, lt, or } from "drizzle-orm";
+import {
+  decodeCursor,
+  encodeCursor,
+  type PageResult,
+} from "@/features/books/pagination";
 import type { Book } from "@/features/books/types";
 import { getSqliteDb } from "./client";
 import { getDbEnv } from "./env";
@@ -14,10 +19,17 @@ export async function listBooks(): Promise<Book[]> {
   const env = getDbEnv();
   if (env.driver === "postgres") {
     const db = getPgClient();
-    const rows = await db.select().from(booksTablePg);
+    const rows = await db
+      .select()
+      .from(booksTablePg)
+      .orderBy(desc(booksTablePg.id));
     return rows as Book[];
   }
-  const rows = getSqliteDb().select().from(booksSqlite).all();
+  const rows = getSqliteDb()
+    .select()
+    .from(booksSqlite)
+    .orderBy(desc(booksSqlite.id))
+    .all();
   return rows as Book[];
 }
 
@@ -38,7 +50,8 @@ export async function searchBooks(query: string): Promise<Book[]> {
           ilike(booksTablePg.title, `%${q}%`),
           ilike(booksTablePg.author, `%${q}%`),
         ),
-      );
+      )
+      .orderBy(desc(booksTablePg.id));
     return rows as Book[];
   }
   // SQLite LIKE is case-insensitive for ASCII by default; good enough for our sample data.
@@ -48,8 +61,133 @@ export async function searchBooks(query: string): Promise<Book[]> {
     .where(
       or(like(booksSqlite.title, `%${q}%`), like(booksSqlite.author, `%${q}%`)),
     )
+    .orderBy(desc(booksSqlite.id))
     .all();
   return rows as Book[];
+}
+
+export async function listBooksPage(params: {
+  after?: string | null;
+  limit: number;
+}): Promise<PageResult<Book>> {
+  const { after, limit } = params;
+  const cursor = decodeCursor(after);
+  const env = getDbEnv();
+  const pageSize = Math.max(1, Math.min(50, limit));
+  if (env.driver === "postgres") {
+    const db = getPgClient();
+    let rows: unknown[];
+    if (cursor) {
+      rows = await db
+        .select()
+        .from(booksTablePg)
+        .where(lt(booksTablePg.id, cursor.id))
+        .orderBy(desc(booksTablePg.id))
+        .limit(pageSize + 1);
+    } else {
+      rows = await db
+        .select()
+        .from(booksTablePg)
+        .orderBy(desc(booksTablePg.id))
+        .limit(pageSize + 1);
+    }
+    const items = (rows as Book[]).slice(0, pageSize);
+    const hasNext = rows.length > pageSize;
+    const last = items[items.length - 1];
+    const nextCursor =
+      hasNext && last ? encodeCursor({ id: last.id }) : undefined;
+    return { items, hasNext, nextCursor };
+  }
+  const db = getSqliteDb();
+  let rows: unknown[];
+  if (cursor) {
+    rows = db
+      .select()
+      .from(booksSqlite)
+      .where(lt(booksSqlite.id, cursor.id))
+      .orderBy(desc(booksSqlite.id))
+      .limit(pageSize + 1)
+      .all();
+  } else {
+    rows = db
+      .select()
+      .from(booksSqlite)
+      .orderBy(desc(booksSqlite.id))
+      .limit(pageSize + 1)
+      .all();
+  }
+  const items = (rows as Book[]).slice(0, pageSize);
+  const hasNext = rows.length > pageSize;
+  const last = items[items.length - 1];
+  const nextCursor =
+    hasNext && last ? encodeCursor({ id: last.id }) : undefined;
+  return { items, hasNext, nextCursor };
+}
+
+export async function searchBooksPage(params: {
+  q: string;
+  after?: string | null;
+  limit: number;
+}): Promise<PageResult<Book>> {
+  const { q: query, after, limit } = params;
+  const q = query.trim();
+  if (!q) return listBooksPage({ after, limit });
+  const cursor = decodeCursor(after);
+  const env = getDbEnv();
+  const pageSize = Math.max(1, Math.min(50, limit));
+  if (env.driver === "postgres") {
+    const db = getPgClient();
+    const searchCond = or(
+      ilike(booksTablePg.title, `%${q}%`),
+      ilike(booksTablePg.author, `%${q}%`),
+    );
+    const whereCond = cursor
+      ? and(searchCond, lt(booksTablePg.id, cursor.id))
+      : searchCond;
+    const rows = await db
+      .select()
+      .from(booksTablePg)
+      .where(whereCond)
+      .orderBy(desc(booksTablePg.id))
+      .limit(pageSize + 1);
+    const items = (rows as Book[]).slice(0, pageSize);
+    const hasNext = rows.length > pageSize;
+    const last = items[items.length - 1];
+    const nextCursor =
+      hasNext && last ? encodeCursor({ id: last.id }) : undefined;
+    return { items, hasNext, nextCursor };
+  }
+  // SQLite
+  const dbLite = getSqliteDb();
+  let rowsLite: unknown[];
+  const whereBase = or(
+    like(booksSqlite.title, `%${q}%`),
+    like(booksSqlite.author, `%${q}%`),
+  );
+  if (cursor) {
+    rowsLite = dbLite
+      .select()
+      .from(booksSqlite)
+      .where(and(whereBase, lt(booksSqlite.id, cursor.id)))
+      .orderBy(desc(booksSqlite.id))
+      .limit(pageSize + 1)
+      .all();
+  } else {
+    rowsLite = dbLite
+      .select()
+      .from(booksSqlite)
+      .where(whereBase)
+      .orderBy(desc(booksSqlite.id))
+      .limit(pageSize + 1)
+      .all();
+  }
+  const rows = rowsLite;
+  const items = (rows as Book[]).slice(0, pageSize);
+  const hasNext = rows.length > pageSize;
+  const lastLite = items[items.length - 1];
+  const nextCursor =
+    hasNext && lastLite ? encodeCursor({ id: lastLite.id }) : undefined;
+  return { items, hasNext, nextCursor };
 }
 
 export async function getBook(id: string): Promise<Book | undefined> {

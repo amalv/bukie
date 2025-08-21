@@ -2,7 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { Container } from "@/design/layout/grid";
 import { BookList } from "@/features/books/BookList";
-import { getBooks } from "@/features/books/data";
+import { getBooksPage } from "@/features/books/data";
+import { PaginatedBooks } from "@/features/books/PaginatedBooks.client";
 import * as s from "./page.css";
 import { SearchForm } from "./SearchForm";
 
@@ -17,7 +18,15 @@ export default async function Page({
     const resolved = await searchParams;
     const rawQ = resolved?.q;
     const q = Array.isArray(rawQ) ? (rawQ[0] ?? "") : (rawQ ?? "");
-    const books = await getBooks(q);
+    const afterRaw = resolved?.after;
+    const after = Array.isArray(afterRaw)
+      ? (afterRaw[0] ?? undefined)
+      : afterRaw;
+    const { items, nextCursor } = await getBooksPage({
+      q,
+      after,
+      limit: 20,
+    });
     return (
       <main>
         <section className={s.hero}>
@@ -30,15 +39,12 @@ export default async function Page({
               </p>
               <SearchForm defaultValue={q} />
               {q ? (
-                <p className={s.searchMeta}>
-                  {books.length} {books.length === 1 ? "result" : "results"} for
-                  "{q}"
-                </p>
+                <p className={s.searchMeta}>Showing results for "{q}"</p>
               ) : null}
             </header>
           </Container>
         </section>
-        <BookList books={books} q={q} />
+        <PaginatedBooks initial={items} initialNextCursor={nextCursor} q={q} />
       </main>
     );
   } catch {
