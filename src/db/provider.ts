@@ -181,9 +181,8 @@ export async function searchBooksPage(params: {
       .limit(pageSize + 1)
       .all();
   }
-  const rows = rowsLite;
-  const items = (rows as Book[]).slice(0, pageSize);
-  const hasNext = rows.length > pageSize;
+  const items = (rowsLite as Book[]).slice(0, pageSize);
+  const hasNext = rowsLite.length > pageSize;
   const lastLite = items[items.length - 1];
   const nextCursor =
     hasNext && lastLite ? encodeCursor({ id: lastLite.id }) : undefined;
