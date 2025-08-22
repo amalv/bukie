@@ -1,3 +1,16 @@
+# [0.24.0](https://github.com/amalv/bukie/compare/v0.23.0...v0.24.0) (2025-08-22)
+
+
+### Bug Fixes
+
+* **books:** remove stray $ in BookCard a11y string ([f6ed291](https://github.com/amalv/bukie/commit/f6ed291176ba42d0e15570cb71916b05d4d02489))
+
+
+### Features
+
+* **books:** polish BookCard single-star rating and grid background ([32029f1](https://github.com/amalv/bukie/commit/32029f16ef1457dac79ac23d21b0591290bba691))
+* **books:** single-star rating and spacing polish on Book page and Card ([92d812f](https://github.com/amalv/bukie/commit/92d812fc1e125385c947acf7fa187f3f6848fda6))
+
 # [0.23.0](https://github.com/amalv/bukie/compare/v0.22.0...v0.23.0) (2025-08-21)
 
 
