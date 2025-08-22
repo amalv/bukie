@@ -1,5 +1,5 @@
 import { style } from "@vanilla-extract/css";
-import { tokens } from "@/design/tokens.css";
+import { darkThemeClass, lightThemeClass, tokens } from "@/design/tokens.css";
 
 export const errorBox = style({
   color: tokens.color.error,
@@ -27,6 +27,23 @@ export const footer = style({
 
 export const gridTop = style({
   marginTop: tokens.spacing["4"],
+  // Theme-specific background treatment
+  selectors: {
+    // In light theme, use a white-ish panel behind cards for contrast
+    [`${lightThemeClass} &`]: {
+      background: tokens.color.background,
+      borderRadius: tokens.radius.lg,
+      paddingTop: tokens.spacing["3"],
+      paddingBottom: tokens.spacing["3"],
+    },
+    // In dark theme, keep the section transparent to the page background
+    [`${darkThemeClass} &`]: {
+      background: "transparent",
+      borderRadius: 0,
+      paddingTop: tokens.spacing["3"],
+      paddingBottom: tokens.spacing["3"],
+    },
+  },
 });
 
 export const loadMoreButton = style({

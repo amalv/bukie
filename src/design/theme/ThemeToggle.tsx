@@ -1,6 +1,7 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import Moon from "lucide-react/dist/esm/icons/moon.js";
+import Sun from "lucide-react/dist/esm/icons/sun.js";
 import { useEffect, useState, useTransition } from "react";
 import { setTheme } from "./actions";
 import * as s from "./toggle.css";

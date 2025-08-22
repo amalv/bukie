@@ -12,7 +12,7 @@ export const card = style({
   alignItems: "stretch",
   gap: tokens.spacing["1"],
   // Fix card height so all cards align uniformly across rows
-  height: 420,
+  height: 430,
   overflow: "hidden",
   transition:
     "box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease",
@@ -30,13 +30,15 @@ export const media = style({
   position: "relative",
   width: "100%",
   // Slightly taller media area to match reference composition
-  height: 280,
+  height: 290,
 });
 
 export const image = style({
   borderRadius: 0,
   width: "100%",
-  height: "100%",
+  // Increase the top offset between card top and image for nicer composition
+  height: `calc(100% - ${tokens.spacing["2"]})`,
+  marginTop: tokens.spacing["2"],
   objectFit: "cover",
   objectPosition: "top",
   display: "block",
@@ -141,6 +143,29 @@ export const starIcon = style({
   height: 12,
   display: "inline-block",
   color: tokens.color.star,
+});
+
+// Single rating row with star + value + optional count
+export const ratingRow = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: tokens.spacing["0_5"],
+});
+
+export const ratingsCount = style({
+  opacity: 0.8,
+});
+
+export const srOnly = style({
+  position: "absolute",
+  width: 1,
+  height: 1,
+  padding: 0,
+  margin: -1,
+  overflow: "hidden",
+  clip: "rect(0, 0, 0, 0)",
+  whiteSpace: "nowrap",
+  border: 0,
 });
 
 export const body = style({

@@ -70,45 +70,29 @@ describe("BookDetails UI", () => {
     expect(screen.queryByText(/\d+ pages/i)).not.toBeInTheDocument();
   });
 
-  it("renders rating with stars and sr-only text (half star)", () => {
-    render(wrap(<BookDetails book={{ ...base, rating: 3.5 }} />));
-    const sr = screen.getByText(/rating: 3\.5 out of 5/i);
-    expect(sr.parentElement).not.toBeNull();
-    const starWrap = sr.parentElement as HTMLElement; // span that wraps stars
-    // 5 star paths rendered
-    const starPaths = starWrap.querySelectorAll("path");
-    expect(starPaths.length).toBe(5);
-    // Half star uses gradient url fill
-    const hasGradient = Array.from(starPaths).some((p) =>
-      (p.getAttribute("fill") || "").startsWith("url("),
+  it("renders rating with a single star and formatted value/count", () => {
+    render(
+      wrap(
+        <BookDetails book={{ ...base, rating: 3.5, ratingsCount: 12847 }} />,
+      ),
     );
-    expect(hasGradient).toBe(true);
-    // Numeric rating is visible alongside
+    // Screen-reader text present
+    expect(screen.getByText(/rating 3\.5 out of 5/i)).toBeInTheDocument();
+    // Visible: one decimal and formatted count
     expect(screen.getByText("3.5")).toBeInTheDocument();
+    expect(screen.getByText("(12,847)")).toBeInTheDocument();
+    // Exactly one star icon
+    const starSvgs = document.querySelectorAll('svg[class*="starIcon"]');
+    expect(starSvgs.length).toBe(1);
   });
 
-  it("renders full and empty star fills at edges (0 and 1)", () => {
-    let utils = render(wrap(<BookDetails book={{ ...base, rating: 0 }} />));
-    let sr = screen.getByText(/rating: 0\.0 out of 5/i);
-    expect(sr.parentElement).not.toBeNull();
-    let starWrap = sr.parentElement as HTMLElement;
-    let starPaths = starWrap.querySelectorAll("path");
-    expect(starPaths.length).toBe(5);
-    expect(starPaths[0].getAttribute("fill")).toBe("none");
-
-    utils.unmount();
-    utils = render(wrap(<BookDetails book={{ ...base, rating: 1 }} />));
-    sr = screen.getByText(/rating: 1\.0 out of 5/i);
-    expect(sr.parentElement).not.toBeNull();
-    starWrap = sr.parentElement as HTMLElement;
-    starPaths = starWrap.querySelectorAll("path");
-    expect(starPaths.length).toBe(5);
-    // At least one full star has currentColor fill
-    expect(
-      Array.from(starPaths).some(
-        (p) => p.getAttribute("fill") === "currentColor",
-      ),
-    ).toBe(true);
+  it("clamps rating to [0,5] and shows one decimal only", () => {
+    const { rerender } = render(
+      wrap(<BookDetails book={{ ...base, rating: -5 }} />),
+    );
+    expect(screen.getByText("0.0")).toBeInTheDocument();
+    rerender(wrap(<BookDetails book={{ ...base, rating: 5.6 }} />));
+    expect(screen.getByText("5.0")).toBeInTheDocument();
   });
 
   it("shows year and pages (from mock when id=1)", () => {

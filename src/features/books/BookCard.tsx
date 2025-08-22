@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
 import * as s from "./BookCard.css";
+import { formatCount, formatOneDecimal } from "./rating";
 import type { Book } from "./types";
 
 export type BookCardProps = { book: Book };
@@ -42,10 +42,22 @@ export function BookCard({ book }: BookCardProps) {
         {(book.rating != null || book.year != null) && (
           <div className={s.meta}>
             {typeof book.rating === "number" ? (
-              <>
-                <span className={s.stars}>{renderStars(book.rating)}</span>
-                <span>{book.rating.toFixed(1)}</span>
-              </>
+              <span className={s.ratingRow}>
+                <span
+                  className={s.srOnly}
+                >{`Rating ${formatOneDecimal(book.rating)} out of 5${
+                  typeof book.ratingsCount === "number"
+                    ? ` based on ${formatCount(book.ratingsCount)} reviews`
+                    : ""
+                }`}</span>
+                <SingleStarIcon />
+                <span>{formatOneDecimal(book.rating)}</span>
+                {typeof book.ratingsCount === "number" ? (
+                  <span className={s.ratingsCount}>
+                    ({formatCount(book.ratingsCount)})
+                  </span>
+                ) : null}
+              </span>
             ) : null}
             {book.year != null ? <span>{book.year}</span> : null}
           </div>
@@ -55,43 +67,12 @@ export function BookCard({ book }: BookCardProps) {
   );
 }
 
-function renderStars(value: number) {
-  const clamped = Math.max(0, Math.min(5, value));
-  const full = Math.floor(clamped);
-  const half = clamped - full >= 0.5 ? 1 : 0;
-  const empty = 5 - full - half;
-  const icons: ReactNode[] = [];
-  for (let i = 0; i < full; i++)
-    icons.push(<Star key={`f-${i}`} variant="full" />);
-  if (half) icons.push(<Star key="h" variant="half" />);
-  for (let i = 0; i < empty; i++)
-    icons.push(<Star key={`e-${i}`} variant="empty" />);
-  return icons;
-}
-
-function Star({ variant }: { variant: "full" | "half" | "empty" }) {
-  const fill = variant === "empty" ? "none" : "currentColor";
-  const defs = variant === "half";
+function SingleStarIcon() {
   return (
     <svg viewBox="0 0 24 24" className={s.starIcon} aria-hidden="true">
-      {defs ? (
-        <defs>
-          <linearGradient
-            id="halfGrad"
-            x1="0"
-            y1="0"
-            x2="24"
-            y2="0"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop offset="50%" stopColor="currentColor" />
-            <stop offset="50%" stopColor="transparent" />
-          </linearGradient>
-        </defs>
-      ) : null}
       <path
         d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-        fill={variant === "half" ? "url(#halfGrad)" : fill}
+        fill="currentColor"
         stroke="currentColor"
         strokeWidth="1"
       />
