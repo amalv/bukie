@@ -11,6 +11,7 @@ const book = {
   cover: "/42.jpg",
   genre: "Sci-Fi",
   rating: 4.5,
+  ratingsCount: 12847,
   year: 1979,
 };
 
@@ -31,7 +32,7 @@ describe("BookCard", () => {
     expect(img).toBeInTheDocument();
   });
 
-  it("renders optional badge, rating and year when provided", () => {
+  it("renders optional badge, rating (single-star) with one decimal and formatted count, and year", () => {
     render(
       <div className={lightThemeClass}>
         <BookCard book={book} />
@@ -40,6 +41,7 @@ describe("BookCard", () => {
 
     expect(screen.getByText(/sci-fi/i)).toBeInTheDocument();
     expect(screen.getByText("4.5")).toBeInTheDocument();
+    expect(screen.getByText("(12,847)")).toBeInTheDocument();
     expect(screen.getByText(/1979/)).toBeInTheDocument();
   });
 
@@ -81,11 +83,18 @@ describe("BookCard", () => {
     expect(screen.queryByText(/\d\.\d/)).not.toBeInTheDocument();
   });
 
-  it("clamps and formats stars (half-star case visible as 5.5 label here)", () => {
+  it("clamps rating to [0,5] and shows one decimal only", () => {
     const base = { id: "st", title: "Starry", author: "Sky", cover: "/c.jpg" };
-    render(<BookCard book={{ ...base, rating: -10 }} />);
-    render(<BookCard book={{ ...base, rating: 5.5 }} />);
-    expect(screen.getByText("5.5")).toBeInTheDocument();
+    const { rerender } = render(<BookCard book={{ ...base, rating: -10 }} />);
+    expect(screen.getByText("0.0")).toBeInTheDocument();
+    rerender(<BookCard book={{ ...base, rating: 5.5 }} />);
+    expect(screen.getByText("5.0")).toBeInTheDocument();
+  });
+
+  it("renders exactly one star icon for rating row", () => {
+    const { container } = render(<BookCard book={book} />);
+    const stars = container.querySelectorAll('svg[class*="starIcon"]');
+    expect(stars.length).toBe(1);
   });
 
   describe("Image unoptimized flag branches", () => {

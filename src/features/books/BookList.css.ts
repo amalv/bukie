@@ -27,6 +27,12 @@ export const footer = style({
 
 export const gridTop = style({
   marginTop: tokens.spacing["4"],
+  // Ensure the area behind the cards follows the theme background (light in light mode)
+  background: tokens.color.background,
+  // Provide slight rounding/shadow separation from hero when needed
+  borderRadius: tokens.radius.lg,
+  paddingTop: tokens.spacing["3"],
+  paddingBottom: tokens.spacing["3"],
 });
 
 export const loadMoreButton = style({

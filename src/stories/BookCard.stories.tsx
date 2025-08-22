@@ -6,7 +6,7 @@ export default {
 };
 
 export const Rich = () => (
-  <div className={lightThemeClass}>
+  <div className={lightThemeClass} style={{ background: "#fff", padding: 12 }}>
     <div style={{ maxWidth: 160 }}>
       <BookCard
         book={{
@@ -16,6 +16,7 @@ export const Rich = () => (
           cover: "https://placehold.co/120x180.png?text=Neuromancer",
           genre: "Sci-Fi",
           rating: 4.5,
+          ratingsCount: 12847,
           year: 1984,
         }}
       />

@@ -7,6 +7,8 @@ export type Book = {
   genre?: string;
   /** Optional numeric rating 0-5; decimals allowed */
   rating?: number;
+  /** Optional number of ratings/reviews to display alongside rating */
+  ratingsCount?: number;
   /** Optional published year */
   year?: number;
   /** Optional long description */
