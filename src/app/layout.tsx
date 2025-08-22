@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { BookOpen } from "lucide-react";
+import BookOpen from "lucide-react/dist/esm/icons/book-open.js";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import { Container } from "@/design/layout/grid";

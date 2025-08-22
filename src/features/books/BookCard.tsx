@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import * as s from "./BookCard.css";
+import { formatCount, formatOneDecimal } from "./rating";
 import type { Book } from "./types";
 
 export type BookCardProps = { book: Book };
@@ -42,9 +43,9 @@ export function BookCard({ book }: BookCardProps) {
           <div className={s.meta}>
             {typeof book.rating === "number" ? (
               <span className={s.ratingRow}>
-                <span className={s.srOnly}>{`Rating ${formatOneDecimal(
-                  book.rating,
-                )} out of 5${
+                <span
+                  className={s.srOnly}
+                >{`Rating ${formatOneDecimal(book.rating)} out of 5$${
                   typeof book.ratingsCount === "number"
                     ? ` based on ${formatCount(book.ratingsCount)} reviews`
                     : ""
@@ -77,13 +78,4 @@ function SingleStarIcon() {
       />
     </svg>
   );
-}
-
-function formatOneDecimal(n: number): string {
-  const clamped = Math.max(0, Math.min(5, n));
-  return clamped.toFixed(1);
-}
-
-function formatCount(n: number): string {
-  return new Intl.NumberFormat(undefined).format(n);
 }

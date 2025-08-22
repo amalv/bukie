@@ -69,6 +69,8 @@ export const cover = style({
   width: "100%",
   height: "100%",
   objectFit: "cover",
+  // Add a visible top offset between the card and the cover image for nicer composition
+  marginTop: tokens.spacing["2"],
   borderRadius: tokens.radius.md,
   boxShadow: tokens.elevation["1"],
 });
