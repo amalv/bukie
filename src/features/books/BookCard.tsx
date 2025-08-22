@@ -45,7 +45,7 @@ export function BookCard({ book }: BookCardProps) {
               <span className={s.ratingRow}>
                 <span
                   className={s.srOnly}
-                >{`Rating ${formatOneDecimal(book.rating)} out of 5$${
+                >{`Rating ${formatOneDecimal(book.rating)} out of 5${
                   typeof book.ratingsCount === "number"
                     ? ` based on ${formatCount(book.ratingsCount)} reviews`
                     : ""
