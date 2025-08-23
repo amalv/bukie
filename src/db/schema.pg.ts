@@ -9,7 +9,21 @@ export const booksTablePg = pgTable("books", {
   genre: text("genre"),
   rating: real("rating"),
   year: integer("year"),
+  ratingsCount: integer("ratings_count"),
+  addedAt: integer("added_at"),
+  description: text("description"),
+  pages: integer("pages"),
+  publisher: text("publisher"),
+  isbn: text("isbn"),
 });
 
 export type BookRowPg = InferSelectModel<typeof booksTablePg>;
 export type NewBookRowPg = InferInsertModel<typeof booksTablePg>;
+
+export const bookMetricsTablePg = pgTable("book_metrics", {
+  bookId: text("book_id").primaryKey(),
+  viewsAllTime: integer("views_all_time"),
+  views7d: integer("views_7d"),
+  trendingScore: real("trending_score"),
+  updatedAt: integer("updated_at"),
+});
