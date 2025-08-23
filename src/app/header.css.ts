@@ -35,10 +35,8 @@ export const brandIcon = style({
   height: 20,
   display: "inline-block",
   selectors: {
-    // Light mode cyan-600 approx
-    [`${lightThemeClass} &`]: { color: "oklch(0.55 0.15 200)" },
-    // Dark mode sky-500-ish for contrast
-    [`${darkThemeClass} &`]: { color: "oklch(0.6 0.15 200)" },
+    [`${lightThemeClass} &`]: { color: tokens.color.primary },
+    [`${darkThemeClass} &`]: { color: tokens.color.primary },
   },
 });
 

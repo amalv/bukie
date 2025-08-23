@@ -50,6 +50,7 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ feat: basic search functionality (query DB)
 * ✅ feat: search UX polish (styled input, result count, better empty state)
 * ✅ fix: search input focus when clicking container/icon
+* ✅ feat: homepage sections — New Arrivals, Top Rated, Trending Now (schema + queries + docs)
 * ⏳ feat: authentication (Clerk or similar)
 * ⏳ feat: add book (CRUD: create, DB-backed)
 * ⏳ docs: usage instructions

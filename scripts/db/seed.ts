@@ -18,14 +18,21 @@ db.run(
   cover TEXT NOT NULL,
   genre TEXT,
   rating REAL,
-  year INTEGER
+  year INTEGER,
+  ratings_count INTEGER,
+  added_at INTEGER,
+  description TEXT,
+  pages INTEGER,
+  publisher TEXT,
+  isbn TEXT
   )`
 );
 
 // Clean slate to ensure exact dataset
 db.run("DELETE FROM books");
 
-const books = mockBooks.map((b) => ({
+const now = Date.now();
+const books = mockBooks.map((b, i) => ({
   id: b.id,
   title: b.title,
   author: b.author,
@@ -33,10 +40,16 @@ const books = mockBooks.map((b) => ({
   genre: b.genre,
   rating: b.rating,
   year: b.year,
+  ratingsCount: b.ratingsCount ?? Math.floor(100 + Math.random() * 900),
+  addedAt: b.addedAt ?? now - i * 86_400_000,
+  description: b.description ?? null,
+  pages: b.pages ?? null,
+  publisher: b.publisher ?? null,
+  isbn: b.isbn ?? null,
 }));
 
 const insert = db.prepare(
-  "INSERT INTO books (id, title, author, cover, genre, rating, year) VALUES (?, ?, ?, ?, ?, ?, ?)"
+  "INSERT INTO books (id, title, author, cover, genre, rating, year, ratings_count, added_at, description, pages, publisher, isbn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 );
 const tx = db.transaction((rows: typeof books) => {
   for (const r of rows)
@@ -45,9 +58,15 @@ const tx = db.transaction((rows: typeof books) => {
       r.title,
       r.author,
       r.cover,
-      r.genre ?? null,
-      r.rating ?? null,
-      r.year ?? null,
+  r.genre ?? null,
+  r.rating ?? null,
+  r.year ?? null,
+  r.ratingsCount ?? null,
+  r.addedAt ?? null,
+  r.description ?? null,
+  r.pages ?? null,
+  r.publisher ?? null,
+  r.isbn ?? null,
     );
 });
 

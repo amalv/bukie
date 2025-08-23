@@ -1,7 +1,7 @@
 import { getDbEnv } from "@/db/env";
 import { closePg, getPgDb } from "@/db/pg";
 import { books as mockBooks } from "@/../mocks/books";
-import { booksTablePg } from "@/db/schema.pg";
+import { bookMetricsTablePg, booksTablePg } from "@/db/schema.pg";
 
 async function main() {
   const env = getDbEnv();
@@ -33,7 +33,8 @@ async function main() {
   }
 
   // Idempotent upsert-ish: we ignore conflicts on id (prod empty or preview after reset)
-  const values = mockBooks.map((b) => ({
+  const now = Date.now();
+  const values = mockBooks.map((b, i) => ({
     id: b.id,
     title: b.title,
     author: b.author,
@@ -41,6 +42,12 @@ async function main() {
     genre: b.genre,
     rating: b.rating,
     year: b.year,
+    ratingsCount: b.ratingsCount ?? Math.floor(100 + Math.random() * 900),
+    addedAt: b.addedAt ?? now - i * 86_400_000,
+    description: b.description ?? null,
+    pages: b.pages ?? null,
+    publisher: b.publisher ?? null,
+    isbn: b.isbn ?? null,
   }));
 
   const CHUNK = 50;
@@ -48,6 +55,18 @@ async function main() {
     const batch = values.slice(i, i + CHUNK);
     for (const row of batch) {
       await db.insert(booksTablePg).values(row).onConflictDoNothing();
+      // basic metrics rows
+      const score = Math.round((row.rating ?? 0) * (row.ratingsCount ?? 0));
+      await db
+        .insert(bookMetricsTablePg)
+        .values({
+          bookId: row.id,
+          viewsAllTime: (row.ratingsCount ?? 0) * 10,
+          views7d: Math.floor(((row.ratingsCount ?? 0) * 10) / 12),
+          trendingScore: Math.max(0, score / 100),
+          updatedAt: now,
+        })
+        .onConflictDoNothing();
     }
   }
   // eslint-disable-next-line no-console

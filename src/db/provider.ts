@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, like, lt, or } from "drizzle-orm";
+import { and, desc, eq, gt, ilike, like, lt, or } from "drizzle-orm";
 import {
   decodeCursor,
   encodeCursor,
@@ -8,8 +8,8 @@ import type { Book } from "@/features/books/types";
 import { getSqliteDb } from "./client";
 import { getDbEnv } from "./env";
 import { getPgDb } from "./pg";
-import { booksTable as booksSqlite } from "./schema";
-import { booksTablePg } from "./schema.pg";
+import { bookMetricsTable, booksTable as booksSqlite } from "./schema";
+import { bookMetricsTablePg, booksTablePg } from "./schema.pg";
 
 function getPgClient() {
   return getPgDb();
@@ -31,6 +31,106 @@ export async function listBooks(): Promise<Book[]> {
     .orderBy(desc(booksSqlite.id))
     .all();
   return rows as Book[];
+}
+
+// Section queries
+export async function listNewArrivals(limit = 24): Promise<Book[]> {
+  const env = getDbEnv();
+  const pageSize = Math.max(1, Math.min(50, limit));
+  if (env.driver === "postgres") {
+    const db = getPgClient();
+    const rows = await db
+      .select()
+      .from(booksTablePg)
+      .orderBy(desc(booksTablePg.addedAt ?? booksTablePg.id))
+      .limit(pageSize);
+    return rows as Book[];
+  }
+  const rows = getSqliteDb()
+    .select()
+    .from(booksSqlite)
+    .orderBy(desc(booksSqlite.addedAt ?? booksSqlite.id))
+    .limit(pageSize)
+    .all();
+  return rows as Book[];
+}
+
+export async function listTopRated(limit = 24, minCount = 10): Promise<Book[]> {
+  const env = getDbEnv();
+  const pageSize = Math.max(1, Math.min(50, limit));
+  if (env.driver === "postgres") {
+    const db = getPgClient();
+    const rows = await db
+      .select()
+      .from(booksTablePg)
+      .where(gt(booksTablePg.ratingsCount, minCount))
+      .orderBy(desc(booksTablePg.rating), desc(booksTablePg.ratingsCount))
+      .limit(pageSize);
+    return rows as Book[];
+  }
+  const rows = getSqliteDb()
+    .select()
+    .from(booksSqlite)
+    .where(gt(booksSqlite.ratingsCount, minCount))
+    .orderBy(desc(booksSqlite.rating), desc(booksSqlite.ratingsCount))
+    .limit(pageSize)
+    .all();
+  return rows as Book[];
+}
+
+export async function listTrendingNow(limit = 24): Promise<Book[]> {
+  const env = getDbEnv();
+  const pageSize = Math.max(1, Math.min(50, limit));
+  if (env.driver === "postgres") {
+    const db = getPgClient();
+    const rows = await db
+      .select({
+        id: booksTablePg.id,
+        title: booksTablePg.title,
+        author: booksTablePg.author,
+        cover: booksTablePg.cover,
+        genre: booksTablePg.genre,
+        rating: booksTablePg.rating,
+        year: booksTablePg.year,
+        ratingsCount: booksTablePg.ratingsCount,
+        addedAt: booksTablePg.addedAt,
+        description: booksTablePg.description,
+        pages: booksTablePg.pages,
+        publisher: booksTablePg.publisher,
+        isbn: booksTablePg.isbn,
+      })
+      .from(booksTablePg)
+      .leftJoin(
+        bookMetricsTablePg,
+        eq(bookMetricsTablePg.bookId, booksTablePg.id),
+      )
+      .orderBy(desc(bookMetricsTablePg.trendingScore), desc(booksTablePg.id))
+      .limit(pageSize);
+    return rows as unknown as Book[];
+  }
+  const db = getSqliteDb();
+  const rows = db
+    .select({
+      id: booksSqlite.id,
+      title: booksSqlite.title,
+      author: booksSqlite.author,
+      cover: booksSqlite.cover,
+      genre: booksSqlite.genre,
+      rating: booksSqlite.rating,
+      year: booksSqlite.year,
+      ratingsCount: booksSqlite.ratingsCount,
+      addedAt: booksSqlite.addedAt,
+      description: booksSqlite.description,
+      pages: booksSqlite.pages,
+      publisher: booksSqlite.publisher,
+      isbn: booksSqlite.isbn,
+    })
+    .from(booksSqlite)
+    .leftJoin(bookMetricsTable, eq(bookMetricsTable.bookId, booksSqlite.id))
+    .orderBy(desc(bookMetricsTable.trendingScore), desc(booksSqlite.id))
+    .limit(pageSize)
+    .all();
+  return rows as unknown as Book[];
 }
 
 /**
@@ -225,6 +325,15 @@ export async function createBookRow(
         genre: input.genre,
         rating: input.rating as number | null | undefined,
         year: input.year as number | null | undefined,
+        ratingsCount: input.ratingsCount as number | null | undefined,
+        addedAt: (input as { addedAt?: number }).addedAt as
+          | number
+          | null
+          | undefined,
+        description: input.description as string | null | undefined,
+        pages: input.pages as number | null | undefined,
+        publisher: input.publisher as string | null | undefined,
+        isbn: input.isbn as string | null | undefined,
       })
       .returning();
     return created as Book;
@@ -239,6 +348,15 @@ export async function createBookRow(
       genre: input.genre,
       rating: input.rating as number | null | undefined,
       year: input.year as number | null | undefined,
+      ratingsCount: input.ratingsCount as number | null | undefined,
+      addedAt: (input as { addedAt?: number }).addedAt as
+        | number
+        | null
+        | undefined,
+      description: input.description as string | null | undefined,
+      pages: input.pages as number | null | undefined,
+      publisher: input.publisher as string | null | undefined,
+      isbn: input.isbn as string | null | undefined,
     })
     .run();
   const created = getSqliteDb()
@@ -261,6 +379,20 @@ export async function updateBookRow(
   if (patch.genre !== undefined) setters.genre = patch.genre;
   if (patch.rating !== undefined) setters.rating = patch.rating;
   if (patch.year !== undefined) setters.year = patch.year;
+  const p = patch as Partial<{
+    ratingsCount: number;
+    addedAt: number;
+    description: string;
+    pages: number;
+    publisher: string;
+    isbn: string;
+  }>;
+  if (p.ratingsCount !== undefined) setters.ratingsCount = p.ratingsCount;
+  if (p.addedAt !== undefined) setters.addedAt = p.addedAt;
+  if (p.description !== undefined) setters.description = p.description;
+  if (p.pages !== undefined) setters.pages = p.pages;
+  if (p.publisher !== undefined) setters.publisher = p.publisher;
+  if (p.isbn !== undefined) setters.isbn = p.isbn;
   if (Object.keys(setters).length === 0) return getBook(id);
 
   if (env.driver === "postgres") {

@@ -3,6 +3,9 @@ import {
   createBookRow,
   deleteBookRow,
   getBook as getBookRow,
+  listNewArrivals,
+  listTopRated,
+  listTrendingNow,
   updateBookRow,
 } from "@/db/provider";
 import type { Book } from "./types";
@@ -30,4 +33,19 @@ export async function updateBook(
 export async function deleteBook(id: string): Promise<boolean> {
   await ensureDb();
   return deleteBookRow(id);
+}
+
+export async function getNewArrivals(limit = 24): Promise<Book[]> {
+  await ensureDb();
+  return listNewArrivals(limit);
+}
+
+export async function getTopRated(limit = 24, minCount = 10): Promise<Book[]> {
+  await ensureDb();
+  return listTopRated(limit, minCount);
+}
+
+export async function getTrendingNow(limit = 24): Promise<Book[]> {
+  await ensureDb();
+  return listTrendingNow(limit);
 }

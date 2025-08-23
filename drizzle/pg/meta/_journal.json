@@ -15,6 +15,20 @@
       "when": 1755287622651,
       "tag": "0001_graceful_zaladane",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1755964800000,
+      "tag": "0002_sections_and_metrics",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1755977400000,
+      "tag": "0003_ms_timestamps",
+      "breakpoints": true
     }
   ]
 }

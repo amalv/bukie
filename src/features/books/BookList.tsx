@@ -6,6 +6,7 @@ import {
   errorBox,
   footer as footerClass,
   gridTop,
+  gridTopDense,
 } from "./BookList.css";
 import type { Book } from "./types";
 
@@ -17,9 +18,18 @@ export type BookListProps = {
   footer?: React.ReactNode;
   /** Optional current search string to improve empty-state copy */
   q?: string;
+  /** Spacing preset above the grid */
+  spacing?: "normal" | "dense";
 };
 
-export function BookList({ books, loading, error, footer, q }: BookListProps) {
+export function BookList({
+  books,
+  loading,
+  error,
+  footer,
+  q,
+  spacing = "normal",
+}: BookListProps) {
   if (loading) {
     const skeletonKeys = [
       "sk-1",
@@ -85,7 +95,7 @@ export function BookList({ books, loading, error, footer, q }: BookListProps) {
     );
   }
   return (
-    <Container className={gridTop}>
+    <Container className={spacing === "dense" ? gridTopDense : gridTop}>
       <Grid gap="lg">
         {books?.map((b) => (
           <Column key={b.id} span={{ base: 12, sm: 6, md: 3 }}>

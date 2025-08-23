@@ -16,7 +16,7 @@ export function BookCard({ book }: BookCardProps) {
           className={s.mediaLink}
         >
           <Image
-            src={book.cover}
+            src={book.cover?.trim() ? book.cover : "/covers/placeholder.webp"}
             alt={`Cover of ${book.title} by ${book.author}`}
             width={400}
             height={600}
@@ -24,7 +24,7 @@ export function BookCard({ book }: BookCardProps) {
             // Keep unoptimized in dev/test for stability; enable optimization in prod for raster images
             unoptimized={
               process.env.NODE_ENV !== "production" ||
-              book.cover.includes(".svg")
+              book.cover?.includes(".svg") === true
             }
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 22vw, 200px"
           />

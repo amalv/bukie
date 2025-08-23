@@ -49,9 +49,56 @@ export async function ensureDb(): Promise<void> {
         cover TEXT NOT NULL,
         genre TEXT,
         rating REAL,
-        year INTEGER
-      )`,
+        year INTEGER,
+        ratings_count INTEGER,
+        added_at INTEGER,
+        description TEXT,
+        pages INTEGER,
+        publisher TEXT,
+        isbn TEXT
+      );
+      CREATE TABLE IF NOT EXISTS book_metrics (
+        book_id TEXT PRIMARY KEY NOT NULL,
+        views_all_time INTEGER,
+        views_7d INTEGER,
+        trending_score REAL,
+        updated_at INTEGER
+      );`,
     );
+  }
+
+  // Post-migration safety: ensure new columns exist in existing dev DBs
+  try {
+    const s = sqlite ?? new Database(DB_PATH);
+    sqlite = s;
+    const cols = s.prepare(`PRAGMA table_info(books);`).all() as Array<{
+      name: string;
+    }>;
+    const names = new Set(cols.map((c) => c.name));
+    const addCol = (sql: string) => s.exec(sql);
+    if (!names.has("ratings_count"))
+      addCol(`ALTER TABLE books ADD COLUMN ratings_count INTEGER;`);
+    if (!names.has("added_at"))
+      addCol(`ALTER TABLE books ADD COLUMN added_at INTEGER;`);
+    if (!names.has("description"))
+      addCol(`ALTER TABLE books ADD COLUMN description TEXT;`);
+    if (!names.has("pages"))
+      addCol(`ALTER TABLE books ADD COLUMN pages INTEGER;`);
+    if (!names.has("publisher"))
+      addCol(`ALTER TABLE books ADD COLUMN publisher TEXT;`);
+    if (!names.has("isbn")) addCol(`ALTER TABLE books ADD COLUMN isbn TEXT;`);
+    // Ensure metrics table exists
+    s.exec(
+      `CREATE TABLE IF NOT EXISTS book_metrics (
+        book_id TEXT PRIMARY KEY NOT NULL,
+        views_all_time INTEGER,
+        views_7d INTEGER,
+        trending_score REAL,
+        updated_at INTEGER
+      );`,
+    );
+  } catch {
+    // ignore
   }
 
   // Seed if empty
@@ -62,7 +109,8 @@ export async function ensureDb(): Promise<void> {
     .limit(1)
     .all();
   if (hasAny.length === 0) {
-    const insertValues = mockBooks.map((b) => ({
+    const now = Date.now();
+    const insertValues = mockBooks.map((b, i) => ({
       id: b.id,
       title: b.title,
       author: b.author,
@@ -70,6 +118,12 @@ export async function ensureDb(): Promise<void> {
       genre: b.genre,
       rating: b.rating,
       year: b.year,
+      ratingsCount: b.ratingsCount ?? Math.floor(100 + Math.random() * 900),
+      addedAt: b.addedAt ?? now - i * 86_400_000,
+      description: b.description ?? null,
+      pages: b.pages ?? null,
+      publisher: b.publisher ?? null,
+      isbn: b.isbn ?? null,
     }));
     const CHUNK = 25;
     for (let i = 0; i < insertValues.length; i += CHUNK) {
