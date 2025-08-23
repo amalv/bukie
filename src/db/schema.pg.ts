@@ -1,5 +1,5 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { integer, pgTable, real, text } from "drizzle-orm/pg-core";
+import { bigint, integer, pgTable, real, text } from "drizzle-orm/pg-core";
 
 export const booksTablePg = pgTable("books", {
   id: text("id").primaryKey(),
@@ -10,7 +10,8 @@ export const booksTablePg = pgTable("books", {
   rating: real("rating"),
   year: integer("year"),
   ratingsCount: integer("ratings_count"),
-  addedAt: integer("added_at"),
+  // store epoch milliseconds as bigint
+  addedAt: bigint("added_at", { mode: "number" }),
   description: text("description"),
   pages: integer("pages"),
   publisher: text("publisher"),
@@ -25,5 +26,6 @@ export const bookMetricsTablePg = pgTable("book_metrics", {
   viewsAllTime: integer("views_all_time"),
   views7d: integer("views_7d"),
   trendingScore: real("trending_score"),
-  updatedAt: integer("updated_at"),
+  // epoch milliseconds
+  updatedAt: bigint("updated_at", { mode: "number" }),
 });

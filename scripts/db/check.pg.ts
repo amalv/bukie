@@ -20,12 +20,26 @@ async function main() {
     console.log("migrations:", migrations);
 
     const columns = await sql`
-      select column_name from information_schema.columns
+      select column_name, data_type from information_schema.columns
       where table_schema = 'public' and table_name = 'books'
       order by ordinal_position
     `;
     // eslint-disable-next-line no-console
-    console.log("books columns:", columns.map((c: any) => c.column_name));
+    console.log(
+      "books columns:",
+      columns.map((c: any) => `${c.column_name}:${c.data_type}`),
+    );
+
+    const metrics = await sql`
+      select column_name, data_type from information_schema.columns
+      where table_schema = 'public' and table_name = 'book_metrics'
+      order by ordinal_position
+    `;
+    // eslint-disable-next-line no-console
+    console.log(
+      "book_metrics columns:",
+      metrics.map((c: any) => `${c.column_name}:${c.data_type}`),
+    );
   } finally {
     await sql.end({ timeout: 5_000 });
   }
