@@ -87,7 +87,7 @@ export const lightThemeClass = createTheme(tokens, {
     },
   },
   color: {
-    primary: "#6750A4",
+    primary: "#0EA5E9", // blue (sky-500)
     onPrimary: "#FFFFFF",
     surface: "#FFFBFE",
     onSurface: "#1C1B1F",
@@ -146,8 +146,8 @@ export const darkThemeClass = createTheme(tokens, {
     },
   },
   color: {
-    primary: "#CFBCFF",
-    onPrimary: "#1C1B1F",
+    primary: "#38BDF8", // blue (sky-400) for dark
+    onPrimary: "#0B1220",
     surface: "#1C1B1F",
     onSurface: "#E6E1E5",
     background: "#121212",

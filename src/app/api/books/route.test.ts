@@ -39,11 +39,13 @@ describe("GET /api/books", () => {
 
   it("returns 500 when getBooks throws", async () => {
     const spy = vi.spyOn(data, "getBooks").mockRejectedValue(new Error("boom"));
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const res = await GET();
     expect(res.status).toBe(500);
     const json = (await res.json()) as { error: string };
     expect(json.error).toMatch(/internal server error/i);
     spy.mockRestore();
+    errorSpy.mockRestore();
   });
 
   it("POST returns 400 when required fields are missing", async () => {

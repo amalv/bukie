@@ -56,7 +56,9 @@ export function PaginatedBooks({
       books={items}
       q={q}
       footer={
-        cursor ? (
+        error ? (
+          <div role="alert">{error}</div>
+        ) : cursor ? (
           <button
             type="button"
             className={loadMoreButton}
@@ -65,8 +67,6 @@ export function PaginatedBooks({
           >
             {loading ? "Loading…" : "Load More Books"}
           </button>
-        ) : error ? (
-          <div role="alert">{error}</div>
         ) : null
       }
     />

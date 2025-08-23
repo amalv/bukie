@@ -127,3 +127,100 @@ export const srOnly = style({
   whiteSpace: "nowrap",
   border: 0,
 });
+
+// Sections nav (tabs/pills)
+export const sectionsNav = style({
+  marginTop: tokens.spacing["2"],
+});
+
+export const sectionDivider = style({
+  marginTop: tokens.spacing["2"],
+  borderTop: `1px solid ${tokens.color.outline}`,
+});
+
+export const tabsList = style({
+  display: "flex",
+  gap: tokens.spacing["1"],
+  listStyle: "none",
+  padding: 0,
+  margin: 0,
+});
+
+export const tabLink = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: tokens.spacing["0_5"],
+  textDecoration: "none",
+  border: `1px solid ${tokens.color.outline}`,
+  padding: `${tokens.spacing["1"]} ${tokens.spacing["2"]}`,
+  borderRadius: "9999px",
+  background: tokens.color.surface,
+  color: tokens.color.onSurface,
+  boxShadow: tokens.elevation["0"],
+  transition:
+    "box-shadow 180ms ease, border-color 150ms ease, transform 120ms ease, background-color 150ms ease, color 150ms ease",
+  selectors: {
+    "&:hover, &:focus-visible": {
+      borderColor: tokens.color.primary,
+      boxShadow: tokens.elevation["1"],
+      outline: "none",
+      transform: "translateY(-1px)",
+    },
+    "&[aria-current='page']": {
+      background: tokens.color.primary,
+      color: tokens.color.onPrimary,
+      borderColor: tokens.color.primary,
+      boxShadow: tokens.elevation["1"],
+    },
+  },
+});
+
+// Main content surface after the hero. In Material terms this approximates
+// a surface container, distinct from the app background.
+export const contentSurface = style({
+  background: tokens.color.surface,
+  color: tokens.color.onSurface,
+  borderTop: `1px solid ${tokens.color.outline}`,
+  paddingTop: tokens.spacing["2"],
+  paddingBottom: tokens.spacing["4"],
+});
+
+// Section header above the grid (icon + title)
+export const sectionHeader = style({
+  marginTop: tokens.spacing["2"],
+  marginBottom: tokens.spacing["1"],
+  display: "flex",
+  alignItems: "center",
+  gap: tokens.spacing["1"],
+  justifyContent: "flex-start",
+});
+
+export const sectionTitleRow = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: tokens.spacing["1"],
+});
+
+export const sectionIcon = style({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 28,
+  height: 28,
+  borderRadius: "9999px",
+  border: `1px solid ${tokens.color.outline}`,
+  background: tokens.color.background,
+  boxShadow: tokens.elevation["0"],
+});
+
+export const sectionTitle = style({
+  margin: 0,
+  fontSize: "clamp(1.125rem, 2.2vw, 1.5rem)",
+  lineHeight: tokens.typography.lineHeight.tight,
+  color: tokens.color.onBackground,
+});
+
+// Color-only icon for the section header (no circle)
+export const sectionHeaderIcon = style({
+  color: tokens.color.primary,
+});
