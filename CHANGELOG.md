@@ -1,3 +1,18 @@
+# [0.25.0](https://github.com/amalv/bukie/compare/v0.24.0...v0.25.0) (2025-08-23)
+
+
+### Bug Fixes
+
+* **schema:** ensure drizzle schema is created if not exists ([338fa37](https://github.com/amalv/bukie/commit/338fa37d2a0d7ed5df9650a2448801a9437add49))
+
+
+### Features
+
+* **check:** add script to check database migrations and columns ([0b6524c](https://github.com/amalv/bukie/commit/0b6524c14e9bfaca533048b1d2ccd504a5674975))
+* **homepage:** add homepage sections (New Arrivals, Top Rated, Trending Now) and full test coverage ([8256ef8](https://github.com/amalv/bukie/commit/8256ef8c65513c8433dbe8f4864b3c2fdf1f5eff))
+* **homepage:** add sections (New Arrivals, Top Rated, Trending Now) ([1ef61c6](https://github.com/amalv/bukie/commit/1ef61c64f5c204b16c3ddd0df0bcca19e29daba4))
+* **timestamps:** update added_at and updated_at columns to bigint for epoch milliseconds ([68d8e2e](https://github.com/amalv/bukie/commit/68d8e2e88381f9c0b4cc400ef6ed3fc8bcd88ae4))
+
 # [0.24.0](https://github.com/amalv/bukie/compare/v0.23.0...v0.24.0) (2025-08-22)
 
 
