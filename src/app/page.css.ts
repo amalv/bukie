@@ -19,15 +19,17 @@ export const header = style({
 export const title = style({
   margin: 0,
   // Larger display-like title
-  fontSize: "clamp(2rem, 4.5vw, 2.75rem)",
+  fontSize: "clamp(2.25rem, 5vw, 3rem)",
   lineHeight: tokens.typography.lineHeight.tight,
   color: tokens.color.onBackground,
+  fontWeight: 700,
 });
 
 export const subtitle = style({
   margin: 0,
   color: tokens.color.onSurface,
-  opacity: 0.8,
+  // Improve contrast by reducing translucency
+  opacity: 0.95,
   fontSize: "clamp(1rem, 2vw, 1.125rem)",
 });
 
