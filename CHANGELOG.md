@@ -1,3 +1,11 @@
+# [0.26.0](https://github.com/amalv/bukie/compare/v0.25.0...v0.26.0) (2025-08-24)
+
+
+### Features
+
+* **tests:** add unit tests for pageParams helpers and PaginatedBooks component ([68ce974](https://github.com/amalv/bukie/commit/68ce974c3298aec1e76ea10217b7c7dfef0f5331))
+* **tests:** add unit tests for pagination, BookList, and theme actions; update coverage script ([94b17cc](https://github.com/amalv/bukie/commit/94b17cc45dab2813b23705e132d7b31739637c5b))
+
 # [0.25.0](https://github.com/amalv/bukie/compare/v0.24.0...v0.25.0) (2025-08-23)
 
 
