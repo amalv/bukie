@@ -6,12 +6,17 @@ vi.mock("next/font/google", () => ({
   Geist_Mono: () => ({ variable: "font-geist-mono" }),
 }));
 
-vi.mock("next/headers", () => ({
-  cookies: () =>
-    Promise.resolve({
-      get: vi.fn().mockReturnValue(undefined),
-    }),
-}));
+function mockNextHeadersCookie(value?: string) {
+  vi.doMock("next/headers", () => ({
+    cookies: () =>
+      Promise.resolve({
+        get: vi.fn().mockReturnValue(value ? { value } : undefined),
+      }),
+  }));
+}
+
+// default: no cookie
+mockNextHeadersCookie(undefined);
 
 describe("RootLayout", () => {
   it("renders children and applies global styles", async () => {
@@ -29,10 +34,7 @@ describe("RootLayout", () => {
   });
 
   it("uses dark theme when cookie is set", async () => {
-    vi.doMock("next/headers", () => ({
-      cookies: () =>
-        Promise.resolve({ get: vi.fn().mockReturnValue({ value: "dark" }) }),
-    }));
+    mockNextHeadersCookie("dark");
     type Props = Readonly<{ children: React.ReactNode }>;
     const props: Props = { children: <div /> };
     // reset module registry so the layout module re-evaluates under the new mock
@@ -44,10 +46,7 @@ describe("RootLayout", () => {
   });
 
   it("uses light theme when cookie is set", async () => {
-    vi.doMock("next/headers", () => ({
-      cookies: () =>
-        Promise.resolve({ get: vi.fn().mockReturnValue({ value: "light" }) }),
-    }));
+    mockNextHeadersCookie("light");
     vi.resetModules();
     const { default: ReRoot } = await import("./layout");
     type Props = Readonly<{ children: React.ReactNode }>;

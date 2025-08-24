@@ -4,6 +4,22 @@ const MAX_AGE = 60 * 60 * 24 * 365;
 
 let mockSet: ReturnType<typeof vi.fn> | undefined;
 
+async function withNodeEnv<T>(env: string, fn: () => Promise<T>) {
+  const original = process.env.NODE_ENV;
+  try {
+    Object.defineProperty(process, "env", {
+      value: { ...process.env, NODE_ENV: env },
+      writable: true,
+    });
+    return await fn();
+  } finally {
+    Object.defineProperty(process, "env", {
+      value: { ...process.env, NODE_ENV: original },
+      writable: true,
+    });
+  }
+}
+
 describe("setTheme server action", () => {
   it("sets theme cookie with correct options in non-production", async () => {
     vi.resetModules();
@@ -14,25 +30,16 @@ describe("setTheme server action", () => {
 
     const { setTheme } = await import("./actions");
 
-    // ensure NODE_ENV is not production
-    const original = process.env.NODE_ENV;
-    Object.defineProperty(process, "env", {
-      value: { ...process.env, NODE_ENV: "development" },
-      writable: true,
-    });
+    await withNodeEnv("development", async () => {
+      await setTheme("light");
 
-    await setTheme("light");
-
-    expect(mockSet).toHaveBeenCalledWith("theme", "light", {
-      httpOnly: false,
-      sameSite: "lax",
-      secure: false,
-      path: "/",
-      maxAge: MAX_AGE,
-    });
-    Object.defineProperty(process, "env", {
-      value: { ...process.env, NODE_ENV: original },
-      writable: true,
+      expect(mockSet).toHaveBeenCalledWith("theme", "light", {
+        httpOnly: false,
+        sameSite: "lax",
+        secure: false,
+        path: "/",
+        maxAge: MAX_AGE,
+      });
     });
     mockSet = undefined;
   });
@@ -46,24 +53,16 @@ describe("setTheme server action", () => {
 
     const { setTheme } = await import("./actions");
 
-    const original2 = process.env.NODE_ENV;
-    Object.defineProperty(process, "env", {
-      value: { ...process.env, NODE_ENV: "production" },
-      writable: true,
-    });
+    await withNodeEnv("production", async () => {
+      await setTheme("dark");
 
-    await setTheme("dark");
-
-    expect(mockSet).toHaveBeenCalledWith("theme", "dark", {
-      httpOnly: false,
-      sameSite: "lax",
-      secure: true,
-      path: "/",
-      maxAge: MAX_AGE,
-    });
-    Object.defineProperty(process, "env", {
-      value: { ...process.env, NODE_ENV: original2 },
-      writable: true,
+      expect(mockSet).toHaveBeenCalledWith("theme", "dark", {
+        httpOnly: false,
+        sameSite: "lax",
+        secure: true,
+        path: "/",
+        maxAge: MAX_AGE,
+      });
     });
     mockSet = undefined;
   });

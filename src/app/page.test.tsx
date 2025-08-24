@@ -8,6 +8,8 @@ import type { Book } from "@/features/books/types";
 import Page from "./page";
 import * as s from "./page.css";
 
+type SearchParams = { [key: string]: string | string[] | undefined };
+
 describe("Page", () => {
   it("renders BookList with books", async () => {
     vi.spyOn(data, "getBooksPage").mockResolvedValue({
@@ -16,8 +18,8 @@ describe("Page", () => {
       hasNext: false,
     });
     vi.spyOn(repo, "getNewArrivals").mockResolvedValue([
-      { id: "1", title: "A", author: "B", cover: "x" } as Book,
-    ] as unknown as Book[]);
+      { id: "1", title: "A", author: "B", cover: "x" },
+    ]);
     const Comp = await Page({ searchParams: Promise.resolve({ q: "" }) });
     render(Comp);
     expect(screen.getByText("A")).toBeInTheDocument();
@@ -60,8 +62,8 @@ describe("Page", () => {
       hasNext: false,
     });
     vi.spyOn(repo, "getTopRated").mockResolvedValue([
-      { id: "2", title: "B", author: "C", cover: "y" } as Book,
-    ] as unknown as Book[]);
+      { id: "2", title: "B", author: "C", cover: "y" },
+    ]);
     const Comp = await Page({
       searchParams: Promise.resolve({ q: "", section: "top" }),
     });
@@ -82,8 +84,8 @@ describe("Page", () => {
       hasNext: false,
     });
     vi.spyOn(repo, "getTrendingNow").mockResolvedValue([
-      { id: "3", title: "C", author: "D", cover: "z" } as Book,
-    ] as unknown as Book[]);
+      { id: "3", title: "C", author: "D", cover: "z" },
+    ]);
     const Comp = await Page({
       searchParams: Promise.resolve({ q: "", section: "trending" }),
     });
@@ -131,9 +133,7 @@ describe("Page", () => {
     });
     const spyTop = vi
       .spyOn(repo, "getTopRated")
-      .mockResolvedValue([
-        { id: "2", title: "B", author: "C", cover: "y" } as Book,
-      ] as unknown as Book[]);
+      .mockResolvedValue([{ id: "2", title: "B", author: "C", cover: "y" }]);
 
     const Comp = await Page({
       searchParams: Promise.resolve({
@@ -147,6 +147,95 @@ describe("Page", () => {
     // getBooksPage should have been called with the first element of the arrays
     expect(spy).toHaveBeenCalledWith({ q: "", after: "cursor-1", limit: 20 });
     expect(spyTop).toHaveBeenCalled();
+  });
+
+  it("handles empty-array params for q and after (nullish fallbacks)", async () => {
+    const spy = vi.spyOn(data, "getBooksPage").mockResolvedValue({
+      items: [],
+      nextCursor: undefined,
+      hasNext: false,
+    });
+
+    const Comp = await Page({
+      searchParams: Promise.resolve({ q: [], after: [] }),
+    });
+    render(Comp);
+
+    // when q is an empty array and after is an empty array, fallbacks should be used
+    expect(spy).toHaveBeenCalledWith({ q: "", after: undefined, limit: 20 });
+  });
+
+  it("accepts q as an array with a value and uses the first element", async () => {
+    const spy = vi.spyOn(data, "getBooksPage").mockResolvedValue({
+      items: [{ id: "7", title: "Z", author: "Y", cover: "z" }],
+      nextCursor: undefined,
+      hasNext: false,
+    });
+
+    const Comp = await Page({
+      searchParams: Promise.resolve({ q: ["array-q"] }),
+    });
+    render(Comp);
+
+    expect(spy).toHaveBeenCalledWith({
+      q: "array-q",
+      after: undefined,
+      limit: 20,
+    });
+    expect(
+      screen.getByText(/Showing results for "array-q"/),
+    ).toBeInTheDocument();
+  });
+
+  it("handles q as [undefined] and falls back to empty string", async () => {
+    const spy = vi.spyOn(data, "getBooksPage").mockResolvedValue({
+      items: [],
+      nextCursor: undefined,
+      hasNext: false,
+    });
+
+    // Test simulates runtime shape with undefined in array; cast through unknown to satisfy TS
+    const Comp = await Page({
+      searchParams: Promise.resolve({
+        q: [undefined],
+      }) as unknown as Promise<SearchParams>,
+    });
+    render(Comp);
+
+    expect(spy).toHaveBeenCalledWith({ q: "", after: undefined, limit: 20 });
+  });
+
+  it("handles q explicitly set to null (runtime) and falls back to empty string", async () => {
+    const spy = vi.spyOn(data, "getBooksPage").mockResolvedValue({
+      items: [],
+      nextCursor: undefined,
+      hasNext: false,
+    });
+
+    // Test simulates runtime null q value; cast through unknown to satisfy lint
+    const Comp = await Page({
+      searchParams: Promise.resolve({
+        q: null as unknown as string,
+      }) as unknown as Promise<SearchParams>,
+    });
+    render(Comp);
+
+    expect(spy).toHaveBeenCalledWith({ q: "", after: undefined, limit: 20 });
+  });
+
+  it("handles missing q property and falls back to empty string", async () => {
+    const spy = vi.spyOn(data, "getBooksPage").mockResolvedValue({
+      items: [],
+      nextCursor: undefined,
+      hasNext: false,
+    });
+
+    const Comp = await Page({
+      searchParams: Promise.resolve({}) as Promise<SearchParams>,
+    });
+    render(Comp);
+
+    expect(spy).toHaveBeenCalledWith({ q: "", after: undefined, limit: 20 });
   });
 
   it("renders no section header or list when repo returns undefined sectionItems", async () => {
