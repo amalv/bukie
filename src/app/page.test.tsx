@@ -105,4 +105,69 @@ describe("Page", () => {
     render(Comp);
     expect(screen.getByText(/failed to load books/i)).toBeInTheDocument();
   });
+
+  it("renders PaginatedBooks when q param is present", async () => {
+    vi.spyOn(data, "getBooksPage").mockResolvedValue({
+      items: [{ id: "99", title: "D", author: "E", cover: "c" }],
+      nextCursor: "next-1",
+      hasNext: true,
+    });
+    const Comp = await Page({ searchParams: Promise.resolve({ q: "dune" }) });
+    const { container } = render(Comp);
+    // search meta should be visible when q is provided
+    expect(screen.getByText(/Showing results for "dune"/)).toBeInTheDocument();
+    // PaginatedBooks branch renders a footer/button when nextCursor is present
+    const btn =
+      screen.queryByRole("button", { name: /Load More Books/i }) ||
+      container.querySelector("button");
+    expect(btn).toBeTruthy();
+  });
+
+  it("parses array params for section and after and calls repos appropriately", async () => {
+    const spy = vi.spyOn(data, "getBooksPage").mockResolvedValue({
+      items: [],
+      nextCursor: undefined,
+      hasNext: false,
+    });
+    const spyTop = vi
+      .spyOn(repo, "getTopRated")
+      .mockResolvedValue([
+        { id: "2", title: "B", author: "C", cover: "y" } as Book,
+      ] as unknown as Book[]);
+
+    const Comp = await Page({
+      searchParams: Promise.resolve({
+        q: [""],
+        section: ["top"],
+        after: ["cursor-1"],
+      }),
+    });
+    render(Comp);
+
+    // getBooksPage should have been called with the first element of the arrays
+    expect(spy).toHaveBeenCalledWith({ q: "", after: "cursor-1", limit: 20 });
+    expect(spyTop).toHaveBeenCalled();
+  });
+
+  it("renders no section header or list when repo returns undefined sectionItems", async () => {
+    vi.spyOn(data, "getBooksPage").mockResolvedValue({
+      items: [],
+      nextCursor: undefined,
+      hasNext: false,
+    });
+    // simulate repo returning null (no items)
+    vi.spyOn(repo, "getNewArrivals").mockResolvedValue(
+      null as unknown as Book[],
+    );
+
+    const Comp = await Page({ searchParams: Promise.resolve({ q: "" }) });
+    const { container } = render(Comp);
+
+    // when sectionItems is falsy, the section header and BookList should not render
+    expect(container.querySelector(`.${s.sectionHeader}`)).toBeNull();
+    expect(container.querySelector(`.${s.sectionTitle}`)).toBeNull();
+    const bookList = container.querySelector("[data-testid='book-list']");
+    // BookList renders as normal markup; ensure no list present for sectionItems
+    expect(bookList).toBeNull();
+  });
 });

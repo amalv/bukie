@@ -1,17 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { decodeCursor, encodeCursor } from "./pagination";
 
-describe("decodeCursor edge cases", () => {
-  it("returns undefined for null input", () => {
+describe("pagination cursors", () => {
+  it("returns null for falsy or invalid cursor", () => {
+    expect(decodeCursor(undefined)).toBeNull();
     expect(decodeCursor(null)).toBeNull();
+    expect(decodeCursor("not-base64")).toBeNull();
   });
 
-  it("returns undefined for invalid input", () => {
-    expect(decodeCursor("not-a-cursor")).toBeNull();
+  it("roundtrips an encoded cursor", () => {
+    const cur = encodeCursor({ id: "abc" });
+    expect(decodeCursor(cur)).toEqual({ id: "abc" });
   });
 
-  it("decodes a valid cursor", () => {
-    const cursor = encodeCursor({ id: "foo" });
-    expect(decodeCursor(cursor)).toEqual({ id: "foo" });
+  it("returns null when cursor decodes to invalid JSON", () => {
+    // base64url for '{ invalid json'
+    const bad = Buffer.from("{ invalid json", "utf8").toString("base64url");
+    expect(decodeCursor(bad)).toBeNull();
+  });
+
+  it("returns null when decoded object has no id string", () => {
+    const json = JSON.stringify({ foo: "bar" });
+    const cur = Buffer.from(json, "utf8").toString("base64url");
+    expect(decodeCursor(cur)).toBeNull();
   });
 });

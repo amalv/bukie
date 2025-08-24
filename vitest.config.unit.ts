@@ -28,6 +28,7 @@ export default defineConfig({
         "**/lefthook.yml",
         // Types-only modules
         "**/types.ts",
+        "**/*.d.ts",
         // Styles-only modules (no executable logic)
         "**/*.css.ts",
         // Database and providers (covered via integration/e2e; out of scope for unit coverage)
