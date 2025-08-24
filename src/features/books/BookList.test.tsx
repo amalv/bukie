@@ -1,9 +1,26 @@
-import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { lightThemeClass } from "@/design/tokens.css";
 import * as skel from "./BookCard.skeleton.css";
 import { BookList } from "./BookList";
+
+describe("BookList empty states", () => {
+  it("shows empty message when no books and no q", () => {
+    render(<BookList books={[]} q={undefined} />);
+    expect(screen.getByText(/No books found/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Try searching by title, author, or genre/i),
+    ).toBeInTheDocument();
+  });
+
+  it("shows contextual message when q is provided", () => {
+    render(<BookList books={[]} q={"dune"} />);
+    expect(
+      screen.getByText(/We couldn't find any results matching/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/"dune"/)).toBeInTheDocument();
+  });
+});
 
 const wrap = (ui: React.ReactElement) => (
   <div className={lightThemeClass}>{ui}</div>

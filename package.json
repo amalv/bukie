@@ -23,7 +23,7 @@
     "start:ci": "next start",
     "storybook": "storybook dev -p 6006",
     "test": "bunx vitest --config vitest.config.unit.ts --run",
-    "test:coverage": "bunx vitest --config vitest.config.unit.ts --coverage",
+    "test:coverage": "bunx vitest --config vitest.config.unit.ts --coverage --run",
     "test:playwright": "bunx playwright test",
     "test:storybook": "bunx vitest --config vitest.config.storybook.ts",
     "images:optimize": "bun ./scripts/optimize-images.ts --webp --maxWidth 450 --quality 80",

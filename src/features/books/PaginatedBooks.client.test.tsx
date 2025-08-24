@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { PaginatedBooks } from "./PaginatedBooks.client";
 
@@ -45,7 +45,9 @@ describe("PaginatedBooks client", () => {
     );
     expect(screen.getByText("A")).toBeTruthy();
     const btn = await screen.findByRole("button");
-    fireEvent.click(btn);
+    await act(async () => {
+      fireEvent.click(btn);
+    });
     // Wait for fetch to resolve and new item to render
     const newItem = await screen.findByText("D");
     expect(newItem).toBeTruthy();
@@ -78,7 +80,9 @@ describe("PaginatedBooks client", () => {
       />,
     );
     const btn = await screen.findByRole("button");
-    fireEvent.click(btn);
+    await act(async () => {
+      fireEvent.click(btn);
+    });
     // Find all alert nodes and check for error text in any
     const alertNodes = await screen.findAllByRole("alert");
     const found = alertNodes.some((node) =>
@@ -104,5 +108,58 @@ describe("PaginatedBooks client", () => {
       />,
     );
     expect(screen.queryByRole("button")).toBeNull();
+  });
+
+  it("prevents duplicate fetch when loading is true", async () => {
+    // Create a fetch mock we can resolve later to keep component loading
+    let resolveFetch: ((value?: unknown) => void) | undefined;
+    const fetchMock = vi.fn(
+      () =>
+        new Promise((res) => {
+          resolveFetch = res;
+        }),
+    );
+
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+
+    render(
+      <PaginatedBooks
+        initial={[
+          {
+            id: "1",
+            title: "A",
+            author: "Test Author",
+            cover: "/covers/placeholder.webp",
+            rating: 0,
+            description: "",
+          },
+        ]}
+        initialNextCursor={"cursor"}
+      />,
+    );
+
+    const btn = await screen.findByRole("button");
+
+    // First click starts loading and triggers the fetch
+    await act(async () => {
+      fireEvent.click(btn);
+    });
+
+    // Second click while still loading should early-return and not call fetch again
+    await act(async () => {
+      fireEvent.click(btn);
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Now resolve the fetch to let the component finish
+    await act(async () => {
+      resolveFetch?.({
+        ok: true,
+        json: () => Promise.resolve({ items: [], nextCursor: undefined }),
+      });
+      // allow microtask queue to drain
+      await Promise.resolve();
+    });
   });
 });

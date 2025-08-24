@@ -12,6 +12,7 @@ import {
   getTopRated,
   getTrendingNow,
 } from "@/features/books/repo";
+import { normalizeAfter, normalizeQ } from "./helpers/pageParams";
 import * as s from "./page.css";
 import { SearchForm } from "./SearchForm";
 
@@ -25,14 +26,12 @@ export default async function Page({
   try {
     const resolved = await searchParams;
     const rawQ = resolved?.q;
-    const q = Array.isArray(rawQ) ? (rawQ[0] ?? "") : (rawQ ?? "");
+    const q = normalizeQ(rawQ);
     const rawSection = resolved?.section;
     const section =
       (Array.isArray(rawSection) ? rawSection[0] : rawSection) ?? "new";
     const afterRaw = resolved?.after;
-    const after = Array.isArray(afterRaw)
-      ? (afterRaw[0] ?? undefined)
-      : afterRaw;
+    const after = normalizeAfter(afterRaw);
 
     const { items, nextCursor } = await getBooksPage({ q, after, limit: 20 });
 
