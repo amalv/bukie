@@ -50,6 +50,55 @@ export default async function Page({
     // page for the client-side `PaginatedBooks` component when the user
     // selects the "All" section so we don't fetch the entire dataset.
 
+    // Helper to centralize the icon + title for the small section headers
+    function getSectionHeader(sectionName: string) {
+      if (sectionName === "top") {
+        return {
+          icon: (
+            <Medal
+              className={s.sectionHeaderIcon}
+              width={20}
+              height={20}
+              aria-hidden
+            />
+          ),
+          title: "Top Rated",
+        };
+      }
+
+      if (sectionName === "trending") {
+        return {
+          icon: (
+            <TrendingUp
+              className={s.sectionHeaderIcon}
+              width={20}
+              height={20}
+              aria-hidden
+            />
+          ),
+          title: "Trending Now",
+        };
+      }
+
+      return {
+        icon: (
+          <Clock
+            className={s.sectionHeaderIcon}
+            width={20}
+            height={20}
+            aria-hidden
+          />
+        ),
+        title: "New Arrivals",
+      };
+    }
+
+    function BooksCount({ count }: { count: number }) {
+      return <div className={s.booksCount}>{count} books found</div>;
+    }
+
+    const sectionHeader = getSectionHeader(section);
+
     return (
       <main>
         <section className={s.hero}>
@@ -120,39 +169,10 @@ export default async function Page({
               <Container>
                 <header className={s.sectionHeader}>
                   <div className={s.sectionTitleRow}>
-                    {section === "top" ? (
-                      <Medal
-                        className={s.sectionHeaderIcon}
-                        width={20}
-                        height={20}
-                        aria-hidden
-                      />
-                    ) : section === "trending" ? (
-                      <TrendingUp
-                        className={s.sectionHeaderIcon}
-                        width={20}
-                        height={20}
-                        aria-hidden
-                      />
-                    ) : (
-                      <Clock
-                        className={s.sectionHeaderIcon}
-                        width={20}
-                        height={20}
-                        aria-hidden
-                      />
-                    )}
-                    <h2 className={s.sectionTitle}>
-                      {section === "top"
-                        ? "Top Rated"
-                        : section === "trending"
-                          ? "Trending Now"
-                          : "New Arrivals"}
-                    </h2>
+                    {sectionHeader.icon}
+                    <h2 className={s.sectionTitle}>{sectionHeader.title}</h2>
                   </div>
-                  <div className={s.booksCount}>
-                    {sectionItems.length} books found
-                  </div>
+                  <BooksCount count={sectionItems.length} />
                 </header>
               </Container>
             ) : null}
@@ -168,11 +188,9 @@ export default async function Page({
               items.length > 0 || nextCursor ? (
                 <>
                   <Container>
-                    <header className={s.sectionHeader}>
+                    <header className={s.allBooksHeader}>
                       <h2 className={s.sectionTitle}>All Books</h2>
-                      <div className={s.booksCount}>
-                        {items.length} books found
-                      </div>
+                      <BooksCount count={items.length} />
                     </header>
                   </Container>
                   <PaginatedBooks
