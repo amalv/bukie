@@ -1,3 +1,16 @@
+# [0.27.0](https://github.com/amalv/bukie/compare/v0.26.0...v0.27.0) (2025-08-25)
+
+
+### Bug Fixes
+
+* **books:** restore listNewArrivals import ([2a8003d](https://github.com/amalv/bukie/commit/2a8003db52ede1509fee1b56537b4a19e2c35a3b))
+
+
+### Features
+
+* **design:** increase hero H1 prominence and book title scale for better hierarchy and contrast ([e195cc6](https://github.com/amalv/bukie/commit/e195cc6694b519e1a3092b04a2ebe331b88b1bc5))
+* **page:** update section fallback to "all" and enhance "All Books" display logic ([ed8751f](https://github.com/amalv/bukie/commit/ed8751fdca01d8cc8e132127c6277a4dd5b6a2d4))
+
 # [0.26.0](https://github.com/amalv/bukie/compare/v0.25.0...v0.26.0) (2025-08-24)
 
 
