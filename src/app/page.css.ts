@@ -194,7 +194,23 @@ export const sectionHeader = style({
   display: "flex",
   alignItems: "center",
   gap: tokens.spacing["1"],
-  justifyContent: "flex-start",
+  justifyContent: "space-between",
+});
+
+// Header used specifically for the "All Books" row which shows a count on the right
+export const allBooksHeader = style({
+  marginTop: tokens.spacing["2"],
+  marginBottom: tokens.spacing["1"],
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: tokens.spacing["1"],
+});
+
+export const booksCount = style({
+  color: tokens.color.onSurface,
+  opacity: 0.9,
+  fontSize: tokens.typography.sm,
 });
 
 export const sectionTitleRow = style({

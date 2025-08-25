@@ -37,12 +37,18 @@ export default async function Page({
 
     const showSections = !q;
     const sectionItems = showSections
-      ? section === "top"
-        ? await getTopRated(20, 10)
-        : section === "trending"
-          ? await getTrendingNow(20)
-          : await getNewArrivals(20)
+      ? section === "all"
+        ? undefined
+        : section === "top"
+          ? await getTopRated(20, 10)
+          : section === "trending"
+            ? await getTrendingNow(20)
+            : await getNewArrivals(20)
       : undefined;
+
+    // Note: we use the paginated `items` and `nextCursor` as the initial
+    // page for the client-side `PaginatedBooks` component when the user
+    // selects the "All" section so we don't fetch the entire dataset.
 
     return (
       <main>
@@ -67,6 +73,15 @@ export default async function Page({
             <Container>
               <nav aria-label="Sections" className={s.sectionsNav}>
                 <ul className={s.tabsList}>
+                  <li>
+                    <a
+                      href="/?section=all"
+                      className={s.tabLink}
+                      aria-current={section === "all" ? "page" : undefined}
+                    >
+                      All
+                    </a>
+                  </li>
                   <li>
                     <a
                       href="/?section=new"
@@ -104,41 +119,65 @@ export default async function Page({
             {sectionItems ? (
               <Container>
                 <header className={s.sectionHeader}>
-                  {section === "top" ? (
-                    <Medal
-                      className={s.sectionHeaderIcon}
-                      width={20}
-                      height={20}
-                      aria-hidden
-                    />
-                  ) : section === "trending" ? (
-                    <TrendingUp
-                      className={s.sectionHeaderIcon}
-                      width={20}
-                      height={20}
-                      aria-hidden
-                    />
-                  ) : (
-                    <Clock
-                      className={s.sectionHeaderIcon}
-                      width={20}
-                      height={20}
-                      aria-hidden
-                    />
-                  )}
-                  <h2 className={s.sectionTitle}>
-                    {section === "top"
-                      ? "Top Rated"
-                      : section === "trending"
-                        ? "Trending Now"
-                        : "New Arrivals"}
-                  </h2>
+                  <div className={s.sectionTitleRow}>
+                    {section === "top" ? (
+                      <Medal
+                        className={s.sectionHeaderIcon}
+                        width={20}
+                        height={20}
+                        aria-hidden
+                      />
+                    ) : section === "trending" ? (
+                      <TrendingUp
+                        className={s.sectionHeaderIcon}
+                        width={20}
+                        height={20}
+                        aria-hidden
+                      />
+                    ) : (
+                      <Clock
+                        className={s.sectionHeaderIcon}
+                        width={20}
+                        height={20}
+                        aria-hidden
+                      />
+                    )}
+                    <h2 className={s.sectionTitle}>
+                      {section === "top"
+                        ? "Top Rated"
+                        : section === "trending"
+                          ? "Trending Now"
+                          : "New Arrivals"}
+                    </h2>
+                  </div>
+                  <div className={s.booksCount}>
+                    {sectionItems.length} books found
+                  </div>
                 </header>
               </Container>
             ) : null}
 
             {sectionItems ? (
               <BookList books={sectionItems} spacing="dense" />
+            ) : null}
+
+            {/* All Books listing (shows the full available list and a count) - only when "All" is selected */}
+            {section === "all" ? (
+              <>
+                <Container>
+                  <header className={s.sectionHeader}>
+                    <h2 className={s.sectionTitle}>All Books</h2>
+                    <div className={s.booksCount}>
+                      {items.length} books found
+                    </div>
+                  </header>
+                </Container>
+                <PaginatedBooks
+                  initial={items}
+                  initialNextCursor={nextCursor}
+                  q={q}
+                />
+              </>
             ) : null}
           </section>
         ) : (
@@ -150,7 +189,11 @@ export default async function Page({
         )}
       </main>
     );
-  } catch {
+  } catch (err) {
+    // Surface server-side render errors in the dev terminal to aid debugging
+    // (kept lightweight to avoid leaking secrets in production)
+    // eslint-disable-next-line no-console
+    console.error("Page render error:", err);
     return (
       <main>
         <BookList error="Failed to load books. Please try again." />
