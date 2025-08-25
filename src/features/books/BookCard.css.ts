@@ -82,9 +82,10 @@ const clampWebkitProps: Record<string, string | number> = {
 
 export const title = style({
   margin: `${tokens.spacing["1"]} 0 ${tokens.spacing["0_5"]}`,
-  fontSize: tokens.typography.lg,
+  fontSize: tokens.typography.xl,
   lineHeight: tokens.typography.lineHeight.normal,
   color: tokens.color.onSurface,
+  fontWeight: 700,
   textAlign: "left",
   overflow: "hidden",
   display: "-webkit-box",
@@ -99,7 +100,8 @@ export const title = style({
 export const author = style({
   margin: 0,
   color: tokens.color.onSurface,
-  opacity: 0.7,
+  // Improve author contrast for legibility
+  opacity: 0.9,
   fontSize: tokens.typography.sm,
   lineHeight: tokens.typography.lineHeight.normal,
   textAlign: "left",

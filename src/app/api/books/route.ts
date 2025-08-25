@@ -34,3 +34,15 @@ export async function POST(request: Request) {
   });
   return NextResponse.json(created, { status: 201 });
 }
+
+// Support preflight requests (CORS) to avoid 400 responses for OPTIONS
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    },
+  });
+}

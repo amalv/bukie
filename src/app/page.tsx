@@ -29,7 +29,7 @@ export default async function Page({
     const q = normalizeQ(rawQ);
     const rawSection = resolved?.section;
     const section =
-      (Array.isArray(rawSection) ? rawSection[0] : rawSection) ?? "new";
+      (Array.isArray(rawSection) ? rawSection[0] : rawSection) ?? "all";
     const afterRaw = resolved?.after;
     const after = normalizeAfter(afterRaw);
 
@@ -37,12 +37,67 @@ export default async function Page({
 
     const showSections = !q;
     const sectionItems = showSections
-      ? section === "top"
-        ? await getTopRated(20, 10)
-        : section === "trending"
-          ? await getTrendingNow(20)
-          : await getNewArrivals(20)
+      ? section === "all"
+        ? undefined
+        : section === "top"
+          ? await getTopRated(20, 10)
+          : section === "trending"
+            ? await getTrendingNow(20)
+            : await getNewArrivals(20)
       : undefined;
+
+    // Note: we use the paginated `items` and `nextCursor` as the initial
+    // page for the client-side `PaginatedBooks` component when the user
+    // selects the "All" section so we don't fetch the entire dataset.
+
+    // Helper to centralize the icon + title for the small section headers
+    function getSectionHeader(sectionName: string) {
+      if (sectionName === "top") {
+        return {
+          icon: (
+            <Medal
+              className={s.sectionHeaderIcon}
+              width={20}
+              height={20}
+              aria-hidden
+            />
+          ),
+          title: "Top Rated",
+        };
+      }
+
+      if (sectionName === "trending") {
+        return {
+          icon: (
+            <TrendingUp
+              className={s.sectionHeaderIcon}
+              width={20}
+              height={20}
+              aria-hidden
+            />
+          ),
+          title: "Trending Now",
+        };
+      }
+
+      return {
+        icon: (
+          <Clock
+            className={s.sectionHeaderIcon}
+            width={20}
+            height={20}
+            aria-hidden
+          />
+        ),
+        title: "New Arrivals",
+      };
+    }
+
+    function BooksCount({ count }: { count: number }) {
+      return <div className={s.booksCount}>{count} books found</div>;
+    }
+
+    const sectionHeader = getSectionHeader(section);
 
     return (
       <main>
@@ -67,6 +122,15 @@ export default async function Page({
             <Container>
               <nav aria-label="Sections" className={s.sectionsNav}>
                 <ul className={s.tabsList}>
+                  <li>
+                    <a
+                      href="/?section=all"
+                      className={s.tabLink}
+                      aria-current={section === "all" ? "page" : undefined}
+                    >
+                      All
+                    </a>
+                  </li>
                   <li>
                     <a
                       href="/?section=new"
@@ -104,41 +168,38 @@ export default async function Page({
             {sectionItems ? (
               <Container>
                 <header className={s.sectionHeader}>
-                  {section === "top" ? (
-                    <Medal
-                      className={s.sectionHeaderIcon}
-                      width={20}
-                      height={20}
-                      aria-hidden
-                    />
-                  ) : section === "trending" ? (
-                    <TrendingUp
-                      className={s.sectionHeaderIcon}
-                      width={20}
-                      height={20}
-                      aria-hidden
-                    />
-                  ) : (
-                    <Clock
-                      className={s.sectionHeaderIcon}
-                      width={20}
-                      height={20}
-                      aria-hidden
-                    />
-                  )}
-                  <h2 className={s.sectionTitle}>
-                    {section === "top"
-                      ? "Top Rated"
-                      : section === "trending"
-                        ? "Trending Now"
-                        : "New Arrivals"}
-                  </h2>
+                  <div className={s.sectionTitleRow}>
+                    {sectionHeader.icon}
+                    <h2 className={s.sectionTitle}>{sectionHeader.title}</h2>
+                  </div>
+                  <BooksCount count={sectionItems.length} />
                 </header>
               </Container>
             ) : null}
 
             {sectionItems ? (
               <BookList books={sectionItems} spacing="dense" />
+            ) : null}
+
+            {/* All Books listing (shows the full available list and a count) - only when "All" is selected */}
+            {section === "all" ? (
+              // Only show the All header when we actually have items or a next
+              // cursor (prevents an empty header when the initial page is empty)
+              items.length > 0 || nextCursor ? (
+                <>
+                  <Container>
+                    <header className={s.allBooksHeader}>
+                      <h2 className={s.sectionTitle}>All Books</h2>
+                      <BooksCount count={items.length} />
+                    </header>
+                  </Container>
+                  <PaginatedBooks
+                    initial={items}
+                    initialNextCursor={nextCursor}
+                    q={q}
+                  />
+                </>
+              ) : null
             ) : null}
           </section>
         ) : (
@@ -150,7 +211,11 @@ export default async function Page({
         )}
       </main>
     );
-  } catch {
+  } catch (err) {
+    // Surface server-side render errors in the dev terminal to aid debugging
+    // (kept lightweight to avoid leaking secrets in production)
+    // eslint-disable-next-line no-console
+    console.error("Page render error:", err);
     return (
       <main>
         <BookList error="Failed to load books. Please try again." />
