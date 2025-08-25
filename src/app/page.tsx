@@ -29,7 +29,7 @@ export default async function Page({
     const q = normalizeQ(rawQ);
     const rawSection = resolved?.section;
     const section =
-      (Array.isArray(rawSection) ? rawSection[0] : rawSection) ?? "new";
+      (Array.isArray(rawSection) ? rawSection[0] : rawSection) ?? "all";
     const afterRaw = resolved?.after;
     const after = normalizeAfter(afterRaw);
 
@@ -163,21 +163,25 @@ export default async function Page({
 
             {/* All Books listing (shows the full available list and a count) - only when "All" is selected */}
             {section === "all" ? (
-              <>
-                <Container>
-                  <header className={s.sectionHeader}>
-                    <h2 className={s.sectionTitle}>All Books</h2>
-                    <div className={s.booksCount}>
-                      {items.length} books found
-                    </div>
-                  </header>
-                </Container>
-                <PaginatedBooks
-                  initial={items}
-                  initialNextCursor={nextCursor}
-                  q={q}
-                />
-              </>
+              // Only show the All header when we actually have items or a next
+              // cursor (prevents an empty header when the initial page is empty)
+              items.length > 0 || nextCursor ? (
+                <>
+                  <Container>
+                    <header className={s.sectionHeader}>
+                      <h2 className={s.sectionTitle}>All Books</h2>
+                      <div className={s.booksCount}>
+                        {items.length} books found
+                      </div>
+                    </header>
+                  </Container>
+                  <PaginatedBooks
+                    initial={items}
+                    initialNextCursor={nextCursor}
+                    q={q}
+                  />
+                </>
+              ) : null
             ) : null}
           </section>
         ) : (
