@@ -15,16 +15,16 @@ db.run(
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     author TEXT NOT NULL,
-  cover TEXT NOT NULL,
-  genre TEXT,
-  rating REAL,
-  year INTEGER,
-  ratings_count INTEGER,
-  added_at INTEGER,
-  description TEXT,
-  pages INTEGER,
-  publisher TEXT,
-  isbn TEXT
+    cover TEXT NOT NULL,
+    genre TEXT,
+    rating REAL,
+    year INTEGER,
+    ratings_count INTEGER,
+    added_at INTEGER,
+    description TEXT,
+    pages INTEGER,
+    publisher TEXT,
+    isbn TEXT
   )`
 );
 

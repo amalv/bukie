@@ -26,9 +26,10 @@ export const footer = style({
 });
 
 export const gridTop = style({
-  marginTop: tokens.spacing["4"],
-  paddingTop: tokens.spacing["3"],
-  paddingBottom: tokens.spacing["3"],
+  // Align separation with other sections to avoid excessive gap
+  marginTop: tokens.spacing["2"],
+  paddingTop: tokens.spacing["1"],
+  paddingBottom: tokens.spacing["2"],
 });
 
 export const gridTopDense = style({

@@ -13,15 +13,17 @@ const bp = {
 export const container = style({
   marginLeft: "auto",
   marginRight: "auto",
-  paddingLeft: tokens.spacing["2"],
-  paddingRight: tokens.spacing["2"],
+  // Add extra side padding so grids don't hug the viewport edges
+  paddingLeft: tokens.spacing["3"],
+  paddingRight: tokens.spacing["3"],
   width: "100%",
   maxWidth: "100%",
   "@media": {
+    // Cap widths a touch earlier to show gutters on very wide screens
     [`screen and (min-width: ${bp.sm}px)`]: { maxWidth: "600px" },
-    [`screen and (min-width: ${bp.md}px)`]: { maxWidth: "905px" },
-    [`screen and (min-width: ${bp.lg}px)`]: { maxWidth: "1240px" },
-    [`screen and (min-width: ${bp.xl}px)`]: { maxWidth: "1440px" },
+    [`screen and (min-width: ${bp.md}px)`]: { maxWidth: "900px" },
+    [`screen and (min-width: ${bp.lg}px)`]: { maxWidth: "1200px" },
+    [`screen and (min-width: ${bp.xl}px)`]: { maxWidth: "1400px" },
   },
 });
 
