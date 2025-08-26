@@ -1,3 +1,20 @@
+# [0.28.0](https://github.com/amalv/bukie/compare/v0.27.0...v0.28.0) (2025-08-26)
+
+
+### Bug Fixes
+
+* **design-system:** make BookCard heart icon non-interactive to avoid test collisions ([09ee167](https://github.com/amalv/bukie/commit/09ee167c4ba17e557f4a2925d182465e049d1ab6))
+
+
+### Features
+
+* **design-system:** compact BookCard UI and uniform media heights ([83fe225](https://github.com/amalv/bukie/commit/83fe225b57dee6b4d615eacfa819ae76b42010ad))
+
+
+### Performance Improvements
+
+* **images:** reduce BookCard intrinsic size to 427x240 to avoid unnecessary bandwidth ([e4dae46](https://github.com/amalv/bukie/commit/e4dae46403aedf5dca2bc9a06d6446e1b36e5b8b))
+
 # [0.27.0](https://github.com/amalv/bukie/compare/v0.26.0...v0.27.0) (2025-08-25)
 
 
