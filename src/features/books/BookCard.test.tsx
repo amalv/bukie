@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { lightThemeClass } from "@/design/tokens.css";
 import { BookCard } from "./BookCard";
+import type { Book } from "./types";
 
 const book = {
   id: "42",
@@ -41,7 +42,7 @@ describe("BookCard", () => {
 
     expect(screen.getByText(/sci-fi/i)).toBeInTheDocument();
     expect(screen.getByText("4.5")).toBeInTheDocument();
-    expect(screen.getByText("(12,847)")).toBeInTheDocument();
+    expect(screen.getByText("(12,847 reviews)")).toBeInTheDocument();
     expect(screen.getByText(/1979/)).toBeInTheDocument();
   });
 
@@ -89,6 +90,23 @@ describe("BookCard", () => {
     expect(screen.getByText("0.0")).toBeInTheDocument();
     rerender(<BookCard book={{ ...base, rating: 5.5 }} />);
     expect(screen.getByText("5.0")).toBeInTheDocument();
+  });
+
+  it("renders optional short description when provided and hides when empty string", () => {
+    const withDesc: Book = {
+      id: "d1",
+      title: "Desc",
+      author: "A",
+      cover: "/c.jpg",
+      description: "A short, enticing snippet about the book.",
+    };
+    const { rerender } = render(<BookCard book={withDesc} />);
+    expect(screen.getByText(/enticing snippet/i)).toBeInTheDocument();
+
+    rerender(
+      <BookCard book={{ ...withDesc, id: "d2", description: "" } as Book} />,
+    );
+    expect(screen.queryByText(/enticing snippet/i)).toBeNull();
   });
 
   it("renders exactly one star icon for rating row", () => {

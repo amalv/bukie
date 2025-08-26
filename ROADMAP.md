@@ -57,12 +57,15 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 
 ### Extended Features (DB-backed)
 * ⏳ feat: edit and delete book (CRUD: update, delete, DB-backed)
-* ⏳ feat: improved search and filters (DB queries)
-* ⏳ feat: pagination for book list (DB queries)
+* ✅ feat: improved search and filters (DB queries)
+* ✅ feat: pagination for book list (DB queries)
 * ⏳ docs: API documentation
 
 ### User & UI Enhancements
 * ✅ feat(design-system): dark/light mode theming (SSR-safe, no FOUC, accessible toggle)
+* ✅ feat(design-system): enhance BookCard UI — reviews count label, optional short description,
+    uniform media height across cards, actions row (Add to Library/Preview), polished hover,
+    aligned skeleton media height, and normalized section spacing for All Books (see issue #75)
 * ⏳ feat: user profiles
 * ⏳ feat: UI/UX improvements
 * ⏳ docs: onboarding guide
