@@ -11,11 +11,7 @@ export function BookCard({ book }: BookCardProps) {
     <div className={s.card}>
       <div className={s.media}>
         {/* Floating favorite icon for visual parity with expected design; non-functional placeholder */}
-        <button
-          type="button"
-          className={s.iconButton}
-          aria-label="Add to favorites"
-        >
+        <div className={s.iconButton} aria-hidden="true">
           <svg
             viewBox="0 0 24 24"
             className={s.heartIcon}
@@ -27,7 +23,7 @@ export function BookCard({ book }: BookCardProps) {
               fill="currentColor"
             />
           </svg>
-        </button>
+        </div>
         <Link
           href={`/books/${book.id}`}
           aria-label={`View details for ${book.title}`}

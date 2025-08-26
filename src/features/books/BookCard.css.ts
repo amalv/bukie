@@ -282,11 +282,12 @@ export const iconButton = style({
   justifyContent: "center",
   boxShadow: tokens.elevation["1"],
   transition: "transform 120ms ease, box-shadow 150ms ease",
+  // Decorative; no pointer interactivity
+  pointerEvents: "none",
   selectors: {
-    "&:hover": { transform: "scale(1.05)", boxShadow: tokens.elevation["2"] },
-    "&:focus-visible": {
-      outline: "none",
-      boxShadow: `0 0 0 2px ${tokens.color.primary}`,
+    [`${card}:hover &`]: {
+      transform: "scale(1.05)",
+      boxShadow: tokens.elevation["2"],
     },
   },
 });
