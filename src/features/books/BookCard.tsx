@@ -32,9 +32,10 @@ export function BookCard({ book }: BookCardProps) {
           <Image
             src={book.cover?.trim() ? book.cover : "/covers/placeholder.webp"}
             alt={`Cover of ${book.title} by ${book.author}`}
-            // Large intrinsic size; CSS controls the fixed height crop
-            width={1600}
-            height={900}
+            // Use a reasonable intrinsic size to avoid unnecessary bandwidth.
+            // Displayed height is capped by CSS (max 240px), so use a matching height.
+            width={427}
+            height={240}
             className={s.image}
             // Keep unoptimized in dev/test for stability; enable optimization in prod for raster images
             unoptimized={
@@ -82,10 +83,13 @@ export function BookCard({ book }: BookCardProps) {
         ) : null}
         {/* Actions row to match expected UI. These are simple links/buttons; routing kept server-friendly */}
         <div className={s.actions}>
-          <Link href={`/books/${book.id}`} className={s.primaryButton}>
+          <Link href={`/books/${book.id}/add`} className={s.primaryButton}>
             Add to Library
           </Link>
-          <Link href={`/books/${book.id}`} className={s.secondaryButton}>
+          <Link
+            href={`/books/${book.id}/preview`}
+            className={s.secondaryButton}
+          >
             Preview
           </Link>
         </div>
