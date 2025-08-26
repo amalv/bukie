@@ -86,3 +86,23 @@ flowchart TD
 
 - See ADRs in `docs/decisions` for the testing and tooling rationale.
 - See `README.md` for CI and database notes.
+
+## Test-time DB mock and local DB helper
+
+- To avoid unit tests writing to the local dev SQLite file (`.data/dev.sqlite`), the test setup (`vitest.setup.ts`) applies a test-time mock for the DB provider that replaces create/update/delete with an in-memory implementation.
+  - `createBookRow` returns a synthetic id and tracks it in-process.
+  - `updateBookRow` and `deleteBookRow` simulate not-found for ids not created during the same test process.
+
+- A lightweight helper `scripts/db/list-books.ts` is available for local inspection of `.data/dev.sqlite`. Run it via:
+
+```powershell
+bun run db:list
+```
+
+- If you need tests to run against a real DB for integration verification, set the env var `TEST_USE_REAL_DB=1` before running tests and the provider mock will be skipped (see `vitest.setup.ts`). Example:
+
+```powershell
+$env:TEST_USE_REAL_DB=1; bun run test
+```
+
+This approach keeps unit tests fast and side-effect free while allowing teams to opt into a real-DB integration run when needed.

@@ -12,7 +12,11 @@ import { server } from "./src/mocks/server";
 // fixtures continue to work; only create/update/delete are replaced.
 import { vi } from "vitest";
 
-vi.mock("@/db/provider", async () => {
+// Allow opting into a real DB for integration-style runs by setting
+// TEST_USE_REAL_DB=1 in the environment. When set, we skip the provider
+// mock so tests run against the real provider (useful for integration checks).
+if (process.env.TEST_USE_REAL_DB !== "1") {
+	vi.mock("@/db/provider", async () => {
 	// importActual to preserve non-write exports
 	const actual = await vi.importActual<any>("@/db/provider");
 
@@ -38,7 +42,8 @@ vi.mock("@/db/provider", async () => {
 			return true;
 		},
 	};
-});
+  });
+}
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
