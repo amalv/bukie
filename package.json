@@ -27,6 +27,7 @@
     "test:playwright": "bunx playwright test",
     "test:storybook": "bunx vitest --config vitest.config.storybook.ts",
     "images:optimize": "bun ./scripts/optimize-images.ts --webp --maxWidth 450 --quality 80",
+    "db:list": "bunx tsx ./scripts/db/list-books.ts",
     "db:sync:covers": "bunx tsx ./scripts/db/sync-covers.ts",
     "covers:fetch": "bun ./scripts/covers/fetch-covers.ts",
     "covers:fetch:node": "bunx tsx ./scripts/covers/fetch-covers.ts"
