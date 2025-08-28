@@ -371,31 +371,7 @@ export async function createBookRow(
 // Explicit provider surface for DI / testability. Keep the existing named
 // exports for backwards compatibility but also export the provider object
 // so callers can inject or replace implementations more easily.
-export type BookProvider = {
-  listBooks(): Promise<Book[]>;
-  listNewArrivals(limit?: number): Promise<Book[]>;
-  listTopRated(limit?: number, minCount?: number): Promise<Book[]>;
-  listTrendingNow(limit?: number): Promise<Book[]>;
-  searchBooks(query: string): Promise<Book[]>;
-  listBooksPage(params: {
-    after?: string | null;
-    limit: number;
-  }): Promise<PageResult<Book>>;
-  searchBooksPage(params: {
-    q: string;
-    after?: string | null;
-    limit: number;
-  }): Promise<PageResult<Book>>;
-  getBook(id: string): Promise<Book | undefined>;
-  createBookRow(input: Omit<Book, "id"> & { id?: string }): Promise<Book>;
-  updateBookRow(
-    id: string,
-    patch: Partial<Omit<Book, "id">>,
-  ): Promise<Book | undefined>;
-  deleteBookRow(id: string): Promise<boolean>;
-};
-
-export const provider: BookProvider = {
+export const provider = {
   listBooks,
   listNewArrivals,
   listTopRated,
@@ -408,6 +384,8 @@ export const provider: BookProvider = {
   updateBookRow,
   deleteBookRow,
 };
+
+export type BookProvider = typeof provider;
 
 export async function updateBookRow(
   id: string,
