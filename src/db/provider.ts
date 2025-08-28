@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { and, desc, eq, gt, ilike, like, lt, or } from "drizzle-orm";
 import {
   decodeCursor,
@@ -106,7 +107,7 @@ export async function listTrendingNow(limit = 24): Promise<Book[]> {
       )
       .orderBy(desc(bookMetricsTablePg.trendingScore), desc(booksTablePg.id))
       .limit(pageSize);
-    return rows as unknown as Book[];
+    return rows as Book[];
   }
   const db = getSqliteDb();
   const rows = db
@@ -130,7 +131,7 @@ export async function listTrendingNow(limit = 24): Promise<Book[]> {
     .orderBy(desc(bookMetricsTable.trendingScore), desc(booksSqlite.id))
     .limit(pageSize)
     .all();
-  return rows as unknown as Book[];
+  return rows as Book[];
 }
 
 /**
@@ -312,7 +313,7 @@ export async function createBookRow(
   input: Omit<Book, "id"> & { id?: string },
 ): Promise<Book> {
   const env = getDbEnv();
-  const id = input.id ?? String(Date.now());
+  const id = input.id ?? randomUUID();
   if (env.driver === "postgres") {
     const db = getPgClient();
     const [created] = await db
@@ -366,6 +367,25 @@ export async function createBookRow(
     .get();
   return created as Book;
 }
+
+// Explicit provider surface for DI / testability. Keep the existing named
+// exports for backwards compatibility but also export the provider object
+// so callers can inject or replace implementations more easily.
+export const provider = {
+  listBooks,
+  listNewArrivals,
+  listTopRated,
+  listTrendingNow,
+  searchBooks,
+  listBooksPage,
+  searchBooksPage,
+  getBook,
+  createBookRow,
+  updateBookRow,
+  deleteBookRow,
+};
+
+export type BookProvider = typeof provider;
 
 export async function updateBookRow(
   id: string,

@@ -2,15 +2,34 @@ import { describe, expect, it, vi } from "vitest";
 import * as repo from "./repo";
 
 vi.mock("@/db/client", () => ({ ensureDb: vi.fn() }));
-vi.mock("@/db/provider", () => ({
-  createBookRow: vi.fn(async (input) => ({ ...input, id: "new-id" })),
-  deleteBookRow: vi.fn(async () => true),
-  getBook: vi.fn(async (id) => ({ id, title: "Mock Book" })),
-  listNewArrivals: vi.fn(async () => [{ id: "1", title: "A" }]),
-  listTopRated: vi.fn(async () => [{ id: "2", title: "B" }]),
-  listTrendingNow: vi.fn(async () => [{ id: "3", title: "C" }]),
-  updateBookRow: vi.fn(async (id, patch) => ({ id, ...patch })),
-}));
+vi.mock("@/db/provider", () => {
+  const mocks = {
+    createBookRow: vi.fn(async (input) => ({ ...input, id: "new-id" })),
+    deleteBookRow: vi.fn(async () => true),
+    getBook: vi.fn(async (id) => ({ id, title: "Mock Book" })),
+    listNewArrivals: vi.fn(async () => [{ id: "1", title: "A" }]),
+    listTopRated: vi.fn(async () => [{ id: "2", title: "B" }]),
+    listTrendingNow: vi.fn(async () => [{ id: "3", title: "C" }]),
+    updateBookRow: vi.fn(async (id, patch) => ({ id, ...patch })),
+  } as Record<string, unknown>;
+
+  return {
+    ...mocks,
+    provider: {
+      listBooks: mocks.listNewArrivals, // not used in these tests but present
+      listNewArrivals: mocks.listNewArrivals,
+      listTopRated: mocks.listTopRated,
+      listTrendingNow: mocks.listTrendingNow,
+      searchBooks: async () => [],
+      listBooksPage: async () => ({ items: [], hasNext: false }),
+      searchBooksPage: async () => ({ items: [], hasNext: false }),
+      getBook: mocks.getBook,
+      createBookRow: mocks.createBookRow,
+      updateBookRow: mocks.updateBookRow,
+      deleteBookRow: mocks.deleteBookRow,
+    },
+  };
+});
 
 describe("repo functions", () => {
   it("findBookById returns book", async () => {

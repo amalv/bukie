@@ -7,7 +7,7 @@
  *   bunx tsx ./scripts/db/sync-covers.ts
  */
 import { ensureDb } from "../../src/db/client";
-import { listBooks, deleteBookRow, updateBookRow } from "../../src/db/provider";
+import { provider } from "../../src/db/provider";
 import { books as mockBooks } from "../../mocks/books";
 import { stat } from "node:fs/promises";
 import path from "node:path";
@@ -18,7 +18,7 @@ function slugify(input: string): string {
 
 async function main() {
   await ensureDb();
-  const dbBooks = await listBooks();
+  const dbBooks = await provider.listBooks();
 
   // Build allowed id set from mocks (first 50 entries)
   const allowed = new Set(mockBooks.slice(0, 50).map((b) => b.id));
@@ -48,13 +48,13 @@ async function main() {
 
   for (const row of dbBooks) {
     if (!allowed.has(row.id)) {
-      await deleteBookRow(row.id);
+  await provider.deleteBookRow(row.id);
       deleted++;
       continue;
     }
     const want = expectedCover.get(row.id)!;
     if (row.cover !== want) {
-      await updateBookRow(row.id, { cover: want });
+  await provider.updateBookRow(row.id, { cover: want });
       updated++;
     }
   }
