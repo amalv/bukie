@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useId } from "react";
 import * as s from "./page.css";
 
 type Props = {
@@ -13,12 +14,14 @@ type Props = {
  * - Icon is decorative and doesn't steal focus.
  */
 export function SearchForm({ defaultValue = "" }: Props) {
+  const id = useId();
+
   return (
     <div className={s.searchRow}>
       <div className={s.searchBox}>
         <div>
           <form method="get" aria-label="Search books" className={s.form}>
-            <label htmlFor="q" className={s.labelWrap}>
+            <label htmlFor={id} className={s.labelWrap}>
               <span className={s.srOnly}>Search books</span>
               <svg
                 aria-hidden="true"
@@ -32,7 +35,7 @@ export function SearchForm({ defaultValue = "" }: Props) {
                 />
               </svg>
               <input
-                id="q"
+                id={id}
                 name="q"
                 type="search"
                 defaultValue={defaultValue}

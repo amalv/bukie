@@ -2,6 +2,7 @@ import BookOpen from "lucide-react/dist/esm/icons/book-open.js";
 import Calendar from "lucide-react/dist/esm/icons/calendar.js";
 import User from "lucide-react/dist/esm/icons/user.js";
 import Image from "next/image";
+import { useId } from "react";
 import * as s from "./BookDetails.css";
 import { formatCount, formatOneDecimal } from "./rating";
 import type { Book } from "./types";
@@ -57,7 +58,7 @@ export function BookDetails({ book }: BookDetailsProps) {
             <section className={s.meta}>
               <div className={s.headerRow}>
                 <div>
-                  <h1 id="book-title" className={s.title}>
+                  <h1 id={useId()} className={s.title}>
                     {book.title}
                   </h1>
                   <p className={s.author}>

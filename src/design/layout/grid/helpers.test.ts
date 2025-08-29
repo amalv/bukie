@@ -18,7 +18,9 @@ describe("resolveSpanClasses", () => {
     const classes = resolveSpanClasses(span);
 
     expect(classes.length).toBe(3);
-    classes.forEach((c) => expect(typeof c).toBe("string"));
+    classes.forEach((c) => {
+      expect(typeof c).toBe("string");
+    });
   });
 });
 

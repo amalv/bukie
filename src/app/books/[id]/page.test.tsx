@@ -61,9 +61,8 @@ describe("Book dynamic page", () => {
     vi.mock("next/navigation", () => ({
       notFound: () => {
         const err = new Error("NOT_FOUND_TRIGGERED");
-        // @ts-ignore attach marker
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        // @ts-expect-error
         err.__notFound = true;
         throw err;
       },
