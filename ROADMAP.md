@@ -70,6 +70,9 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ⏳ feat: UI/UX improvements
 * ⏳ docs: onboarding guide
 
+### Refactor `page.tsx` for Modularity
+* ⏳ refactor: modularize `page.tsx` by extracting components and helpers
+
 ### Future (TBD)
 * ⏳ Additional features and improvements will be planned and tracked as issues. Only the first milestones are detailed; more will be added as the project evolves.
 
