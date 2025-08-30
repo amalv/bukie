@@ -45,6 +45,8 @@ export const media = style({
 
 export const image = style({
   borderRadius: 0,
+  position: "absolute",
+  inset: 0,
   width: "100%",
   height: "100%",
   objectFit: "cover",
@@ -133,6 +135,7 @@ export const link = style({
 // Block-level link for the media area to eliminate inline spacing artifacts
 export const mediaLink = style({
   display: "block",
+  position: "relative",
   width: "100%",
   height: "100%",
 });

@@ -8,6 +8,7 @@ import Script from "next/script";
 import { Container } from "@/design/layout/grid";
 import { darkThemeClass, lightThemeClass } from "@/design/tokens.css";
 import { ThemeToggle } from "../design/theme/ThemeToggle";
+import * as footerStyles from "./footer.css";
 import * as headerStyles from "./header.css";
 
 const geistSans = Geist({
@@ -71,10 +72,13 @@ export default async function RootLayout({
         {/* offset for fixed header */}
         <div className={headerStyles.offset} aria-hidden />
         {children}
-        <footer className={headerStyles.footer}>
+        <footer className={footerStyles.footer}>
           <Container>
-            <div className={headerStyles.footerInner}>
-              <BookOpen className={headerStyles.brandIcon} aria-hidden />
+            <div className={footerStyles.footerInner}>
+              <BookOpen
+                className={footerStyles.brandIconSelector}
+                aria-hidden
+              />
               Bukie
             </div>
           </Container>

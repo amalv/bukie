@@ -1,4 +1,4 @@
-import { style } from "@vanilla-extract/css";
+import { globalStyle, style } from "@vanilla-extract/css";
 import { darkThemeClass, lightThemeClass, tokens } from "@/design/tokens.css";
 
 export const header = style({
@@ -46,17 +46,39 @@ export const offset = style({
 });
 
 export const footer = style({
-  marginTop: tokens.spacing["4"],
+  // bring footer visually closer to page content and use a subtler divider
+  // keep footer compact by avoiding extra top margin
   background: tokens.color.background,
   color: tokens.color.onSurface,
-  borderTop: `1px solid ${tokens.color.outline}`,
+  // use overlay token for a lightweight 1px divider that maps well in light/dark
+  borderTop: `1px solid ${tokens.color.overlay}`,
 });
 
 export const footerInner = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  gap: tokens.spacing["1"],
-  minHeight: 80,
+  gap: tokens.spacing["2"],
+  // compact vertical padding so the footer band is proportional to content
+  paddingTop: tokens.spacing["1"],
+  paddingBottom: tokens.spacing["1"],
   textAlign: "center",
+  // slightly larger type inside the footer band so the brand row reads prominent
+  fontSize: tokens.typography.lg,
+  // increase the brand icon inside the footer only (keeps header icon unchanged)
+});
+
+// Target the brand icon specifically when it's a descendant of the footer inner container.
+// Use `globalStyle` with the generated class names to avoid invalid selector errors.
+globalStyle(`${footerInner} ${brandIcon}`, {
+  width: 24,
+  height: 24,
+});
+
+// Slightly more vertical padding on wider viewports for improved balance
+globalStyle(`@media (min-width: ${tokens.breakpoints.md})`, {
+  [footerInner]: {
+    paddingTop: tokens.spacing["1_5"],
+    paddingBottom: tokens.spacing["1_5"],
+  },
 });
