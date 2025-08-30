@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { randomUUID } from "node:crypto";
 import BookOpen from "lucide-react/dist/esm/icons/book-open.js";
 import { cookies } from "next/headers";
 import Script from "next/script";
@@ -34,12 +35,13 @@ export default async function RootLayout({
   const pref = cookieStore.get("theme")?.value as "light" | "dark" | undefined;
   const themeClass = pref === "dark" ? darkThemeClass : lightThemeClass;
   const initialThemeAttr = pref ?? "system";
+  const scriptId = randomUUID(); // Use randomUUID to generate a unique ID
   return (
     <html lang="en" data-theme={initialThemeAttr}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${themeClass}`}
       >
-        <Script id="theme-init" strategy="beforeInteractive">{`
+        <Script id={scriptId} strategy="beforeInteractive">{`
           (function initTheme(){
             try {
               // Read theme cookie if present
@@ -50,8 +52,8 @@ export default async function RootLayout({
               // Choose theme: cookie wins, else system
               var theme = cookiePref || (prefersDark ? 'dark' : 'light');
               document.documentElement.setAttribute('data-theme', theme);
-            } catch (_) {
-              // noop
+            } catch (e) {
+              console.error(e);
             }
           })();
           `}</Script>

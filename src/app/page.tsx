@@ -12,7 +12,10 @@ import {
   getTopRated,
   getTrendingNow,
 } from "@/features/books/repo";
+import { BooksCount } from "./components/BooksCount";
+import { SectionHeader } from "./components/SectionHeader";
 import { normalizeAfter, normalizeQ } from "./helpers/pageParams";
+import { getSectionHeader } from "./helpers/sectionHeader";
 import * as s from "./page.css";
 import { SearchForm } from "./SearchForm";
 
@@ -45,57 +48,6 @@ export default async function Page({
             ? await getTrendingNow(20)
             : await getNewArrivals(20)
       : undefined;
-
-    // Note: we use the paginated `items` and `nextCursor` as the initial
-    // page for the client-side `PaginatedBooks` component when the user
-    // selects the "All" section so we don't fetch the entire dataset.
-
-    // Helper to centralize the icon + title for the small section headers
-    function getSectionHeader(sectionName: string) {
-      if (sectionName === "top") {
-        return {
-          icon: (
-            <Medal
-              className={s.sectionHeaderIcon}
-              width={20}
-              height={20}
-              aria-hidden
-            />
-          ),
-          title: "Top Rated",
-        };
-      }
-
-      if (sectionName === "trending") {
-        return {
-          icon: (
-            <TrendingUp
-              className={s.sectionHeaderIcon}
-              width={20}
-              height={20}
-              aria-hidden
-            />
-          ),
-          title: "Trending Now",
-        };
-      }
-
-      return {
-        icon: (
-          <Clock
-            className={s.sectionHeaderIcon}
-            width={20}
-            height={20}
-            aria-hidden
-          />
-        ),
-        title: "New Arrivals",
-      };
-    }
-
-    function BooksCount({ count }: { count: number }) {
-      return <div className={s.booksCount}>{count} books found</div>;
-    }
 
     const sectionHeader = getSectionHeader(section);
 
@@ -167,13 +119,11 @@ export default async function Page({
 
             {sectionItems ? (
               <Container>
-                <header className={s.sectionHeader}>
-                  <div className={s.sectionTitleRow}>
-                    {sectionHeader.icon}
-                    <h2 className={s.sectionTitle}>{sectionHeader.title}</h2>
-                  </div>
-                  <BooksCount count={sectionItems.length} />
-                </header>
+                <SectionHeader
+                  icon={sectionHeader.icon}
+                  title={sectionHeader.title}
+                />
+                <BooksCount count={sectionItems.length} />
               </Container>
             ) : null}
 
