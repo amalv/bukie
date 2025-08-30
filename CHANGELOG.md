@@ -1,3 +1,10 @@
+# [0.29.0](https://github.com/amalv/bukie/compare/v0.28.0...v0.29.0) (2025-08-30)
+
+
+### Features
+
+* **layout:** polish footer, match header branding ([52f9126](https://github.com/amalv/bukie/commit/52f912661cbe0fee0153c3469405427c5ade01b6))
+
 # [0.28.0](https://github.com/amalv/bukie/compare/v0.27.0...v0.28.0) (2025-08-26)
 
 
