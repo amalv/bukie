@@ -32,17 +32,14 @@ export function BookCard({ book }: BookCardProps) {
           <Image
             src={book.cover?.trim() ? book.cover : "/covers/placeholder.webp"}
             alt={`Cover of ${book.title} by ${book.author}`}
-            // Use a reasonable intrinsic size to avoid unnecessary bandwidth.
-            // Displayed height is capped by CSS (max 240px), so use a matching height.
-            width={427}
-            height={240}
+            // Use fill to let the image fill the media container and use object-fit to preserve aspect ratio.
+            fill
             className={s.image}
             // Keep unoptimized in dev/test for stability; enable optimization in prod for raster images
             unoptimized={
               process.env.NODE_ENV !== "production" ||
               book.cover?.includes(".svg") === true
             }
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 240px"
           />
         </Link>
         <div className={s.mediaOverlay} />
