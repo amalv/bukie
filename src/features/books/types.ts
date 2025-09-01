@@ -1,6 +1,8 @@
 export type Book = {
   id: string;
   title: string;
+  /** Preferred: list of authors; first entry used as primary in UI/DB */
+  authors?: string[];
   author: string;
   cover: string;
   /** Optional genre badge to show over the cover */

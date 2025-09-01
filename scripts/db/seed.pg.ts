@@ -1,7 +1,9 @@
 import { getDbEnv } from "@/db/env";
 import { closePg, getPgDb } from "@/db/pg";
 import { books as mockBooks } from "@/../mocks/books";
+// no longer reading JSON batches; always use typed mocks
 import { bookMetricsTablePg, booksTablePg } from "@/db/schema.pg";
+import { ingestBooks } from "@/db/ingest";
 
 async function main() {
   const env = getDbEnv();
@@ -32,7 +34,7 @@ async function main() {
     await db.delete(booksTablePg);
   }
 
-  // Idempotent upsert-ish: we ignore conflicts on id (prod empty or preview after reset)
+  // Build values from mocks for ingest (upsert)
   const now = Date.now();
   const values = mockBooks.map((b, i) => ({
     id: b.id,
@@ -44,18 +46,19 @@ async function main() {
     year: b.year,
     ratingsCount: b.ratingsCount ?? Math.floor(100 + Math.random() * 900),
     addedAt: b.addedAt ?? now - i * 86_400_000,
-    description: b.description ?? null,
-    pages: b.pages ?? null,
-    publisher: b.publisher ?? null,
-    isbn: b.isbn ?? null,
+    description: b.description ?? undefined,
+    pages: b.pages ?? undefined,
+    publisher: b.publisher ?? undefined,
+    isbn: b.isbn ?? undefined,
   }));
 
+  await ingestBooks(values, { mode: "upsert" });
+
+  // basic metrics rows (keep existing logic)
   const CHUNK = 50;
   for (let i = 0; i < values.length; i += CHUNK) {
     const batch = values.slice(i, i + CHUNK);
     for (const row of batch) {
-      await db.insert(booksTablePg).values(row).onConflictDoNothing();
-      // basic metrics rows
       const score = Math.round((row.rating ?? 0) * (row.ratingsCount ?? 0));
       await db
         .insert(bookMetricsTablePg)

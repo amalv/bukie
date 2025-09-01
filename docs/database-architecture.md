@@ -90,8 +90,17 @@ Set `DEBUG_DB=1` to print which driver and target are used (without secrets) at 
 
 ## Migrations
 
-- Postgres migrations run during Vercel build via `bun run db:migrate:pg`.
-- SQLite migrations run automatically on first access in development via `ensureDb()`.
+- Do we need a migration for recent changes?
+  - No. The new `authors[]` is a TypeScript-only helper; we still persist a single `author` text field. All other fields we use (ratingsCount, addedAt, description, pages, publisher, isbn) already exist in both schemas.
+
+- SQLite
+  - In development, `ensureDb()` runs SQLite migrations automatically and also patches missing columns with `ALTER TABLE` as a safety net. This means older local DBs will be brought up-to-date on first access without manual steps.
+  - You can run the sqlite migrator explicitly with the helper script: `scripts/db/migrate.ts`.
+  - If you introduce new columns/tables, generate migrations with Drizzle and commit them under `drizzle/`.
+
+- Postgres
+  - Migrations run during Vercel build via `bun run db:migrate:pg` (see `scripts/db/migrate.pg.ts`).
+  - For schema changes, generate migrations with Drizzle (configured via `drizzle.config.pg.ts`) and commit them under `drizzle/pg`.
 
 ## Troubleshooting
 

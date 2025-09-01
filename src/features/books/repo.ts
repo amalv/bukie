@@ -1,4 +1,10 @@
 import { ensureDb } from "@/db/client";
+import {
+  type IngestItem,
+  type IngestMode,
+  type IngestReport,
+  ingestBooks,
+} from "@/db/ingest";
 import { provider } from "@/db/provider";
 import type { Book } from "./types";
 
@@ -40,4 +46,13 @@ export async function getTopRated(limit = 24, minCount = 10): Promise<Book[]> {
 export async function getTrendingNow(limit = 24): Promise<Book[]> {
   await ensureDb();
   return provider.listTrendingNow(limit);
+}
+
+// Shared ingest from repo (server-side entry)
+export async function ingest(
+  items: IngestItem[],
+  opts: { mode: IngestMode; dryRun?: boolean },
+): Promise<IngestReport> {
+  await ensureDb();
+  return ingestBooks(items, opts);
 }

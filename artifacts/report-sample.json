@@ -1,0 +1,27 @@
+{
+  "input": "./artifacts/batch-YYYY-MM-DD.json",
+  "processed": 2,
+  "created": 1,
+  "updated": 1,
+  "skipped": 0,
+  "failed": 0,
+  "invalidIsbn": 0,
+  "startedAt": "2025-09-01T13:01:54.946Z",
+  "finishedAt": "2025-09-01T13:01:54.947Z",
+  "durationMs": 42,
+  "results": [
+    {
+      "id": "101",
+      "title": "Clean Code",
+      "status": "created"
+    },
+    {
+      "id": "102",
+      "title": "The Pragmatic Programmer",
+      "status": "updated",
+      "warnings": [
+        "invalid ISBN detected: 020161622X"
+      ]
+    }
+  ]
+}
