@@ -1,0 +1,11 @@
+name: Importer Dry-Run (disabled)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Note
+        run: echo "Importer JSON dry-run is disabled; importer now reads mocks/books.ts and supports --mode flag."

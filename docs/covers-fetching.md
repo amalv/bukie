@@ -2,6 +2,8 @@
 
 This document explains how book cover images are fetched, stored, and used in the app. 
 
+For the end-to-end 100-book batch workflow (including seeding/import, cover fetching, optimization, and DB sync), see `docs/books-steps.md`.
+
 ## Overview
 
 - Goal: replace placeholder covers with real images from Open Library.
