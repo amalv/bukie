@@ -8,7 +8,6 @@ For the end-to-end 100-book batch workflow (including seeding/import, cover fetc
 
 - Goal: replace placeholder covers with real images from Open Library.
 - Runner: a small CLI script saves images into `public/covers` and updates the `cover` field in the books table to point to the local file.
-- Windows note: use the Node/tsx runner to avoid Bun’s Windows crash.
 
 ## Key files
 
@@ -27,7 +26,7 @@ Strategy (current):
 
 Image format:
 - By default, the script converts images to WebP (`.webp`).
-- Use `--no-optimize` to keep the original bytes and file extension (safer on Windows).
+- Use `--no-optimize` to keep the original bytes and file extension.
 
 ## Where covers are stored
 
@@ -36,9 +35,8 @@ Image format:
 
 ## CLI usage
 
-Scripts:
-- Windows-friendly runner (Node/tsx): `bun run covers:fetch:node`
-- Alternative (Bun): `bun run covers:fetch` (preferred on macOS/Linux/CI)
+Script:
+- `bun run covers:fetch`
 
 Flags:
 - `--id=<bookId>` — process only one book.
@@ -52,14 +50,14 @@ Flags:
 Examples (PowerShell):
 
 ```powershell
-# Fetch a single book by id (first placeholder in mocks is 39)
-bun run covers:fetch:node -- --id=39 --concurrency=1 --no-optimize
+# Fetch a single book by id (example)
+bun run covers:fetch -- --id=39 --concurrency=1 --no-optimize
 
 # Fetch the first two placeholder books
-bun run covers:fetch:node -- --limit=2 --concurrency=1 --no-optimize
+bun run covers:fetch -- --limit=2 --concurrency=1 --no-optimize
 
-# Refresh all 50 seeded books using slug filenames (overwrites if found)
-bun run covers:fetch:node -- --limit=50 --concurrency=4 --seo-filenames --force
+# Refresh a batch using slug filenames (overwrites if found)
+bun run covers:fetch -- --limit=50 --concurrency=4 --seo-filenames --force
 ```
 
 ## Syncing DB cover paths
@@ -130,14 +128,13 @@ graph TD
 
 ## Testing the UI
 
-1) Run the fetcher for a known id (e.g., `39`) or a small limit:
-   - `bun run covers:fetch:node -- --id=39 --concurrency=1 --no-optimize`
-   - `bun run covers:fetch:node -- --limit=2 --concurrency=1 --no-optimize`
+1) Run the fetcher for a known id or a small limit:
+   - `bun run covers:fetch -- --id=39 --concurrency=1 --no-optimize`
+   - `bun run covers:fetch -- --limit=2 --concurrency=1 --no-optimize`
 2) Start the app: `bun run dev` and open http://localhost:3000
 3) Verify the updated book cards show non-placeholder images. Clicking a card shows the new cover on the details page.
 
 ## Troubleshooting
 
-- Bun crash on Windows: use `covers:fetch:node` (Node/tsx). This avoids the known Bun segfault.
-- “DB unavailable … falling back to mock data”: files are written, but DB isn’t updated. Re-run with the Node runner when your DB is accessible to persist the new cover path.
+- “DB unavailable … falling back to mock data”: files are written, but DB isn’t updated. Ensure DB access is available and re-run.
 - No match found: some titles lack predictable cover URLs. Add an ISBN where possible or wait for Search API integration.

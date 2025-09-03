@@ -1,0 +1,514 @@
+{
+  "input": "C:\\Users\\dunca\\bukie\\artifacts\\catalog\\sci-fi.json",
+  "processed": 100,
+  "created": 100,
+  "updated": 0,
+  "skipped": 0,
+  "failed": 0,
+  "invalidIsbn": 0,
+  "startedAt": "2025-09-03T20:57:30.260Z",
+  "finishedAt": "2025-09-03T20:57:31.761Z",
+  "durationMs": 1501,
+  "results": [
+    {
+      "id": "45b43977-d857-41b8-8659-12974a938646",
+      "title": "Dune",
+      "status": "created"
+    },
+    {
+      "id": "6dbac07f-8b16-4814-b4d1-5a6c5a776902",
+      "title": "Neuromancer",
+      "status": "created"
+    },
+    {
+      "id": "bc2ea7c9-bc69-47fd-8fb9-339c9b496e51",
+      "title": "Foundation",
+      "status": "created"
+    },
+    {
+      "id": "6fa70830-c24e-41b3-ad50-5fe49211fc4b",
+      "title": "The Left Hand of Darkness",
+      "status": "created"
+    },
+    {
+      "id": "5207fd7f-1cef-43a6-a001-7ee3a595a698",
+      "title": "Snow Crash",
+      "status": "created"
+    },
+    {
+      "id": "139ef23b-f5d9-488d-bc90-c46ef4838ad4",
+      "title": "Hyperion",
+      "status": "created"
+    },
+    {
+      "id": "f98cad47-ca62-43a1-a8ca-029f06b2d4ba",
+      "title": "Ender's Game",
+      "status": "created"
+    },
+    {
+      "id": "24ac4e90-f009-49e6-87b9-27e9ae157410",
+      "title": "The Hitchhiker's Guide to the Galaxy",
+      "status": "created"
+    },
+    {
+      "id": "f47e0d14-8577-4c88-855d-c22f0513507e",
+      "title": "Nineteen Eighty-Four",
+      "status": "created"
+    },
+    {
+      "id": "7f87c71d-59d2-4e4e-ae86-5dbdea3c8cd7",
+      "title": "Brave New World",
+      "status": "created"
+    },
+    {
+      "id": "87b5ad9c-da09-4636-922d-a735deb23e53",
+      "title": "Fahrenheit 451",
+      "status": "created"
+    },
+    {
+      "id": "462df89f-ab40-46cd-9997-3ce6f1a5b3ea",
+      "title": "The Martian",
+      "status": "created"
+    },
+    {
+      "id": "ff95629c-1305-4fcf-875c-8454ce3e57e0",
+      "title": "The War of the Worlds",
+      "status": "created"
+    },
+    {
+      "id": "9ff4dd80-c6c6-4443-8eb2-a0340510f504",
+      "title": "The Time Machine",
+      "status": "created"
+    },
+    {
+      "id": "8ec2ee30-320c-4983-8bee-542fdd3072a1",
+      "title": "Do Androids Dream of Electric Sheep?",
+      "status": "created"
+    },
+    {
+      "id": "d319e91f-93a6-4d64-945c-7c3c84cac0a3",
+      "title": "Ubik",
+      "status": "created"
+    },
+    {
+      "id": "3281d057-74db-4974-b9b2-2e718868b073",
+      "title": "A Scanner Darkly",
+      "status": "created"
+    },
+    {
+      "id": "6a558e93-1433-4deb-a75c-7a435818a835",
+      "title": "Childhood's End",
+      "status": "created"
+    },
+    {
+      "id": "d88488eb-f110-4071-9d5e-0a2574fee9ff",
+      "title": "2001: A Space Odyssey",
+      "status": "created"
+    },
+    {
+      "id": "81e89fd3-65f1-40de-8017-88b15d4a3c59",
+      "title": "Rendezvous with Rama",
+      "status": "created"
+    },
+    {
+      "id": "4caaeda3-5c40-4395-b8b1-a64925470158",
+      "title": "The Forever War",
+      "status": "created"
+    },
+    {
+      "id": "e0cd62f5-5161-4f8d-85bf-4b1e1c4e09ad",
+      "title": "Starship Troopers",
+      "status": "created"
+    },
+    {
+      "id": "e2a5e197-3431-4b18-b7cf-07dfc64d6fcd",
+      "title": "The Moon Is a Harsh Mistress",
+      "status": "created"
+    },
+    {
+      "id": "300c7690-1b9c-4793-ac71-d0c5a7ad2f85",
+      "title": "Stranger in a Strange Land",
+      "status": "created"
+    },
+    {
+      "id": "96f75667-591a-442a-9e3f-570be3ab2d34",
+      "title": "Old Man's War",
+      "status": "created"
+    },
+    {
+      "id": "e9e8877b-a847-4d15-a75e-5c1c7b3631a8",
+      "title": "The Three-Body Problem",
+      "status": "created"
+    },
+    {
+      "id": "86ecc738-fef0-4230-995a-660c9bb1c824",
+      "title": "The Dark Forest",
+      "status": "created"
+    },
+    {
+      "id": "0ae7ce50-732c-4e5e-99b2-217a153912d1",
+      "title": "Death's End",
+      "status": "created"
+    },
+    {
+      "id": "40dafd79-b4bb-43f7-bc0b-cca15782551a",
+      "title": "The Dispossessed",
+      "status": "created"
+    },
+    {
+      "id": "bf42037d-075d-4d98-82c6-940df8d907e8",
+      "title": "Annihilation",
+      "status": "created"
+    },
+    {
+      "id": "c3737e4e-003f-4dd5-9a6c-719916c94653",
+      "title": "Exhalation",
+      "status": "created"
+    },
+    {
+      "id": "69f4bc40-b428-4d85-b635-fdbc1f5f3db4",
+      "title": "Stories of Your Life and Others",
+      "status": "created"
+    },
+    {
+      "id": "e0c028b3-c222-4f8d-b125-9129a953cb43",
+      "title": "Leviathan Wakes",
+      "status": "created"
+    },
+    {
+      "id": "4a6d36a1-61e9-4a17-98f8-5994196ea470",
+      "title": "Caliban's War",
+      "status": "created"
+    },
+    {
+      "id": "a3e439a2-2c41-4c85-9c52-aa9ab271934f",
+      "title": "Abaddon's Gate",
+      "status": "created"
+    },
+    {
+      "id": "0823b278-4f0a-415b-ad16-e57dbd164e8e",
+      "title": "Ancillary Justice",
+      "status": "created"
+    },
+    {
+      "id": "5cabeb3e-87dc-4ad6-997f-5988efd6b2a8",
+      "title": "Red Mars",
+      "status": "created"
+    },
+    {
+      "id": "02dd1547-d282-4ab7-842e-c91940bc723c",
+      "title": "Green Mars",
+      "status": "created"
+    },
+    {
+      "id": "d6b79a97-9e63-4b27-a8d8-7cfa6427cd81",
+      "title": "Blue Mars",
+      "status": "created"
+    },
+    {
+      "id": "18271b88-03ca-4410-86b7-0e3c9515c604",
+      "title": "The Man in the High Castle",
+      "status": "created"
+    },
+    {
+      "id": "32c9bbbd-dbcc-4e0b-92eb-45abdbdb4dc6",
+      "title": "Blindsight",
+      "status": "created"
+    },
+    {
+      "id": "64f6b491-108e-422e-a898-51917bb8395b",
+      "title": "Solaris",
+      "status": "created"
+    },
+    {
+      "id": "d32a8c74-4a22-4e0d-9693-56a48d1cb4d0",
+      "title": "Roadside Picnic",
+      "status": "created"
+    },
+    {
+      "id": "df5032ac-4799-465e-883b-53df49b43fe9",
+      "title": "The Andromeda Strain",
+      "status": "created"
+    },
+    {
+      "id": "0c32aee2-da61-4d74-8b2a-d84d1c755dce",
+      "title": "Jurassic Park",
+      "status": "created"
+    },
+    {
+      "id": "7a88e613-6b58-4cbc-87d9-5ae96acc041a",
+      "title": "Sphere",
+      "status": "created"
+    },
+    {
+      "id": "51a519b3-32e6-4765-86da-65d4d858b120",
+      "title": "Contact",
+      "status": "created"
+    },
+    {
+      "id": "bd616c43-ccaa-4abf-b823-687fca0619a2",
+      "title": "A Fire Upon the Deep",
+      "status": "created"
+    },
+    {
+      "id": "f80559f5-2b58-486c-b44a-9a91503a3b7b",
+      "title": "A Deepness in the Sky",
+      "status": "created"
+    },
+    {
+      "id": "3bddccb8-95c2-4c56-9dbf-e6b802bed3c9",
+      "title": "The Demolished Man",
+      "status": "created"
+    },
+    {
+      "id": "ae66b972-4f20-4fee-96f6-452059f24a50",
+      "title": "The Stars My Destination",
+      "status": "created"
+    },
+    {
+      "id": "aff80d35-ba98-4357-9d8e-336f6790e41a",
+      "title": "The Handmaid's Tale",
+      "status": "created"
+    },
+    {
+      "id": "bdae7db5-59fe-4a3f-82cf-65dacb8ad099",
+      "title": "Oryx and Crake",
+      "status": "created"
+    },
+    {
+      "id": "6aa4aef2-3a81-45b8-927d-734e97b7e6e5",
+      "title": "The Hunger Games",
+      "status": "created"
+    },
+    {
+      "id": "3bf58a66-df1f-4a06-880e-a70bb5deafcd",
+      "title": "Cloud Atlas",
+      "status": "created"
+    },
+    {
+      "id": "d9234c4a-31e9-44c3-b80e-4eae45769d14",
+      "title": "The Sparrow",
+      "status": "created"
+    },
+    {
+      "id": "1b323e1a-5301-4b50-a762-73bc6ba8c923",
+      "title": "The Long Way to a Small, Angry Planet",
+      "status": "created"
+    },
+    {
+      "id": "1cfdb2d0-a1b8-42fb-9837-010f96a240e4",
+      "title": "Children of Time",
+      "status": "created"
+    },
+    {
+      "id": "17649520-a51b-46e4-96a4-56e85b10fd70",
+      "title": "Children of Ruin",
+      "status": "created"
+    },
+    {
+      "id": "cefe1d3c-1327-455a-a04c-fe6ccdeac3c8",
+      "title": "The Space Between Worlds",
+      "status": "created"
+    },
+    {
+      "id": "1ab56548-904a-4f73-b47b-a51c30ab3528",
+      "title": "The Peripheral",
+      "status": "created"
+    },
+    {
+      "id": "ced14b47-325c-4367-a4a0-2557da049ba3",
+      "title": "Agency",
+      "status": "created"
+    },
+    {
+      "id": "ba62a6e3-74e3-4979-9278-ad8cd0904db2",
+      "title": "Altered Carbon",
+      "status": "created"
+    },
+    {
+      "id": "a3d841c6-e44a-47e0-8f09-099904e94e90",
+      "title": "The Girl With All the Gifts",
+      "status": "created"
+    },
+    {
+      "id": "f8dfa6bb-a24e-4b14-b725-911d80f478a4",
+      "title": "Station Eleven",
+      "status": "created"
+    },
+    {
+      "id": "5f3efed8-6853-4fe8-bead-90e9da27faf8",
+      "title": "Parable of the Sower",
+      "status": "created"
+    },
+    {
+      "id": "540adf2e-1784-4664-91eb-ee4f0f9de4f0",
+      "title": "Parable of the Talents",
+      "status": "created"
+    },
+    {
+      "id": "31f72e80-c9dc-4309-bcbe-b2f07215d0cc",
+      "title": "Kindred",
+      "status": "created"
+    },
+    {
+      "id": "e084c811-d227-4ba2-a889-0d6a0c1e296f",
+      "title": "Dawn",
+      "status": "created"
+    },
+    {
+      "id": "e532294d-4a69-4d70-9505-93a2ee817e41",
+      "title": "Adulthood Rites",
+      "status": "created"
+    },
+    {
+      "id": "d59dfa78-4256-4e0a-9e33-a1949f36f803",
+      "title": "Imago",
+      "status": "created"
+    },
+    {
+      "id": "0abd1c93-4323-42a8-9106-36d6ead740c3",
+      "title": "The Invisible Man",
+      "status": "created"
+    },
+    {
+      "id": "88012a4c-26df-4f70-b69a-aa80d9e267ff",
+      "title": "The Island of Dr. Moreau",
+      "status": "created"
+    },
+    {
+      "id": "a977a4c2-6d1c-486b-abd3-365e15e3832d",
+      "title": "Flowers for Algernon",
+      "status": "created"
+    },
+    {
+      "id": "3d70fd01-75d0-464d-a43d-e4d03cc50352",
+      "title": "The Giver",
+      "status": "created"
+    },
+    {
+      "id": "e3a277a2-6343-418f-bc6e-27a9356b7943",
+      "title": "The City and the Stars",
+      "status": "created"
+    },
+    {
+      "id": "6ca07ddf-3439-4b88-a6b4-8469e61349af",
+      "title": "The Martian Chronicles",
+      "status": "created"
+    },
+    {
+      "id": "bed1306e-1d53-49bd-aaa6-d7aa3b9848cd",
+      "title": "The Illustrated Man",
+      "status": "created"
+    },
+    {
+      "id": "029cb840-f866-460d-84fb-8a98698eb34f",
+      "title": "Ringworld",
+      "status": "created"
+    },
+    {
+      "id": "55a3254e-4598-4e06-92ad-cbec999486a5",
+      "title": "The Mote in God's Eye",
+      "status": "created"
+    },
+    {
+      "id": "e83f1b20-1367-4a57-a5ce-4dc6c8c3ee89",
+      "title": "The Snow Queen",
+      "status": "created"
+    },
+    {
+      "id": "384a44c2-e090-4005-8d62-7866179f364f",
+      "title": "The Shadow of the Torturer",
+      "status": "created"
+    },
+    {
+      "id": "25398495-4401-4aec-91bb-7b33a24c7fec",
+      "title": "The Player of Games",
+      "status": "created"
+    },
+    {
+      "id": "2cfdb262-0860-4a90-9a16-306f25184317",
+      "title": "Consider Phlebas",
+      "status": "created"
+    },
+    {
+      "id": "11e03f79-6928-41c1-b9ca-600cbb49ea11",
+      "title": "Use of Weapons",
+      "status": "created"
+    },
+    {
+      "id": "cbbac996-7ec8-4f99-bbb1-b009272ebaf9",
+      "title": "Pandora's Star",
+      "status": "created"
+    },
+    {
+      "id": "2b0167e4-1f51-4055-9333-70f8ca5fa3b4",
+      "title": "Judas Unchained",
+      "status": "created"
+    },
+    {
+      "id": "d81a62fa-6065-494c-918f-d14b4a4cb857",
+      "title": "Revelation Space",
+      "status": "created"
+    },
+    {
+      "id": "680ff9d2-14c0-40cf-b486-e8899e068e1a",
+      "title": "Chasm City",
+      "status": "created"
+    },
+    {
+      "id": "00d6752e-49ce-4a42-987e-82de133d96f1",
+      "title": "Pushing Ice",
+      "status": "created"
+    },
+    {
+      "id": "a8ee7d5f-2d10-4e2b-8dce-4e7b48b71a48",
+      "title": "The Quantum Thief",
+      "status": "created"
+    },
+    {
+      "id": "7ddc7aee-3a29-4b99-98ed-96a2a78b4cf2",
+      "title": "The Diamond Age",
+      "status": "created"
+    },
+    {
+      "id": "37b9c624-3dba-4478-8a37-3fc2893af65d",
+      "title": "Anathem",
+      "status": "created"
+    },
+    {
+      "id": "f1b36d61-14c9-4627-baf8-8168eaa26735",
+      "title": "Seveneves",
+      "status": "created"
+    },
+    {
+      "id": "dbe9ccd3-f940-4c4b-a815-8bf582c094ec",
+      "title": "Ready Player One",
+      "status": "created"
+    },
+    {
+      "id": "2105b42b-03ef-4994-88a2-9dbd9e7e7c4d",
+      "title": "The Windup Girl",
+      "status": "created"
+    },
+    {
+      "id": "2052983d-20ba-4ee7-97d5-4e4d53eddd08",
+      "title": "The Water Knife",
+      "status": "created"
+    },
+    {
+      "id": "69bee794-f281-4b85-b847-52f9ce855b39",
+      "title": "The Left Hand of Darkness (Hainish Cycle)",
+      "status": "created"
+    },
+    {
+      "id": "5aec2cc3-7068-41e4-8397-8d7a7145b911",
+      "title": "Binti",
+      "status": "created"
+    },
+    {
+      "id": "bdd520db-bc0d-407c-892f-54ea28f18865",
+      "title": "Who Fears Death",
+      "status": "created"
+    }
+  ]
+}

@@ -383,6 +383,7 @@ export const provider = {
   createBookRow,
   updateBookRow,
   deleteBookRow,
+  deleteBooksByGenre,
 };
 
 export type BookProvider = typeof provider;
@@ -452,4 +453,21 @@ export async function deleteBookRow(id: string): Promise<boolean> {
     .where(eq(booksSqlite.id, id))
     .run() as unknown as { changes: number };
   return result.changes > 0;
+}
+
+export async function deleteBooksByGenre(genre: string): Promise<number> {
+  const env = getDbEnv();
+  if (env.driver === "postgres") {
+    const db = getPgClient();
+    const deleted = await db
+      .delete(booksTablePg)
+      .where(eq(booksTablePg.genre, genre))
+      .returning({ id: booksTablePg.id });
+    return deleted.length;
+  }
+  const result = getSqliteDb()
+    .delete(booksSqlite)
+    .where(eq(booksSqlite.genre, genre))
+    .run() as unknown as { changes: number };
+  return result.changes;
 }

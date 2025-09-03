@@ -51,6 +51,7 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ feat: search UX polish (styled input, result count, better empty state)
 * ✅ fix: search input focus when clicking container/icon
 * ✅ feat: homepage sections — New Arrivals, Top Rated, Trending Now (schema + queries + docs)
+* ⏳ feat(data-curation): expand base catalog — 5 main categories × 100 books each (~500 total) (see issue #89)
 * ⏳ feat: authentication (Clerk or similar)
 * ⏳ feat: add book (CRUD: create, DB-backed)
 * ⏳ docs: usage instructions
@@ -85,6 +86,7 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 The next milestone is focused on Core Features (DB‑backed):
 * Prepare basic search foundation (indexing and DB query shape)
 * Start add‑book flow (create endpoint + server-rendered form, DB-backed)
+* Kick off category-based catalog expansion: Science Fiction batch of 100 using the importer, then proceed with Fantasy, Mystery & Thriller, Non‑Fiction, and Classics (see issue #89). Initial curated list and importer wiring have been added; proceed iteratively to reach 100 per category.
 
 ---
 
