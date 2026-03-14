@@ -24,7 +24,7 @@ async function main() {
   const webpFiles = files.filter((f) => f.toLowerCase().endsWith(".webp"));
 
   const missing = (sciFi as Book[]).filter((b) =>
-    !b.cover || b.cover.includes("placeholder.webp")
+    !b.cover || b.cover.includes("placeholder.svg")
   );
 
   const lines: string[] = [];

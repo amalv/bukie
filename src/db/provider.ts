@@ -1,5 +1,8 @@
 import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { and, desc, eq, gt, ilike, like, lt, or } from "drizzle-orm";
+import baseCatalog from "@/../artifacts/catalog";
 import {
   decodeCursor,
   encodeCursor,
@@ -12,8 +15,87 @@ import { getPgDb } from "./pg";
 import { bookMetricsTable, booksTable as booksSqlite } from "./schema";
 import { bookMetricsTablePg, booksTablePg } from "./schema.pg";
 
+const COVER_EXTENSIONS = ["webp", "jpg", "png"] as const;
+const PLACEHOLDER_COVER = "/covers/placeholder.svg";
+const catalogByIsbn = new Map(
+  baseCatalog
+    .filter((book) => typeof book.isbn === "string" && book.isbn.length > 0)
+    .map((book) => [book.isbn?.replace(/[^0-9Xx]/g, ""), book]),
+);
+const catalogByTitleAuthor = new Map(
+  baseCatalog.map((book) => [toTitleAuthorKey(book.title, book.author), book]),
+);
+
 function getPgClient() {
   return getPgDb();
+}
+
+function normalizeLookupValue(value: string | undefined): string {
+  return (value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function toTitleAuthorKey(
+  title: string | undefined,
+  author: string | undefined,
+): string {
+  return `${normalizeLookupValue(title)}::${normalizeLookupValue(author)}`;
+}
+
+function resolveCanonicalCoverPath(id: string): string | undefined {
+  for (const ext of COVER_EXTENSIONS) {
+    const rel = `/covers/${id}.${ext}`;
+    const full = path.join(process.cwd(), "public", rel.replace(/^\//, ""));
+    if (existsSync(full)) return rel;
+  }
+  return undefined;
+}
+
+function resolveStoredCoverPath(cover: string | undefined): string | undefined {
+  if (!cover?.startsWith("/covers/")) return undefined;
+  const full = path.join(process.cwd(), "public", cover.replace(/^\//, ""));
+  return existsSync(full) ? cover : undefined;
+}
+
+export function normalizeBookCover(
+  id: string,
+  cover: string | undefined,
+  canonicalId?: string,
+  canonicalCover?: string,
+): string {
+  const canonicalPath =
+    (canonicalId ? resolveCanonicalCoverPath(canonicalId) : undefined) ??
+    (canonicalCover ? resolveStoredCoverPath(canonicalCover) : undefined);
+
+  return (
+    canonicalPath ??
+    resolveCanonicalCoverPath(id) ??
+    resolveStoredCoverPath(cover) ??
+    PLACEHOLDER_COVER
+  );
+}
+
+function normalizeBook(row: Book): Book {
+  const isbnKey = row.isbn?.replace(/[^0-9Xx]/g, "");
+  const catalogMatch =
+    (isbnKey ? catalogByIsbn.get(isbnKey) : undefined) ??
+    catalogByTitleAuthor.get(toTitleAuthorKey(row.title, row.author));
+
+  return {
+    ...row,
+    cover: normalizeBookCover(
+      row.id,
+      row.cover,
+      catalogMatch?.id,
+      catalogMatch?.cover,
+    ),
+  };
+}
+
+function normalizeBooks(rows: Book[]): Book[] {
+  return rows.map(normalizeBook);
 }
 
 export async function listBooks(): Promise<Book[]> {
@@ -24,14 +106,14 @@ export async function listBooks(): Promise<Book[]> {
       .select()
       .from(booksTablePg)
       .orderBy(desc(booksTablePg.id));
-    return rows as Book[];
+    return normalizeBooks(rows as Book[]);
   }
   const rows = getSqliteDb()
     .select()
     .from(booksSqlite)
     .orderBy(desc(booksSqlite.id))
     .all();
-  return rows as Book[];
+  return normalizeBooks(rows as Book[]);
 }
 
 // Section queries
@@ -45,7 +127,7 @@ export async function listNewArrivals(limit = 24): Promise<Book[]> {
       .from(booksTablePg)
       .orderBy(desc(booksTablePg.addedAt ?? booksTablePg.id))
       .limit(pageSize);
-    return rows as Book[];
+    return normalizeBooks(rows as Book[]);
   }
   const rows = getSqliteDb()
     .select()
@@ -53,7 +135,7 @@ export async function listNewArrivals(limit = 24): Promise<Book[]> {
     .orderBy(desc(booksSqlite.addedAt ?? booksSqlite.id))
     .limit(pageSize)
     .all();
-  return rows as Book[];
+  return normalizeBooks(rows as Book[]);
 }
 
 export async function listTopRated(limit = 24, minCount = 10): Promise<Book[]> {
@@ -67,7 +149,7 @@ export async function listTopRated(limit = 24, minCount = 10): Promise<Book[]> {
       .where(gt(booksTablePg.ratingsCount, minCount))
       .orderBy(desc(booksTablePg.rating), desc(booksTablePg.ratingsCount))
       .limit(pageSize);
-    return rows as Book[];
+    return normalizeBooks(rows as Book[]);
   }
   const rows = getSqliteDb()
     .select()
@@ -76,7 +158,7 @@ export async function listTopRated(limit = 24, minCount = 10): Promise<Book[]> {
     .orderBy(desc(booksSqlite.rating), desc(booksSqlite.ratingsCount))
     .limit(pageSize)
     .all();
-  return rows as Book[];
+  return normalizeBooks(rows as Book[]);
 }
 
 export async function listTrendingNow(limit = 24): Promise<Book[]> {
@@ -107,7 +189,7 @@ export async function listTrendingNow(limit = 24): Promise<Book[]> {
       )
       .orderBy(desc(bookMetricsTablePg.trendingScore), desc(booksTablePg.id))
       .limit(pageSize);
-    return rows as Book[];
+    return normalizeBooks(rows as Book[]);
   }
   const db = getSqliteDb();
   const rows = db
@@ -131,7 +213,7 @@ export async function listTrendingNow(limit = 24): Promise<Book[]> {
     .orderBy(desc(bookMetricsTable.trendingScore), desc(booksSqlite.id))
     .limit(pageSize)
     .all();
-  return rows as Book[];
+  return normalizeBooks(rows as Book[]);
 }
 
 /**
@@ -153,7 +235,7 @@ export async function searchBooks(query: string): Promise<Book[]> {
         ),
       )
       .orderBy(desc(booksTablePg.id));
-    return rows as Book[];
+    return normalizeBooks(rows as Book[]);
   }
   // SQLite LIKE is case-insensitive for ASCII by default; good enough for our sample data.
   const rows = getSqliteDb()
@@ -164,7 +246,7 @@ export async function searchBooks(query: string): Promise<Book[]> {
     )
     .orderBy(desc(booksSqlite.id))
     .all();
-  return rows as Book[];
+  return normalizeBooks(rows as Book[]);
 }
 
 export async function listBooksPage(params: {
@@ -192,7 +274,7 @@ export async function listBooksPage(params: {
         .orderBy(desc(booksTablePg.id))
         .limit(pageSize + 1);
     }
-    const items = (rows as Book[]).slice(0, pageSize);
+    const items = normalizeBooks((rows as Book[]).slice(0, pageSize));
     const hasNext = rows.length > pageSize;
     const last = items[items.length - 1];
     const nextCursor =
@@ -217,7 +299,7 @@ export async function listBooksPage(params: {
       .limit(pageSize + 1)
       .all();
   }
-  const items = (rows as Book[]).slice(0, pageSize);
+  const items = normalizeBooks((rows as Book[]).slice(0, pageSize));
   const hasNext = rows.length > pageSize;
   const last = items[items.length - 1];
   const nextCursor =
@@ -251,7 +333,7 @@ export async function searchBooksPage(params: {
       .where(whereCond)
       .orderBy(desc(booksTablePg.id))
       .limit(pageSize + 1);
-    const items = (rows as Book[]).slice(0, pageSize);
+    const items = normalizeBooks((rows as Book[]).slice(0, pageSize));
     const hasNext = rows.length > pageSize;
     const last = items[items.length - 1];
     const nextCursor =
@@ -282,7 +364,7 @@ export async function searchBooksPage(params: {
       .limit(pageSize + 1)
       .all();
   }
-  const items = (rowsLite as Book[]).slice(0, pageSize);
+  const items = normalizeBooks((rowsLite as Book[]).slice(0, pageSize));
   const hasNext = rowsLite.length > pageSize;
   const lastLite = items[items.length - 1];
   const nextCursor =
@@ -299,14 +381,14 @@ export async function getBook(id: string): Promise<Book | undefined> {
       .from(booksTablePg)
       .where(eq(booksTablePg.id, id))
       .limit(1);
-    return rows[0] as Book | undefined;
+    return rows[0] ? normalizeBook(rows[0] as Book) : undefined;
   }
   const row = getSqliteDb()
     .select()
     .from(booksSqlite)
     .where(eq(booksSqlite.id, id))
     .get();
-  return row as Book | undefined;
+  return row ? normalizeBook(row as Book) : undefined;
 }
 
 export async function createBookRow(
@@ -337,7 +419,7 @@ export async function createBookRow(
         isbn: input.isbn as string | null | undefined,
       })
       .returning();
-    return created as Book;
+    return normalizeBook(created as Book);
   }
   getSqliteDb()
     .insert(booksSqlite)
@@ -365,7 +447,7 @@ export async function createBookRow(
     .from(booksSqlite)
     .where(eq(booksSqlite.id, id))
     .get();
-  return created as Book;
+  return normalizeBook(created as Book);
 }
 
 // Explicit provider surface for DI / testability. Keep the existing named
@@ -423,7 +505,7 @@ export async function updateBookRow(
       .set(setters)
       .where(eq(booksTablePg.id, id))
       .returning();
-    return updated as Book | undefined;
+    return updated ? normalizeBook(updated as Book) : undefined;
   }
   getSqliteDb()
     .update(booksSqlite)
@@ -435,7 +517,7 @@ export async function updateBookRow(
     .from(booksSqlite)
     .where(eq(booksSqlite.id, id))
     .get();
-  return updated as Book | undefined;
+  return updated ? normalizeBook(updated as Book) : undefined;
 }
 
 export async function deleteBookRow(id: string): Promise<boolean> {

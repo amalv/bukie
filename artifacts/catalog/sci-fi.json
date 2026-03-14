@@ -1,4 +1,4 @@
-[
+ï»¿[
     {
         "title":  "Dune",
         "authors":  [
@@ -8,7 +8,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1965,
         "description":  "A desert planet, a prophecy, and a struggle for spice power."
     },
@@ -21,7 +21,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1984,
         "description":  "Cyberpunk classic about cyberspace, AI, and corporate intrigue."
     },
@@ -34,9 +34,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1951,
-        "description":  "Psychohistory predicts a fall—knowledge preserves civilization."
+        "description":  "Psychohistory predicts a fallâ€”knowledge preserves civilization."
     },
     {
         "title":  "The Left Hand of Darkness",
@@ -46,7 +46,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1969,
         "description":  "Ambassador on a world of shifting gender and deep politics."
     },
@@ -58,7 +58,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1992,
         "description":  "A hacker and a courier chase a mind-hacking memetic virus."
     },
@@ -70,7 +70,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1989,
         "description":  "Pilgrims share tales en route to meet the Shrike."
     },
@@ -82,7 +82,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1985,
         "description":  "A child tactical prodigy trains to save humanity."
     },
@@ -94,7 +94,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1979,
         "description":  "Don\u0027t panic: cosmic absurdity after Earth\u0027s demolition."
     },
@@ -106,7 +106,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1949,
         "description":  "Dystopia of surveillance, Newspeak, and thoughtcrime."
     },
@@ -118,7 +118,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1932,
         "description":  "Engineered society of pleasure, control, and castes."
     },
@@ -130,7 +130,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1953,
         "description":  "A fireman who burns books begins to question everything."
     },
@@ -142,7 +142,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2011,
         "description":  "An astronaut survives on Mars with science and grit."
     },
@@ -154,7 +154,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1898,
         "description":  "Martians invade Earth with terrifying machines of war."
     },
@@ -166,7 +166,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1895,
         "description":  "A traveler jumps to a distant future divided by class."
     },
@@ -178,7 +178,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1968,
         "description":  "A bounty hunter questions reality while retiring rogue androids."
     },
@@ -190,7 +190,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1969,
         "description":  "Reality unravels in a mind-bending corporate psy-war."
     },
@@ -202,7 +202,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1977,
         "description":  "An undercover addict loses himself in surveillance and paranoia."
     },
@@ -214,9 +214,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1953,
-        "description":  "Benevolent overlords transform humanity’s future forever."
+        "description":  "Benevolent overlords transform humanityâ€™s future forever."
     },
     {
         "title":  "2001: A Space Odyssey",
@@ -226,7 +226,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1968,
         "description":  "A mysterious monolith guides humanity across the stars."
     },
@@ -238,7 +238,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1973,
         "description":  "Explorers enter a vast alien cylinder passing through the solar system."
     },
@@ -250,7 +250,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1974,
         "description":  "A soldier fights a relativistic war that outlasts his era."
     },
@@ -262,7 +262,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1959,
         "description":  "Power armor infantry battles bugs and questions citizenship."
     },
@@ -274,7 +274,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1966,
         "description":  "A lunar colony rebels with help from a sentient computer."
     },
@@ -286,9 +286,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1961,
-        "description":  "A human raised on Mars challenges Earth’s social norms."
+        "description":  "A human raised on Mars challenges Earthâ€™s social norms."
     },
     {
         "title":  "Old Man\u0027s War",
@@ -298,7 +298,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2005,
         "description":  "Seniors enlist for new bodies and interstellar combat."
     },
@@ -310,9 +310,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2006,
-        "description":  "First contact entangles Earth in an alien civilization’s crisis."
+        "description":  "First contact entangles Earth in an alien civilizationâ€™s crisis."
     },
     {
         "title":  "The Dark Forest",
@@ -322,7 +322,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2008,
         "description":  "Humanity hides its plans in a cosmos of hostile listeners."
     },
@@ -334,7 +334,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2010,
         "description":  "Cosmic-scale strategies decide the fate of civilizations."
     },
@@ -346,7 +346,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1974,
         "description":  "A physicist bridges twin worlds divided by politics and ideals."
     },
@@ -358,7 +358,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2014,
         "description":  "An expedition enters a forbidden zone where nature mutates."
     },
@@ -370,7 +370,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2019,
         "description":  "Stories that probe time, memory, and the nature of mind."
     },
@@ -382,7 +382,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2002,
         "description":  "Speculative tales about language, choice, and causality."
     },
@@ -394,7 +394,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2011,
         "description":  "A missing person case uncovers a solar-system conspiracy."
     },
@@ -406,7 +406,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2012,
         "description":  "A new threat escalates tensions across the system."
     },
@@ -418,9 +418,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2013,
-        "description":  "A mysterious ring opens—and humanity ventures beyond."
+        "description":  "A mysterious ring opensâ€”and humanity ventures beyond."
     },
     {
         "title":  "Ancillary Justice",
@@ -430,7 +430,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2013,
         "description":  "A starship AI seeks justice in a human body."
     },
@@ -442,7 +442,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1992,
         "description":  "Colonists begin the hard work of terraforming Mars."
     },
@@ -454,7 +454,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1993,
         "description":  "Mars transforms as factions fight over its future."
     },
@@ -466,7 +466,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1996,
         "description":  "A fully changed Mars faces politics, ecology, and identity."
     },
@@ -478,7 +478,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1962,
         "description":  "An alternate America questions truth under Axis rule."
     },
@@ -490,7 +490,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2006,
         "description":  "First contact becomes a study of consciousness and survival."
     },
@@ -502,7 +502,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1961,
         "description":  "A sentient ocean mirrors human memories and guilt."
     },
@@ -515,7 +515,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1972,
         "description":  "Stalkers scavenge alien zones full of dangerous artifacts."
     },
@@ -527,7 +527,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1969,
         "description":  "Scientists race to contain a deadly extraterrestrial microbe."
     },
@@ -539,7 +539,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1990,
         "description":  "Cloned dinosaurs run amok in a high-tech theme park."
     },
@@ -551,7 +551,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1987,
         "description":  "A mysterious object on the seafloor manipulates reality."
     },
@@ -563,7 +563,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1985,
         "description":  "A signal from the stars invites humanity to build a machine."
     },
@@ -575,7 +575,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1992,
         "description":  "Zones of thought shape a galaxy-spanning rescue and war."
     },
@@ -587,7 +587,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1999,
         "description":  "Traders and tyrants clash over a world awaiting sunrise."
     },
@@ -599,7 +599,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1953,
         "description":  "A telepathic society makes murder nearly impossible."
     },
@@ -611,7 +611,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1956,
         "description":  "Revenge and teleportation spark a man\u0027s transformation."
     },
@@ -623,7 +623,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1985,
         "description":  "A woman resists a theocratic regime that controls her body."
     },
@@ -635,9 +635,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2003,
-        "description":  "Bioengineering and hubris unravel the world’s balance."
+        "description":  "Bioengineering and hubris unravel the worldâ€™s balance."
     },
     {
         "title":  "The Hunger Games",
@@ -647,7 +647,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2008,
         "description":  "A televised death match pits districts against each other."
     },
@@ -659,7 +659,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2004,
         "description":  "Interlinked stories echo across time and place."
     },
@@ -671,7 +671,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1996,
         "description":  "A first contact mission wrestles with faith and tragedy."
     },
@@ -683,7 +683,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2014,
         "description":  "A found-family crew tunnels wormholes and shares stories."
     },
@@ -695,7 +695,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2015,
         "description":  "Engineered evolution creates an unexpected new civilization."
     },
@@ -707,7 +707,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2019,
         "description":  "Explorers awaken ancient intelligences with competing aims."
     },
@@ -719,9 +719,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2020,
-        "description":  "A traveler harvests data from parallel worlds—at a cost."
+        "description":  "A traveler harvests data from parallel worldsâ€”at a cost."
     },
     {
         "title":  "The Peripheral",
@@ -731,7 +731,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2014,
         "description":  "A small-town gamer stumbles into a time-shifted conspiracy."
     },
@@ -743,7 +743,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2020,
         "description":  "An AI assistant navigates geopolitics across split timelines."
     },
@@ -755,7 +755,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2002,
         "description":  "A mercenary solves a murder in a world of body-swapping."
     },
@@ -767,7 +767,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2014,
         "description":  "A gifted child may hold the key in a fungal apocalypse."
     },
@@ -779,7 +779,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2014,
         "description":  "A traveling troupe preserves art after a pandemic."
     },
@@ -791,7 +791,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1993,
         "description":  "A young woman forges a new belief in a collapsing America."
     },
@@ -803,7 +803,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1998,
         "description":  "Community and faith are tested under rising authoritarianism."
     },
@@ -815,9 +815,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1979,
-        "description":  "A woman time-slips into her ancestors’ brutal past."
+        "description":  "A woman time-slips into her ancestorsâ€™ brutal past."
     },
     {
         "title":  "Dawn",
@@ -827,7 +827,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1987,
         "description":  "Humanity awakens on an alien ship with difficult choices."
     },
@@ -839,7 +839,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1988,
         "description":  "A hybrid child struggles with identity between species."
     },
@@ -851,7 +851,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1989,
         "description":  "Transformation brings power and peril to a new mediator."
     },
@@ -863,7 +863,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1897,
         "description":  "An unseen scientist descends into paranoia and crime."
     },
@@ -875,7 +875,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1896,
         "description":  "Gruesome experiments blur the line between human and beast."
     },
@@ -887,9 +887,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1966,
-        "description":  "An experiment raises—and challenges—a man’s intelligence."
+        "description":  "An experiment raisesâ€”and challengesâ€”a manâ€™s intelligence."
     },
     {
         "title":  "The Giver",
@@ -899,7 +899,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1993,
         "description":  "A boy learns the hidden cost of his perfectly ordered world."
     },
@@ -911,7 +911,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1956,
         "description":  "A sheltered city faces curiosity about the wider cosmos."
     },
@@ -923,9 +923,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1950,
-        "description":  "Linked tales of human colonization—and loss—on Mars."
+        "description":  "Linked tales of human colonizationâ€”and lossâ€”on Mars."
     },
     {
         "title":  "The Illustrated Man",
@@ -935,7 +935,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1951,
         "description":  "Tattooed stories reveal futures both wondrous and dark."
     },
@@ -947,7 +947,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1970,
         "description":  "Explorers trek across an impossible megastructure."
     },
@@ -960,7 +960,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1974,
         "description":  "First contact reveals a brilliant yet perilous alien race."
     },
@@ -972,7 +972,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1980,
         "description":  "A planetary cycle sparks intrigue, prophecy, and power."
     },
@@ -984,7 +984,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1980,
         "description":  "An apprentice torturer begins a cryptic, far-future journey."
     },
@@ -996,7 +996,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1988,
         "description":  "A master gamer challenges an empire built on play."
     },
@@ -1008,7 +1008,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1987,
         "description":  "A shapeshifter battles the Culture in a sweeping space war."
     },
@@ -1020,7 +1020,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1990,
         "description":  "A covert agent faces his past through interleaved missions."
     },
@@ -1032,7 +1032,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2004,
         "description":  "A breakthrough in travel awakens an imprisoned threat."
     },
@@ -1044,7 +1044,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2005,
         "description":  "The galaxy fights back as conspiracies reach their climax."
     },
@@ -1056,7 +1056,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2000,
         "description":  "Archaeology and hard SF collide amid ancient ruins."
     },
@@ -1068,7 +1068,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2001,
         "description":  "A plague-scarred city hides secrets of identity and revenge."
     },
@@ -1080,7 +1080,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2005,
         "description":  "A mining crew rides an alien object into the unknown."
     },
@@ -1092,7 +1092,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2010,
         "description":  "A gentleman thief plots in a post-human solar system."
     },
@@ -1104,9 +1104,9 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1995,
-        "description":  "Nanotech reshapes society—and a young girl’s education."
+        "description":  "Nanotech reshapes societyâ€”and a young girlâ€™s education."
     },
     {
         "title":  "Anathem",
@@ -1116,7 +1116,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2008,
         "description":  "Secluded scholars face a crisis crossing math and cosmos."
     },
@@ -1128,7 +1128,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2015,
         "description":  "A shattered moon forces humanity into an orbital ark."
     },
@@ -1140,7 +1140,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2011,
         "description":  "A VR treasure hunt rewrites the rules of a dystopian world."
     },
@@ -1152,7 +1152,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2009,
         "description":  "Biotech and climate upheaval reshape power in Bangkok."
     },
@@ -1164,7 +1164,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2015,
         "description":  "Water rights turn the American Southwest into a battleground."
     },
@@ -1176,7 +1176,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  1969,
         "description":  "An envoy navigates politics and gender on a frozen world."
     },
@@ -1188,7 +1188,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2015,
         "description":  "A gifted student leaves home to join a distant university."
     },
@@ -1200,7 +1200,7 @@
         "categories":  [
                            "Science Fiction"
                        ],
-        "cover":  "/covers/placeholder.webp",
+        "cover":  "/covers/placeholder.svg",
         "year":  2010,
         "description":  "A powerful young woman confronts destiny in a war-torn land."
     }

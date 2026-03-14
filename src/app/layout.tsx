@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { randomUUID } from "node:crypto";
 import BookOpen from "lucide-react/dist/esm/icons/book-open.js";
 import { cookies } from "next/headers";
-import Script from "next/script";
 import { Container } from "@/design/layout/grid";
 import { darkThemeClass, lightThemeClass } from "@/design/tokens.css";
 import { ThemeToggle } from "../design/theme/ThemeToggle";
@@ -35,29 +33,12 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const pref = cookieStore.get("theme")?.value as "light" | "dark" | undefined;
   const themeClass = pref === "dark" ? darkThemeClass : lightThemeClass;
-  const initialThemeAttr = pref ?? "system";
-  const scriptId = randomUUID(); // Use randomUUID to generate a unique ID
+  const initialThemeAttr = pref ?? "light";
   return (
     <html lang="en" data-theme={initialThemeAttr}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${themeClass}`}
       >
-        <Script id={scriptId} strategy="beforeInteractive">{`
-          (function initTheme(){
-            try {
-              // Read theme cookie if present
-              var match = document.cookie.match(/(?:^|; )theme=([^;]+)/);
-              var cookiePref = match ? decodeURIComponent(match[1]) : null;
-              // Detect system preference
-              var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-              // Choose theme: cookie wins, else system
-              var theme = cookiePref || (prefersDark ? 'dark' : 'light');
-              document.documentElement.setAttribute('data-theme', theme);
-            } catch (e) {
-              console.error(e);
-            }
-          })();
-          `}</Script>
         <header className={headerStyles.header}>
           <Container>
             <div className={headerStyles.inner}>

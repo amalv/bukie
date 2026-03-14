@@ -12,9 +12,7 @@
 import { readdir, stat, rm } from "node:fs/promises";
 import { join } from "node:path";
 import type { Book } from "@/features/books/types";
-
-// Import typed catalogs (extendable for other genres later)
-import sciFi from "@/../artifacts/catalog/sci-fi";
+import baseCatalog from "@/../artifacts/catalog";
 
 const argHas = (flag: string) => process.argv.includes(flag);
 const COMMIT = argHas("--commit");
@@ -47,7 +45,7 @@ function referencedFromCatalog(books: Book[]): Set<string> {
 
 async function main() {
   const files = await listFiles(COVERS_DIR);
-  const referenced = referencedFromCatalog(sciFi);
+  const referenced = referencedFromCatalog(baseCatalog);
   const unused = files.filter((f) => !referenced.has(f));
 
   console.log(`covers total: ${files.length}`);

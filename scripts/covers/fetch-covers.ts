@@ -12,7 +12,10 @@
  */
 import { mkdir, writeFile, stat } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { buildOpenLibraryCandidates } from "./helpers";
+import {
+  findOpenLibraryCandidates,
+  getOpenLibraryHeaders,
+} from "./helpers";
 import { books as mockBooks } from "../../mocks/books";
 
 type Book = {
@@ -32,7 +35,6 @@ type Flags = {
   concurrency: number;
   onlyId?: string;
   noOptimize: boolean;
-  seoFilenames?: boolean;
   force?: boolean;
   onlyMissing?: boolean; // explicit alias; default true
   checkFiles?: boolean; // also treat non-placeholder covers as missing if file not found
@@ -46,20 +48,12 @@ function parseFlags(argv: string[]): Flags {
     else if (arg.startsWith("--concurrency=")) flags.concurrency = Number(arg.split("=")[1]);
     else if (arg.startsWith("--id=")) flags.onlyId = arg.split("=")[1];
     else if (arg === "--no-optimize") flags.noOptimize = true;
-    else if (arg === "--seo-filenames") flags.seoFilenames = true;
   else if (arg === "--force") flags.force = true;
     else if (arg === "--all") flags.onlyMissing = false;
     else if (arg === "--only-missing") flags.onlyMissing = true;
     else if (arg === "--check-files") flags.checkFiles = true;
   }
   return flags;
-}
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 let sharpSingleton: any | undefined;
@@ -72,7 +66,10 @@ async function getSharpOnce(): Promise<any> {
 }
 
 async function downloadCover(url: string, baseName: string, optimize: boolean): Promise<string> {
-  const res = await fetch(url, { redirect: "follow" });
+  const res = await fetch(url, {
+    redirect: "follow",
+    headers: getOpenLibraryHeaders(),
+  });
   if (!res.ok) throw new Error(`download failed: ${res.status} ${res.statusText}`);
   const buf = Buffer.from(await res.arrayBuffer());
   let rel = "";
@@ -179,13 +176,11 @@ async function main() {
       const book = queue.shift() as Book | undefined;
       if (!book) break;
       try {
-        const candidates = buildOpenLibraryCandidates(book);
+        const candidates = await findOpenLibraryCandidates(book);
         let usedUrl: string | undefined;
         for (const candidate of candidates) {
           try {
-            const baseName = flags.seoFilenames
-              ? `${book.id}-${slugify(book.title)}`
-              : book.id;
+            const baseName = book.id;
             const localPath = await downloadCover(
               candidate,
               baseName,

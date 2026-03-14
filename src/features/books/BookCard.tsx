@@ -30,7 +30,7 @@ export function BookCard({ book }: BookCardProps) {
           className={s.mediaLink}
         >
           <Image
-            src={book.cover?.trim() ? book.cover : "/covers/placeholder.webp"}
+            src={book.cover?.trim() ? book.cover : "/covers/placeholder.svg"}
             alt={`Cover of ${book.title} by ${book.author}`}
             // Use fill to let the image fill the media container and use object-fit to preserve aspect ratio.
             fill

@@ -1,7 +1,7 @@
 /**
- * Sync DB to the first 50 mock books and set cover paths to slugified WebP/JPG/PNG (prefers WebP, then JPG, then PNG).
- * - Deletes any DB rows not in the mock set (ids 1..50).
- * - Updates cover to "/covers/<id>-<title-slug>.<ext>" for kept rows, choosing ext by precedence.
+ * Sync DB rows to the typed catalog and canonical id-based cover assets.
+ * - Deletes DB rows that are no longer present in the typed catalog.
+ * - Updates cover to "/covers/<id>.<ext>" for kept rows, choosing ext by precedence.
  *
  * Run with:
  *   bunx tsx ./scripts/db/sync-covers.ts
@@ -12,25 +12,20 @@ import { books as mockBooks } from "../../mocks/books";
 import { stat } from "node:fs/promises";
 import path from "node:path";
 
-function slugify(input: string): string {
-  return input.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-}
-
 async function main() {
   await ensureDb();
   const dbBooks = await provider.listBooks();
 
-  // Build allowed id set from mocks (first 50 entries)
-  const allowed = new Set(mockBooks.slice(0, 50).map((b) => b.id));
+  // Build allowed id set from the combined typed catalog.
+  const allowed = new Set(mockBooks.map((b) => b.id));
   const expectedCover = new Map<string, string>();
-  for (const b of mockBooks.slice(0, 50)) {
-    const base = `${b.id}-${slugify(b.title)}`;
+  for (const b of mockBooks) {
     const candidates = [
-      path.join(process.cwd(), "public", "covers", `${base}.webp`),
-      path.join(process.cwd(), "public", "covers", `${base}.jpg`),
-      path.join(process.cwd(), "public", "covers", `${base}.png`),
+      path.join(process.cwd(), "public", "covers", `${b.id}.webp`),
+      path.join(process.cwd(), "public", "covers", `${b.id}.jpg`),
+      path.join(process.cwd(), "public", "covers", `${b.id}.png`),
     ];
-    let rel = `/covers/${base}.webp`;
+    let rel = `/covers/${b.id}.webp`;
     for (const full of candidates) {
       try {
         await stat(full);
@@ -48,13 +43,13 @@ async function main() {
 
   for (const row of dbBooks) {
     if (!allowed.has(row.id)) {
-  await provider.deleteBookRow(row.id);
+      await provider.deleteBookRow(row.id);
       deleted++;
       continue;
     }
     const want = expectedCover.get(row.id)!;
     if (row.cover !== want) {
-  await provider.updateBookRow(row.id, { cover: want });
+      await provider.updateBookRow(row.id, { cover: want });
       updated++;
     }
   }

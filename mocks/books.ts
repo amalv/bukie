@@ -1,4 +1,4 @@
 import type { Book } from "../src/features/books/types";
-import sciFiCatalog from "../artifacts/catalog/sci-fi";
+import baseCatalog from "../artifacts/catalog";
 
-export const books: Book[] = sciFiCatalog;
+export const books: Book[] = baseCatalog;

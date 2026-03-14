@@ -1,63 +1,63 @@
-# Covers pipeline: source to UI
+# Covers Pipeline: Source to UI
 
 This document explains how cover images flow from the catalog source to the UI, how we enrich covers with local assets, and how we keep the covers folder clean.
 
 ## Why this strategy
 
-- Type-safety and SSR: keep the canonical catalog as typed TS (`artifacts/catalog/*.ts`).
-- Deterministic rendering: server provides stable `cover` URLs that Next can pre-render.
-- Performance & SEO: prefer optimized local WebP files with optional SEO-friendly names.
-- Maintainability: enrich covers via a small mapping derived from available assets instead of hardcoding per-item URLs in JSX.
+- Type safety and SSR: keep the canonical catalog as typed TS in `artifacts/catalog/*.ts`.
+- Deterministic rendering: each book resolves to a stable `cover` URL before the app renders.
+- Performance: prefer optimized local WebP files under `public/covers`.
+- Maintainability: use one canonical filename shape, `/covers/<id>.webp`, plus a temporary legacy fallback while older files are being cleaned up.
 
 ## Flow at a glance
 
-- Source of truth: `artifacts/catalog/sci-fi.ts` exports a typed `Book[]` with placeholder covers.
-- Enrichment: the module derives better cover paths when matching files exist in `public/covers` using a simple title slug → filename map.
-- Import: `bun run db:import:sci-fi` ingests the catalog into the DB and persists fields including `cover`.
-- Fetching: `bun run covers:fetch` downloads from Open Library (ISBN first, then title heuristics) and writes optimized assets under `public/covers`.
-- Sync: `bun run db:sync:covers` optionally updates DB rows to the best local extension and SEO filenames.
-- Prune: `bun run covers:prune` reports (and with `--commit`, deletes) files not referenced by the current catalog.
+- Source of truth: `artifacts/catalog/*.ts` exports typed `Book[]` batches, and `artifacts/catalog/index.ts` combines them for the app seed path.
+- Enrichment: `artifacts/catalog/build.ts` checks `public/covers` and resolves each book to `/covers/<id>.webp` when the local asset exists.
+- Import: category-specific `bun run db:import:*` commands ingest each batch into the DB and persist fields including `cover`.
+- Fetching: `bun run covers:fetch` downloads from Open Library (ISBN first, then Search API and manual fallbacks) and writes assets under `public/covers`.
+- Sync: `bun run db:sync:covers` updates DB rows to the best local extension for the current typed catalog.
+- Prune: `bun run covers:prune` reports, and with `--commit` deletes, files not referenced by the current catalog.
 
 ## Mermaid: end-to-end
 
 ```mermaid
 flowchart LR
   subgraph Source
-    A[artifacts/catalog/sci-fi.ts\nBook[] typed] --> B{enrich covers\nvia slug map}
+    A[artifacts/catalog/*.ts\nBook[] typed] --> B[artifacts/catalog/index.ts]
+    B --> C[build.ts resolves\n/covers/<id>.webp]
   end
-  B --> C[db:import:sci-fi\nimport-batch.ts]
-  C -->|rows| D[(Database)]
+
+  C --> D[db:import:* \nimport-batch.ts]
+  D -->|rows| E[(Database)]
 
   subgraph Assets
-    E[scripts/covers/fetch-covers.ts\nOpen Library] --> F[public/covers/*.webp]
-    F --> G[db:sync:covers\nprefer .webp]
-    G --> D
+    F[scripts/covers/fetch-covers.ts\nOpen Library] --> G[public/covers/*.webp]
+    G --> H[db:sync:covers\nprefer local id-based files]
+    H --> E
+    G --> I[covers:prune\nremove unreferenced files]
   end
 
   subgraph App
-    D --> H[Next.js UI]
-    H --> F
+    E --> J[Next.js UI]
+    J --> G
   end
 ```
 
 ## Contracts
 
-- Input: typed `Book` items with `cover` (often placeholder) and optional `isbn`.
+- Input: typed `Book` items with `cover` and optional `isbn`.
 - Output: `cover` paths that are either existing local assets (`/covers/*.webp|jpg|png`) or the placeholder.
-- Error modes: missing files fall back to placeholder; fetch failures are non-fatal.
+- Error mode: missing files fall back to `/covers/placeholder.svg`.
 
 ## Pruning unused covers
 
-- Dry-run by default: `bun run covers:prune` prints counts; add `--print` to list names.
-- Delete with confirmation: `bun run covers:prune -- --commit` removes extras.
-- Scope: compares files under `public/covers` to `cover` values in the current sci-fi catalog.
+- Dry-run by default: `bun run covers:prune` prints counts.
+- Add `--print` to list filenames.
+- Delete with confirmation: `bun run covers:prune -- --commit`.
+- Scope: compares files under `public/covers` to `cover` values in the combined typed catalog.
 
 ## Notes
 
-- Add more genres by importing their typed catalogs into the prune script.
-- Title slugs follow a conservative normalization (lowercase, ASCII, hyphens, drop punctuation).
-- Keep stories/tests deterministic by re-exporting from `mocks/catalog/*.ts`.
-
-## Does this make sense?
-
-- Yes—typed catalogs give compile-time guarantees and SSR-friendly data. We enrich covers in one place, keep assets optimized and local for performance, and prune safely to avoid bloat. The UI stays simple: it just renders `book.cover` with an accessible Image and a placeholder fallback.
+- New category batches should be exported from `artifacts/catalog/index.ts` so cover tooling sees them automatically.
+- Generated catalog IDs are deterministic, so the cover filename contract stays stable across re-imports.
+- Generated importer reports are local-only artifacts and should not be committed.

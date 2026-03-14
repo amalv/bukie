@@ -12,6 +12,7 @@
  */
 import { writeFile, readFile as fsReadFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { ensureDb } from "../../src/db/client";
 import { provider } from "../../src/db/provider";
 import type { Book } from "../../src/features/books/types";
@@ -49,13 +50,40 @@ type Args = {
 };
 
 function parseArgs(argv: string[]): Args {
-  const arg = Object.fromEntries(
-    argv
-      .slice(2)
-      .filter((s) => s.startsWith("--"))
-      .map((s) => s.replace(/^--/, ""))
-      .map((kv) => kv.split("=", 2)) as Array<[string, string | undefined]>,
-  ) as Record<string, string | undefined>;
+  const tokens = argv.slice(2);
+  const arg: Record<string, string | undefined> = {};
+
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (!token.startsWith("--")) continue;
+
+    const trimmed = token.replace(/^--/, "");
+    const [key, initialValue] = trimmed.split("=", 2);
+
+    if (initialValue !== undefined) {
+      let value = initialValue;
+      while (index + 1 < tokens.length && !tokens[index + 1].startsWith("--")) {
+        value = `${value} ${tokens[index + 1]}`;
+        index += 1;
+      }
+      arg[key] = value;
+      continue;
+    }
+
+    if (index + 1 < tokens.length && !tokens[index + 1].startsWith("--")) {
+      let value = tokens[index + 1];
+      index += 1;
+      while (index + 1 < tokens.length && !tokens[index + 1].startsWith("--")) {
+        value = `${value} ${tokens[index + 1]}`;
+        index += 1;
+      }
+      arg[key] = value;
+      continue;
+    }
+
+    arg[key] = undefined;
+  }
+
   const report = arg.report;
   const batchSize = Number(arg["batch-size"] ?? arg.batchSize ?? 100) || 100;
   const dryRun = (arg["dry-run"] ?? "").toLowerCase() === "true" ||
@@ -195,7 +223,7 @@ async function main() {
       if (coverCandidate) {
         base.cover = coverCandidate;
       } else if (!willUpdateExisting) {
-        base.cover = "/covers/placeholder.webp";
+        base.cover = "/covers/placeholder.svg";
       }
       const bookLike = base as Omit<Book, "id"> & { id?: string };
       ingestPayload.push(bookLike);
@@ -225,7 +253,7 @@ async function main() {
 
   const finished = Date.now();
   const report: BatchReport = {
-  input: args.input ? path.resolve(process.cwd(), args.input) : "mocks/books.ts",
+    input: args.input ?? "mocks/books.ts",
     processed: items.length,
     created,
     updated,
@@ -257,7 +285,7 @@ async function main() {
           .replace(/\.(json|ts|tsx|js|mjs|cjs)$/i, "")
       : "import";
     const base = args.category
-      ? args.category.toLowerCase().replace(/\s+/g, "-")
+      ? args.category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
       : baseFromInput;
     return `report-${base}.json`;
   })();
@@ -287,9 +315,10 @@ async function loadPayload(args: Args): Promise<InputBook[]> {
       return arr as InputBook[];
     }
     // TS/JS module path: expect a default export array or a named export with catalog/books/items
-    const mod = await import(full);
+    const mod = await import(pathToFileURL(full).href);
     const candidate =
       (mod.default as unknown) ||
+      (mod.baseCatalog as unknown) ||
       (mod.sciFiCatalog as unknown) ||
       (mod.books as unknown) ||
       (mod.items as unknown);

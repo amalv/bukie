@@ -3,6 +3,7 @@
 import Moon from "lucide-react/dist/esm/icons/moon.js";
 import Sun from "lucide-react/dist/esm/icons/sun.js";
 import { useEffect, useState, useTransition } from "react";
+import { darkThemeClass, lightThemeClass } from "@/design/tokens.css";
 import { setTheme } from "./actions";
 import * as s from "./toggle.css";
 
@@ -17,6 +18,10 @@ export function ThemeToggle() {
 
   function apply(next: "light" | "dark") {
     document.documentElement.setAttribute("data-theme", next);
+    document.body.classList.remove(lightThemeClass, darkThemeClass);
+    document.body.classList.add(
+      next === "dark" ? darkThemeClass : lightThemeClass,
+    );
   }
 
   function onToggle() {

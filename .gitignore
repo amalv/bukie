@@ -58,6 +58,12 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
+# Generated importer reports stay local; keep only samples tracked.
+artifacts/report-*.json
+artifacts/report-*.md
+!artifacts/report-sample.json
+!artifacts/report-sample.md
+
 *storybook.log
 storybook-static
 
