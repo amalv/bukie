@@ -7,7 +7,8 @@
  * Usage (PowerShell):
  *   bunx tsx ./scripts/db/import-batch.ts -- --batch-size=100 --dry-run
  *   bunx tsx ./scripts/db/import-batch.ts -- --batch-size=100 --report=./artifacts/report-YYYY-MM-DD.json
- *   bunx tsx ./scripts/db/import-batch.ts -- --input=./artifacts/catalog/sci-fi.json --category="Science Fiction" --batch-size=100
+ *   # Input can be a JSON file or a TS/JS module exporting an array
+ *   bunx tsx ./scripts/db/import-batch.ts -- --input=./artifacts/catalog/sci-fi.ts --category="Science Fiction" --batch-size=100
  */
 import { writeFile, readFile as fsReadFile } from "node:fs/promises";
 import path from "node:path";
@@ -20,6 +21,7 @@ import {
   isValidIsbn13,
   normalizeAuthor,
 } from "../../src/features/books/importer/validate";
+import { createExistingBookMatcher } from "../../src/features/books/importer/match";
 import { ingestBooks, type IngestMode } from "../../src/db/ingest";
 
 type InputBook = Partial<Book> & {
@@ -118,18 +120,7 @@ async function main() {
   // - Prefer exact ISBN match when available
   // - Fallback to normalized title+author match
   const existing = await provider.listBooks();
-  const norm = (s: string) => s.trim().toLowerCase();
-  const stripIsbn = (s: string) => s.replace(/[-\s]/g, "");
-  const byIsbn = new Map<string, string>();
-  const byKey = new Map<string, string>();
-  for (const b of existing) {
-    if (b.isbn && typeof b.isbn === "string" && b.isbn.trim().length > 0) {
-      byIsbn.set(stripIsbn(b.isbn), b.id);
-    }
-    const t = (b.title ?? "");
-    const a = (b.author ?? "");
-    if (t && a) byKey.set(`${norm(t)}|${norm(a)}`, b.id);
-  }
+  const matchExistingBook = createExistingBookMatcher(existing);
   
 
   const results: PerBookResult[] = [];
@@ -164,15 +155,11 @@ async function main() {
       }
 
       // Try to match an existing row to update (stable ids); else we'll create
-      let matchedId: string | undefined;
-      if (chosenIsbn) {
-        const k = stripIsbn(chosenIsbn);
-        matchedId = byIsbn.get(k);
-      }
-      if (!matchedId) {
-        const key = `${norm(title)}|${norm(authorJoined)}`;
-        matchedId = byKey.get(key);
-      }
+      const matchedId = matchExistingBook({
+        title,
+        author: authorJoined,
+        isbn: chosenIsbn,
+      });
   const { randomUUID: genId } = await import("node:crypto");
   const id = src.id?.toString().trim() || matchedId || genId();
 
@@ -265,7 +252,9 @@ async function main() {
   // Always write a report (KISS): if no --report provided, derive a sensible default
   const defaultReportName = (() => {
     const baseFromInput = args.input
-      ? path.basename(args.input).replace(/\.json$/i, "")
+      ? path
+          .basename(args.input)
+          .replace(/\.(json|ts|tsx|js|mjs|cjs)$/i, "")
       : "import";
     const base = args.category
       ? args.category.toLowerCase().replace(/\s+/g, "-")
@@ -287,10 +276,25 @@ async function main() {
 async function loadPayload(args: Args): Promise<InputBook[]> {
   if (args.input) {
     const full = path.resolve(process.cwd(), args.input);
-    const raw = await fsReadFile(full, "utf8");
-    const data = JSON.parse(raw);
-    const arr = Array.isArray(data) ? data : Array.isArray((data as any).items) ? (data as any).items : [];
-    return arr as InputBook[];
+    if (/\.json$/i.test(full)) {
+      const raw = await fsReadFile(full, "utf8");
+      const data = JSON.parse(raw);
+      const arr = Array.isArray(data)
+        ? data
+        : Array.isArray((data as any).items)
+          ? (data as any).items
+          : [];
+      return arr as InputBook[];
+    }
+    // TS/JS module path: expect a default export array or a named export with catalog/books/items
+    const mod = await import(full);
+    const candidate =
+      (mod.default as unknown) ||
+      (mod.sciFiCatalog as unknown) ||
+      (mod.books as unknown) ||
+      (mod.items as unknown);
+    const arr = Array.isArray(candidate) ? (candidate as InputBook[]) : [];
+    return arr;
   }
   const mod = await import("../../mocks/books");
   const books = (mod.books ?? []) as InputBook[];

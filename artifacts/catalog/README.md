@@ -24,6 +24,6 @@ Example entry:
 
 How to import:
 - Dry run:
-  bunx tsx ./scripts/db/import-batch.ts -- --input=./artifacts/catalog/sci-fi.json --category="Science Fiction" --batch-size=100 --dry-run
+  bunx tsx ./scripts/db/import-batch.ts -- --input=./artifacts/catalog/sci-fi.ts --category="Science Fiction" --batch-size=100 --dry-run
 - Write with report:
-  bunx tsx ./scripts/db/import-batch.ts -- --input=./artifacts/catalog/sci-fi.json --category="Science Fiction" --batch-size=100 --report=./artifacts/report-sci-fi.json
+  bunx tsx ./scripts/db/import-batch.ts -- --input=./artifacts/catalog/sci-fi.ts --category="Science Fiction" --batch-size=100 --report=./artifacts/report-sci-fi.json
