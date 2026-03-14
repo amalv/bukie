@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Column, Container, Grid } from "../design/layout/grid";
-import { boxHelper } from "../design/layout/grid/grid.css";
-import { lightThemeClass, tokens } from "../design/tokens.css";
+import { boxHelperClass } from "../design/layout/grid/styles";
+import { lightThemeClass, tokens } from "../design/tokens";
 
 const meta: Meta = {
   title: "Design/Grid",
@@ -30,7 +30,7 @@ export const Basic: StoryObj = {
       <Grid>
         {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
           <Column key={n} span={1}>
-            <div className={boxHelper}>{n}</div>
+            <div className={boxHelperClass}>{n}</div>
           </Column>
         ))}
       </Grid>
@@ -43,19 +43,19 @@ export const Gutters: StoryObj = {
     <Container>
       <Grid gap="md">
         <Column span={6}>
-          <div className={boxHelper}>6</div>
+          <div className={boxHelperClass}>6</div>
         </Column>
         <Column span={6}>
-          <div className={boxHelper}>6</div>
+          <div className={boxHelperClass}>6</div>
         </Column>
         <Column span={4}>
-          <div className={boxHelper}>4</div>
+          <div className={boxHelperClass}>4</div>
         </Column>
         <Column span={4}>
-          <div className={boxHelper}>4</div>
+          <div className={boxHelperClass}>4</div>
         </Column>
         <Column span={4}>
-          <div className={boxHelper}>4</div>
+          <div className={boxHelperClass}>4</div>
         </Column>
       </Grid>
     </Container>
@@ -67,13 +67,13 @@ export const ResponsiveSpans: StoryObj = {
     <Container>
       <Grid gap="sm">
         <Column span={{ base: 12, sm: 6, md: 4 }}>
-          <div className={boxHelper}>12 → 6 → 4</div>
+          <div className={boxHelperClass}>12 -&gt; 6 -&gt; 4</div>
         </Column>
         <Column span={{ base: 12, sm: 6, md: 4 }}>
-          <div className={boxHelper}>12 → 6 → 4</div>
+          <div className={boxHelperClass}>12 -&gt; 6 -&gt; 4</div>
         </Column>
         <Column span={{ base: 12, sm: 12, md: 4 }}>
-          <div className={boxHelper}>12 → 12 → 4</div>
+          <div className={boxHelperClass}>12 -&gt; 12 -&gt; 4</div>
         </Column>
       </Grid>
     </Container>

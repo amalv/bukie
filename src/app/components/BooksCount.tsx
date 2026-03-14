@@ -1,4 +1,4 @@
-import * as s from "../page.css";
+import { pageStyles as s } from "../pageStyles";
 
 interface BooksCountProps {
   count: number;

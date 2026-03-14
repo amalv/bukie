@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { lightThemeClass } from "@/design/tokens.css";
-import * as skel from "./BookCard.skeleton.css";
+import { lightThemeClass } from "@/design/tokens";
 import { BookList } from "./BookList";
 
 describe("BookList empty states", () => {
@@ -49,7 +48,7 @@ describe("BookList", () => {
 
   it("renders 8 skeletons when loading", () => {
     const { container } = render(wrap(<BookList loading />));
-    const skeletons = container.getElementsByClassName(skel.skeleton);
+    const skeletons = container.getElementsByClassName("book-card-skeleton");
     expect(skeletons.length).toBe(8);
   });
 

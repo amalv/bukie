@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { lightThemeClass } from "@/design/tokens.css";
+import { lightThemeClass } from "@/design/tokens";
 import { BookCard } from "./BookCard";
 import type { Book } from "./types";
 
@@ -111,7 +111,7 @@ describe("BookCard", () => {
 
   it("renders exactly one star icon for rating row", () => {
     const { container } = render(<BookCard book={book} />);
-    const stars = container.querySelectorAll('svg[class*="starIcon"]');
+    const stars = container.querySelectorAll(".book-card-star-icon");
     expect(stars.length).toBe(1);
   });
 

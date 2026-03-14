@@ -1,4 +1,4 @@
-import { lightThemeClass } from "@/design/tokens.css";
+import { lightThemeClass } from "@/design/tokens";
 import { BookList } from "@/features/books/BookList";
 import { books } from "../../mocks/books";
 

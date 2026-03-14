@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
-import { createVanillaExtractPlugin } from "@vanilla-extract/next-plugin";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1"],
   images: {
     formats: ["image/webp"],
     remotePatterns: [
@@ -13,4 +13,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default createVanillaExtractPlugin()(nextConfig);
+export default nextConfig;

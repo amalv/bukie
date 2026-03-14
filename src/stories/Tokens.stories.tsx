@@ -1,10 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import { lightThemeClass, tokens } from "../design/tokens.css";
-import { swatch } from "./tokens.css";
+import { lightThemeClass, tokens } from "../design/tokens";
 
-// Shared token keys to avoid duplication
 const SPACING_KEYS = ["0", "0_5", "1", "1_5", "2", "3", "4", "6", "8"] as const;
 const TYPOGRAPHY_KEYS = ["xs", "sm", "md", "lg", "xl"] as const;
 
@@ -35,7 +33,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          "Foundational tokens inspired by Material 3. Apply the exported theme class (lightThemeClass) high in your app tree (e.g., on the layout wrapper) and reference token values in components/styles. Keep components small and use tokens via Vanilla Extract. This story previews colors, spacing, and type scale.",
+          "Foundational tokens inspired by Material 3. Apply the exported theme class high in your app tree and reference the shared token values or CSS variables from Tailwind-powered components. This story previews colors, spacing, and type scale.",
       },
     },
   },
@@ -61,22 +59,31 @@ export const Colors: StoryObj = {
   render: () => (
     <Stack>
       <Row>
-        <div className={swatch} style={{ background: tokens.color.primary }} />
+        <div
+          className="h-6 w-12 rounded border border-[#ddd]"
+          style={{ background: tokens.color.primary }}
+        />
         <span>primary / onPrimary</span>
       </Row>
       <Row>
-        <div className={swatch} style={{ background: tokens.color.surface }} />
+        <div
+          className="h-6 w-12 rounded border border-[#ddd]"
+          style={{ background: tokens.color.surface }}
+        />
         <span>surface / onSurface</span>
       </Row>
       <Row>
         <div
-          className={swatch}
+          className="h-6 w-12 rounded border border-[#ddd]"
           style={{ background: tokens.color.background }}
         />
         <span>background / onBackground</span>
       </Row>
       <Row>
-        <div className={swatch} style={{ background: tokens.color.error }} />
+        <div
+          className="h-6 w-12 rounded border border-[#ddd]"
+          style={{ background: tokens.color.error }}
+        />
         <span>error / onError</span>
       </Row>
     </Stack>
@@ -90,9 +97,8 @@ export const Spacing: StoryObj = {
     useEffect(() => {
       if (!ref.current) return;
       const el = ref.current;
-      const keys = SPACING_KEYS;
       const next: Record<string, string> = {};
-      for (const k of keys) {
+      for (const k of SPACING_KEYS) {
         const v = tokens.spacing[k];
         const m = /^var\((--[^)]+)\)/.exec(v);
         next[k] = m ? getComputedStyle(el).getPropertyValue(m[1]).trim() : v;
@@ -137,14 +143,12 @@ export const Typography: StoryObj = {
     useEffect(() => {
       if (!ref.current) return;
       const el = ref.current;
-      const keys = TYPOGRAPHY_KEYS;
       const next: Record<string, string> = {};
-      for (const k of keys) {
+      for (const k of TYPOGRAPHY_KEYS) {
         const v = tokens.typography[k];
         const m = /^var\((--[^)]+)\)/.exec(v);
         next[k] = m ? getComputedStyle(el).getPropertyValue(m[1]).trim() : v;
       }
-      // line height
       const lh = tokens.typography.lineHeight.normal;
       const lm = /^var\((--[^)]+)\)/.exec(lh);
       next.lineHeight = lm
@@ -163,7 +167,7 @@ export const Typography: StoryObj = {
                 lineHeight: tokens.typography.lineHeight.normal,
               }}
             >
-              The quick brown fox — {k} ({resolved[k] ?? tokens.typography[k]})
+              The quick brown fox - {k} ({resolved[k] ?? tokens.typography[k]})
             </div>
           ))}
         </Stack>

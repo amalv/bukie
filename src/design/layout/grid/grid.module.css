@@ -1,0 +1,147 @@
+.container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 100%;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 960px;
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1280px;
+    padding-inline: 1.75rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1480px;
+    padding-inline: 2rem;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.gapNone {
+  gap: 0;
+}
+
+.gapXs {
+  gap: 0.25rem;
+}
+
+.gapSm {
+  gap: 0.5rem;
+}
+
+.gapMd {
+  gap: 1rem;
+}
+
+.gapLg {
+  gap: 1.5rem;
+}
+
+.gapXl {
+  gap: 2rem;
+}
+
+.column {
+  grid-column: span var(--col-base, 12) / span var(--col-base, 12);
+}
+
+@media (min-width: 640px) {
+  .column {
+    grid-column:
+      span var(--col-sm, var(--col-base, 12)) / span
+      var(--col-sm, var(--col-base, 12));
+  }
+}
+
+@media (min-width: 768px) {
+  .column {
+    grid-column:
+      span var(--col-md, var(--col-sm, var(--col-base, 12))) / span
+      var(--col-md, var(--col-sm, var(--col-base, 12)));
+  }
+}
+
+@media (min-width: 1024px) {
+  .column {
+    grid-column:
+      span var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12)))) /
+      span var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12))));
+  }
+}
+
+@media (min-width: 1280px) {
+  .column {
+    grid-column:
+      span
+      var(
+        --col-xl,
+        var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12))))
+      )
+      / span
+      var(
+        --col-xl,
+        var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12))))
+      );
+  }
+}
+
+@media (min-width: 600px) {
+  .column {
+    grid-column:
+      span var(--col-sm, var(--col-base, 12)) / span
+      var(--col-sm, var(--col-base, 12));
+  }
+}
+
+@media (min-width: 905px) {
+  .column {
+    grid-column:
+      span var(--col-md, var(--col-sm, var(--col-base, 12))) / span
+      var(--col-md, var(--col-sm, var(--col-base, 12)));
+  }
+}
+
+@media (min-width: 1240px) {
+  .column {
+    grid-column:
+      span var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12)))) /
+      span var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12))));
+  }
+}
+
+@media (min-width: 1440px) {
+  .column {
+    grid-column:
+      span
+      var(
+        --col-xl,
+        var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12))))
+      )
+      / span
+      var(
+        --col-xl,
+        var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12))))
+      );
+  }
+}

@@ -1,5 +1,6 @@
 import type React from "react";
-import { type ResponsiveSpan, resolveSpanClasses } from "./helpers";
+import styles from "./grid.module.css";
+import { type ResponsiveSpan, resolveSpanStyle } from "./helpers";
 
 export type ColumnProps = React.PropsWithChildren<{
   span?: ResponsiveSpan;
@@ -11,9 +12,12 @@ export const Column: React.FC<ColumnProps> = ({
   className,
   children,
 }) => {
-  const spans = resolveSpanClasses(span);
+  const style = resolveSpanStyle(span);
   return (
-    <div className={[...spans, className].filter(Boolean).join(" ")}>
+    <div
+      className={[styles.column, className].filter(Boolean).join(" ")}
+      style={style}
+    >
       {children}
     </div>
   );

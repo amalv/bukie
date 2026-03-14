@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { lightThemeClass } from "@/design/tokens.css";
+import { lightThemeClass } from "@/design/tokens";
 import { BookDetails } from "@/features/books/BookDetails";
 
 const meta = {

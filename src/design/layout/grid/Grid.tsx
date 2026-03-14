@@ -1,8 +1,8 @@
 import type React from "react";
-import { gap, grid } from "./grid.css";
+import styles from "./grid.module.css";
 
 export type GridProps = React.PropsWithChildren<{
-  gap?: keyof typeof gap;
+  gap?: "none" | "xs" | "sm" | "md" | "lg" | "xl";
   className?: string;
 }>;
 
@@ -11,7 +11,22 @@ export const Grid: React.FC<GridProps> = ({
   className,
   children,
 }) => (
-  <div className={[grid, gap[gapKey], className].filter(Boolean).join(" ")}>
+  <div
+    className={[
+      styles.grid,
+      {
+        none: styles.gapNone,
+        xs: styles.gapXs,
+        sm: styles.gapSm,
+        md: styles.gapMd,
+        lg: styles.gapLg,
+        xl: styles.gapXl,
+      }[gapKey],
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ")}
+  >
     {children}
   </div>
 );

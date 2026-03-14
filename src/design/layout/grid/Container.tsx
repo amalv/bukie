@@ -1,5 +1,5 @@
 import type React from "react";
-import { container } from "./grid.css";
+import styles from "./grid.module.css";
 
 export type ContainerProps = React.PropsWithChildren<{
   className?: string;
@@ -9,7 +9,7 @@ export const Container: React.FC<ContainerProps> = ({
   className,
   children,
 }) => (
-  <div className={[container, className].filter(Boolean).join(" ")}>
+  <div className={[styles.container, className].filter(Boolean).join(" ")}>
     {children}
   </div>
 );

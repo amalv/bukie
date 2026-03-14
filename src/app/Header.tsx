@@ -1,11 +1,12 @@
 import { ThemeToggle } from "@/design/theme/ThemeToggle";
-import * as s from "./header.css";
 
 export default function Header() {
   return (
-    <header className={s.header}>
-      <div>Bukie</div>
-      <ThemeToggle />
+    <header className="fixed inset-x-0 top-0 z-[100] border-b border-[color:var(--color-outline)] bg-[var(--color-background)] text-[var(--color-on-surface)]">
+      <div className="flex min-h-14 items-center justify-between px-[var(--spacing-2)]">
+        <div>Bukie</div>
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

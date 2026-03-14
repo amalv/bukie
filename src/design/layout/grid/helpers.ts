@@ -1,4 +1,4 @@
-import { spanClasses } from "./grid.css";
+import type { CSSProperties } from "react";
 
 export type ResponsiveSpan =
   | number
@@ -25,16 +25,24 @@ const clamp = (n: number) =>
     | 11
     | 12;
 
-export const resolveSpanClasses = (span: ResponsiveSpan): string[] => {
-  const classes: string[] = [];
+type ColumnVars = CSSProperties & {
+  "--col-base"?: string;
+  "--col-sm"?: string;
+  "--col-md"?: string;
+  "--col-lg"?: string;
+  "--col-xl"?: string;
+};
+
+export const resolveSpanStyle = (span: ResponsiveSpan): ColumnVars => {
+  const style: ColumnVars = {};
   if (typeof span === "number") {
-    classes.push(spanClasses.base[clamp(span)]);
-    return classes;
+    style["--col-base"] = String(clamp(span));
+    return style;
   }
-  if (span.base != null) classes.push(spanClasses.base[clamp(span.base)]);
-  if (span.sm != null) classes.push(spanClasses.sm[clamp(span.sm)]);
-  if (span.md != null) classes.push(spanClasses.md[clamp(span.md)]);
-  if (span.lg != null) classes.push(spanClasses.lg[clamp(span.lg)]);
-  if (span.xl != null) classes.push(spanClasses.xl[clamp(span.xl)]);
-  return classes;
+  if (span.base != null) style["--col-base"] = String(clamp(span.base));
+  if (span.sm != null) style["--col-sm"] = String(clamp(span.sm));
+  if (span.md != null) style["--col-md"] = String(clamp(span.md));
+  if (span.lg != null) style["--col-lg"] = String(clamp(span.lg));
+  if (span.xl != null) style["--col-xl"] = String(clamp(span.xl));
+  return style;
 };
