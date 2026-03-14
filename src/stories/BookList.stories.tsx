@@ -2,13 +2,15 @@ import { lightThemeClass } from "@/design/tokens.css";
 import { BookList } from "@/features/books/BookList";
 import { books } from "../../mocks/books";
 
+const sampleBooks = books.slice(0, 12);
+
 export default {
   title: "Book List",
 };
 
 export const Basic = () => (
   <div className={lightThemeClass}>
-    <BookList books={books} />
+    <BookList books={sampleBooks} />
   </div>
 );
 
@@ -33,8 +35,8 @@ export const Empty = () => (
 export const WithFooter = () => (
   <div className={lightThemeClass}>
     <BookList
-      books={books.slice(0, 4)}
-      footer={<div style={{ padding: "1rem" }}>Pagination coming soon…</div>}
+      books={sampleBooks.slice(0, 4)}
+      footer={<div style={{ padding: "1rem" }}>Pagination coming soon...</div>}
     />
   </div>
 );

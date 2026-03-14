@@ -17,9 +17,7 @@ const config: StorybookConfig = {
     "name": "@storybook/nextjs-vite",
     "options": {}
   },
-  "staticDirs": [
-    "..\\public"
-  ],
+  "staticDirs": ["../public"],
   // Ensure Vanilla Extract .css.ts files are processed by Vite in Storybook
   viteFinal: async (config) => {
     config.plugins = [...(config.plugins ?? []), vanillaExtractPlugin()];
