@@ -21,7 +21,7 @@
 
 ## Validation
 
-<!-- Keep this honest. Remove items that do not apply. -->
+<!-- Keep this honest. Check items that passed locally or in CI. Remove items that do not apply. -->
 
 - [ ] `bun run lint`
 - [ ] `bun run test`
@@ -30,10 +30,9 @@
 
 ## UX Notes
 
-<!-- Required for UI, content, layout, or interaction changes. -->
+<!-- Required for UI, content, layout, or interaction changes. Attach screenshots or video when that will help review. Remove items that do not apply. -->
 
 - [ ] no visual changes
-- [ ] screenshots or video attached
 - [ ] responsive behavior verified at affected breakpoints
 - [ ] accessibility impact reviewed
 
