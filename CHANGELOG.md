@@ -1,3 +1,10 @@
+## [0.30.2](https://github.com/amalv/bukie/compare/v0.30.1...v0.30.2) (2026-03-15)
+
+
+### Bug Fixes
+
+* **next:** restore turbopack on windows ([e06de2a](https://github.com/amalv/bukie/commit/e06de2ad14aab7545f8609b1c8e412446dc6fb1c))
+
 ## [0.30.1](https://github.com/amalv/bukie/compare/v0.30.0...v0.30.1) (2026-03-15)
 
 
