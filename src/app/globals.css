@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind v4 uses @theme for design tokens. */
 @theme {
   --font-sans:
     var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,

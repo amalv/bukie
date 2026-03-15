@@ -1,5 +1,7 @@
 # ⚡ Backend Framework Decision
-- Status: accepted
+- Status: superseded
+
+> Historical note: Bukie's current backend implementation lives in Next.js App Router server modules and route handlers. This ADR is retained for the earlier Elysia exploration.
 
 ## 📚 Context
 Bukie requires a fast, modern backend for its API. Elysia (Bun) is chosen for its performance and developer experience.

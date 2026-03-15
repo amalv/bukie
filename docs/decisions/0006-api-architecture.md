@@ -1,6 +1,8 @@
 
 # 🔗 API Architecture Decision
-- Status: accepted
+- Status: superseded
+
+> Historical note: Bukie currently exposes REST-style endpoints via Next.js route handlers. This ADR is retained for the earlier Eden/Elysia exploration.
 
 ## 📚 Context
 Bukie needs a robust, type-safe API architecture to serve data to the frontend and other clients. Options include REST, GraphQL, tRPC, and Eden (Elysia).

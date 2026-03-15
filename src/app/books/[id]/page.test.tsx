@@ -17,6 +17,16 @@ const book: Book = {
 // The page module uses async params with Promise<{id:string}>; emulate that.
 const params = (id: string) => Promise.resolve({ id });
 
+vi.mock("next/navigation", () => ({
+  notFound: () => {
+    const err = new Error("NOT_FOUND_TRIGGERED");
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    err.__notFound = true;
+    throw err;
+  },
+}));
+
 describe("Book dynamic page", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -57,17 +67,6 @@ describe("Book dynamic page", () => {
   });
 
   describe("not found branch", () => {
-    // Mock next/navigation notFound to throw a recognizable error
-    vi.mock("next/navigation", () => ({
-      notFound: () => {
-        const err = new Error("NOT_FOUND_TRIGGERED");
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        err.__notFound = true;
-        throw err;
-      },
-    }));
-
     it("invokes notFound when book is missing", async () => {
       vi.spyOn(repo, "findBookById").mockResolvedValue(undefined);
 

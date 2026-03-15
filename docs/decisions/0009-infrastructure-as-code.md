@@ -1,5 +1,7 @@
 # 🏗️ Infrastructure as Code Decision
-- Status: accepted
+- Status: superseded
+
+> Historical note: Bukie's current deployment flow relies on Vercel project configuration and managed integrations rather than committed IaC. This ADR is retained for the earlier Azure/Bicep exploration.
 
 ## 📚 Context
 Bukie aims for repeatable, automated, and versioned cloud infrastructure. Options include Bicep (Azure-native), Terraform, Pulumi, and CDK.

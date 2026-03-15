@@ -3,6 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 const MAX_AGE = 60 * 60 * 24 * 365;
 
 let mockSet: ReturnType<typeof vi.fn> | undefined;
+const mockCookies = vi.fn(async () => ({ set: mockSet }));
+
+vi.mock("next/headers", () => ({
+  cookies: mockCookies,
+}));
 
 async function withNodeEnv<T>(env: string, fn: () => Promise<T>) {
   const original = process.env.NODE_ENV;
@@ -24,9 +29,6 @@ describe("setTheme server action", () => {
   it("sets theme cookie with correct options in non-production", async () => {
     vi.resetModules();
     mockSet = vi.fn();
-    vi.mock("next/headers", () => ({
-      cookies: vi.fn(async () => ({ set: mockSet })),
-    }));
 
     const { setTheme } = await import("./actions");
 
@@ -47,9 +49,6 @@ describe("setTheme server action", () => {
   it("marks secure in production", async () => {
     vi.resetModules();
     mockSet = vi.fn();
-    vi.mock("next/headers", () => ({
-      cookies: vi.fn(async () => ({ set: mockSet })),
-    }));
 
     const { setTheme } = await import("./actions");
 
