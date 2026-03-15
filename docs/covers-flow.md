@@ -12,7 +12,7 @@ This document explains how cover images flow from the catalog source to the UI, 
 ## Flow at a glance
 
 - Source of truth: `artifacts/catalog/*.ts` exports typed `Book[]` batches, and `artifacts/catalog/index.ts` combines them for the app seed path.
-- Enrichment: `artifacts/catalog/build.ts` checks `public/covers` and resolves each book to `/covers/<id>.webp` when the local asset exists.
+- Catalog output: `artifacts/catalog/build.ts` emits canonical id-based cover paths using `/covers/<id>.webp`.
 - Import: category-specific `bun run db:import:*` commands ingest each batch into the DB and persist fields including `cover`.
 - Fetching: `bun run covers:fetch` downloads from Open Library (ISBN first, then Search API and manual fallbacks) and writes assets under `public/covers`.
 - Sync: `bun run db:sync:covers` updates DB rows to the best local extension for the current typed catalog.
@@ -46,7 +46,7 @@ flowchart LR
 ## Contracts
 
 - Input: typed `Book` items with `cover` and optional `isbn`.
-- Output: `cover` paths that are either existing local assets (`/covers/*.webp|jpg|png`) or the placeholder.
+- Output: app-facing `cover` paths that are either existing local assets (`/covers/*.webp|jpg|png`) or the placeholder.
 - Error mode: missing files fall back to `/covers/placeholder.svg`.
 
 ## Pruning unused covers
