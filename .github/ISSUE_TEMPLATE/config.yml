@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Bukie PR Template
+    url: https://github.com/amalv/bukie/blob/main/.github/pull_request_template.md
+    about: Review the pull request template for the level of detail expected when work is ready for implementation.
