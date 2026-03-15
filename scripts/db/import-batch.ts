@@ -7,10 +7,14 @@
  * Usage (PowerShell):
  *   bunx tsx ./scripts/db/import-batch.ts -- --batch-size=100 --dry-run
  *   bunx tsx ./scripts/db/import-batch.ts -- --batch-size=100 --report=./artifacts/report-YYYY-MM-DD.json
+ *   # Input can be a JSON file or a TS/JS module exporting an array
+ *   bunx tsx ./scripts/db/import-batch.ts -- --input=./artifacts/catalog/sci-fi.ts --category="Science Fiction" --batch-size=100
  */
-import { writeFile } from "node:fs/promises";
+import { writeFile, readFile as fsReadFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { ensureDb } from "../../src/db/client";
+import { provider } from "../../src/db/provider";
 import type { Book } from "../../src/features/books/types";
 import {
   chooseIsbn,
@@ -18,6 +22,7 @@ import {
   isValidIsbn13,
   normalizeAuthor,
 } from "../../src/features/books/importer/validate";
+import { createExistingBookMatcher } from "../../src/features/books/importer/match";
 import { ingestBooks, type IngestMode } from "../../src/db/ingest";
 
 type InputBook = Partial<Book> & {
@@ -38,22 +43,57 @@ type Args = {
   dryRun: boolean;
   report?: string;
   mode: IngestMode;
+  input?: string; // optional JSON file with curated items
+  category?: string; // optional category override (e.g., "Science Fiction")
+  purgeGenre?: string; // optional: delete existing rows of this genre before ingest
+  purge?: boolean; // optional: if true, purge the current category's genre
 };
 
 function parseArgs(argv: string[]): Args {
-  const arg = Object.fromEntries(
-    argv
-      .slice(2)
-      .filter((s) => s.startsWith("--"))
-      .map((s) => s.replace(/^--/, ""))
-      .map((kv) => kv.split("=", 2)) as Array<[string, string | undefined]>,
-  ) as Record<string, string | undefined>;
+  const tokens = argv.slice(2);
+  const arg: Record<string, string | undefined> = {};
+
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (!token.startsWith("--")) continue;
+
+    const trimmed = token.replace(/^--/, "");
+    const [key, initialValue] = trimmed.split("=", 2);
+
+    if (initialValue !== undefined) {
+      let value = initialValue;
+      while (index + 1 < tokens.length && !tokens[index + 1].startsWith("--")) {
+        value = `${value} ${tokens[index + 1]}`;
+        index += 1;
+      }
+      arg[key] = value;
+      continue;
+    }
+
+    if (index + 1 < tokens.length && !tokens[index + 1].startsWith("--")) {
+      let value = tokens[index + 1];
+      index += 1;
+      while (index + 1 < tokens.length && !tokens[index + 1].startsWith("--")) {
+        value = `${value} ${tokens[index + 1]}`;
+        index += 1;
+      }
+      arg[key] = value;
+      continue;
+    }
+
+    arg[key] = undefined;
+  }
+
   const report = arg.report;
   const batchSize = Number(arg["batch-size"] ?? arg.batchSize ?? 100) || 100;
   const dryRun = (arg["dry-run"] ?? "").toLowerCase() === "true" ||
     Object.keys(arg).includes("dry-run");
   const mode = (arg.mode === "replace" ? "replace" : "upsert") as IngestMode;
-  return { batchSize, dryRun, report, mode };
+  const input = arg.input;
+  const category = arg.category;
+  const purgeGenre = arg["purge-genre"] ?? arg.purgeGenre;
+  const purge = Object.keys(arg).includes("purge");
+  return { batchSize, dryRun, report, mode, input, category, purgeGenre, purge };
 }
 
 type PerBookResult = {
@@ -78,12 +118,38 @@ type BatchReport = {
   results: PerBookResult[];
 };
 
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  }
+  return h >>> 0;
+}
+
+// Single concise fallback description for cards when none is provided.
+const FALLBACK_DESCRIPTION = "No description available.";
+
 async function main() {
   const args = parseArgs(process.argv);
   await ensureDb();
   const started = Date.now();
-  const payload = await loadPayload();
+  const payload = await loadPayload(args);
   const items = payload.slice(0, Math.max(1, args.batchSize));
+
+  // Optional purge step by genre (explicit or derived from category when --purge)
+  const purgeTarget = args.purgeGenre ?? (args.purge ? args.category : undefined);
+  if (!args.dryRun && purgeTarget) {
+    const deleted = await provider.deleteBooksByGenre(purgeTarget);
+    // eslint-disable-next-line no-console
+    console.log(`[import-batch] purged`, { genre: purgeTarget, deleted });
+  }
+
+  // Build lookup maps to match existing rows for safe upserts (prevents new ids)
+  // - Prefer exact ISBN match when available
+  // - Fallback to normalized title+author match
+  const existing = await provider.listBooks();
+  const matchExistingBook = createExistingBookMatcher(existing);
+  
 
   const results: PerBookResult[] = [];
   let created = 0,
@@ -96,12 +162,10 @@ async function main() {
   for (const src of items) {
     const warnings: string[] = [];
     try {
-  const { randomUUID } = await import("node:crypto");
-  const id = src.id?.toString().trim() || randomUUID();
       const title = (src.title ?? "").trim();
       if (!title) {
         skipped++;
-        results.push({ id, title: src.title ?? "<missing>", status: "skipped", reason: "missing title" });
+        results.push({ id: src.id?.toString().trim() || "<gen>", title: src.title ?? "<missing>", status: "skipped", reason: "missing title" });
         continue;
       }
 
@@ -118,22 +182,50 @@ async function main() {
         }
       }
 
+      // Try to match an existing row to update (stable ids); else we'll create
+      const matchedId = matchExistingBook({
+        title,
+        author: authorJoined,
+        isbn: chosenIsbn,
+      });
+  const { randomUUID: genId } = await import("node:crypto");
+  const id = src.id?.toString().trim() || matchedId || genId();
+
       // Map to Book shape; cover may be placeholder and updated later by covers workflow
-      const bookLike: Omit<Book, "id"> & { id?: string } = {
+      const basis = `${title}|${authorJoined}`;
+      const h = hashString(basis);
+      const fallbackRating = Number((3.6 + ((h % 14) / 10)).toFixed(1)); // 3.6..4.9
+      const fallbackRatingsCount = 200 + (h % 24000); // 200..24199
+  const genreCandidate = (src as any).genre ?? args.category ?? (Array.isArray(src.categories) && src.categories.length > 0 ? src.categories[0] : undefined);
+  const defaultDesc = FALLBACK_DESCRIPTION;
+      // Only set cover when provided explicitly, or when creating a new row.
+      // This preserves existing cover paths on updates.
+      const coverCandidate = src.cover?.toString().trim();
+      const willUpdateExisting = Boolean(matchedId);
+      const base: Record<string, unknown> = {
         id,
         title,
         author: authorJoined,
-        cover: src.cover?.trim() || "/covers/placeholder.webp",
-        genre: src.genre,
-        rating: src.rating,
-        ratingsCount: src.ratingsCount,
+        // prefer explicit genre, then CLI category, then first categories[] entry
+        genre: genreCandidate,
+        rating: src.rating ?? fallbackRating,
+        ratingsCount: src.ratingsCount ?? fallbackRatingsCount,
         addedAt: src.addedAt,
-        year: typeof src.year === "number" ? src.year : parseInt(String(src.publishedDate ?? src.year ?? "").slice(0, 4)) || undefined,
-        description: src.description,
+        year:
+          typeof src.year === "number"
+            ? src.year
+            : parseInt(String(src.publishedDate ?? src.year ?? "").slice(0, 4)) || undefined,
+        description: src.description ?? defaultDesc,
         pages: src.pages,
         publisher: src.publisher,
         isbn: chosenIsbn ?? undefined,
       };
+      if (coverCandidate) {
+        base.cover = coverCandidate;
+      } else if (!willUpdateExisting) {
+        base.cover = "/covers/placeholder.svg";
+      }
+      const bookLike = base as Omit<Book, "id"> & { id?: string };
       ingestPayload.push(bookLike);
     } catch (e: unknown) {
       failed++;
@@ -161,7 +253,7 @@ async function main() {
 
   const finished = Date.now();
   const report: BatchReport = {
-  input: "mocks/books.ts",
+    input: args.input ?? "mocks/books.ts",
     processed: items.length,
     created,
     updated,
@@ -185,14 +277,54 @@ async function main() {
     durationMs: report.durationMs,
   });
 
-  if (args.report) {
-    const out = path.resolve(process.cwd(), args.report);
+  // Always write a report (KISS): if no --report provided, derive a sensible default
+  const defaultReportName = (() => {
+    const baseFromInput = args.input
+      ? path
+          .basename(args.input)
+          .replace(/\.(json|ts|tsx|js|mjs|cjs)$/i, "")
+      : "import";
+    const base = args.category
+      ? args.category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+      : baseFromInput;
+    return `report-${base}.json`;
+  })();
+  const reportPath = args.report || path.join("artifacts", defaultReportName);
+
+  try {
+    const out = path.resolve(process.cwd(), reportPath);
     await writeFile(out, JSON.stringify(report, null, 2), "utf8");
     // eslint-disable-next-line no-console
     console.log("[import-batch] report written:", out);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn("[import-batch] failed to write report:", e);
   }
 }
-async function loadPayload(): Promise<InputBook[]> {
+async function loadPayload(args: Args): Promise<InputBook[]> {
+  if (args.input) {
+    const full = path.resolve(process.cwd(), args.input);
+    if (/\.json$/i.test(full)) {
+      const raw = await fsReadFile(full, "utf8");
+      const data = JSON.parse(raw);
+      const arr = Array.isArray(data)
+        ? data
+        : Array.isArray((data as any).items)
+          ? (data as any).items
+          : [];
+      return arr as InputBook[];
+    }
+    // TS/JS module path: expect a default export array or a named export with catalog/books/items
+    const mod = await import(pathToFileURL(full).href);
+    const candidate =
+      (mod.default as unknown) ||
+      (mod.baseCatalog as unknown) ||
+      (mod.sciFiCatalog as unknown) ||
+      (mod.books as unknown) ||
+      (mod.items as unknown);
+    const arr = Array.isArray(candidate) ? (candidate as InputBook[]) : [];
+    return arr;
+  }
   const mod = await import("../../mocks/books");
   const books = (mod.books ?? []) as InputBook[];
   return Array.isArray(books) ? books : [];

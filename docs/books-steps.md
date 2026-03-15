@@ -10,14 +10,14 @@ This guide describes how we’ll curate and ingest books in batches of 100 so ev
 
 ## Prerequisites
 
-- Bun installed. On Windows, prefer Node/tsx runners when noted.
+- Bun installed.
 - Local dev DB: SQLite auto‑created by scripts. Preview/Prod: Postgres (Neon) via `DATABASE_URL`.
 - See also: `docs/database-architecture.md` and `docs/database-sections.md`.
 
 ## What we already have (reusable scripts)
 
 - Covers
-  - `covers:fetch` (Bun) / `covers:fetch:node` (Node/tsx, Windows‑friendly) — downloads covers and updates `books.cover`.
+  - `covers:fetch` — downloads covers and updates `books.cover`.
   - `images:optimize` — converts/optimizes cover assets (e.g., WebP) under `public/covers`.
   - `db:sync:covers` — syncs DB cover paths to slugged filenames based on files present.
 - Database lifecycle
@@ -43,10 +43,10 @@ See all script entries in `package.json`.
           bun run db:import -- --batch-size=100 --dry-run
           ```
 
-         - Execute and emit a report file (choose mode: upsert | replace):
+       - Execute and emit a report file (upsert mode by default):
 
           ```powershell
-          bun run db:import -- --batch-size=100 --mode=upsert --report=./artifacts/report-YYYY-MM-DD.json
+          bun run db:import -- --batch-size=100
           ```
 
        - Generate a short Markdown summary:
@@ -55,13 +55,13 @@ See all script entries in `package.json`.
           bun run db:report -- --report=./artifacts/report-YYYY-MM-DD.json --out=./artifacts/report-YYYY-MM-DD.md --max=20
           ```
 
-   Seed from mocks (SQLite replace):
+   Seed from mocks (SQLite):
 
     ```powershell
     bun run db:seed
     ```
 
-   For Postgres (preview/prod, upsert; preview resets first):
+   For Postgres (preview/prod):
 
     ```powershell
     bun run db:migrate:pg
@@ -69,12 +69,11 @@ See all script entries in `package.json`.
     ```
 
 3) Fetch covers for the new books
-   - Prefer the Node/tsx runner on Windows to avoid Bun crashes (see guide):
 
-     ```powershell
-     # Process first 100 eligible (placeholders) with low concurrency
-     bun run covers:fetch:node -- --limit=100 --concurrency=2 --no-optimize
-     ```
+   ```powershell
+   # Process first 100 eligible (placeholders) with low concurrency
+   bun run covers:fetch -- --limit=100 --concurrency=2 --no-optimize
+   ```
 
    - You can also target specific ids with `--id=<bookId>` and enable `--seo-filenames` once titles are final.
 
@@ -115,7 +114,7 @@ Required/primary fields per book:
 - categories (array of strings; will become canonical tags)
 - cover (string URL/path like `/covers/<id>-<title-slug>.<ext>`) — filled by covers workflow
 
-Note: We previously considered JSON batch files under `artifacts/`, but the importer currently reads typed mocks only. If we re‑enable external batch files, we’ll restore a dedicated section here.
+Note: We previously considered JSON batch files under `artifacts/`, and the importer can read them with `--input` and `--category`.
 
 Mocked (temporary):
 - ratingsCount (number)
@@ -124,22 +123,22 @@ Mocked (temporary):
 
 ## Reporting per batch
 
-Until the importer script is implemented, capture a short report manually:
-- Count processed books (should be 100), created vs updated (from seed logs), any failures during cover fetch.
-- Keep a `docs/batches/<YYYY-MM-DD>.md` note with: ids, processed/created/updated/failed, and time taken.
+A JSON report is written automatically by the importer under `artifacts/` with a sensible filename. Optionally, generate a Markdown summary:
+
+```powershell
+bun run db:report -- --report=./artifacts/report-YYYY-MM-DD.json --out=./artifacts/report-YYYY-MM-DD.md --max=20
+```
 
 ## Importer details
 
-`scripts/db/import-batch.ts` reads from `mocks/books.ts`, validates ISBNs and authors, and writes via a shared ingest with two modes:
-- `upsert` (default): create new rows or update existing by id.
-- `replace`: delete all rows, then insert current mocks (useful for local resets).
+`scripts/db/import-batch.ts` validates ISBNs and authors and writes via a shared ingest:
+- `upsert` (default): create new rows or update existing.
 
 ## Troubleshooting
 
-- Covers on Windows: use `covers:fetch:node` (Node/tsx) to avoid Bun crash.
 - Reset local DB if rows get out of sync: `bun run db:reset` then re‑seed and sync covers.
 - If covers don’t update in UI, ensure files exist under `public/covers` and that `db:sync:covers` ran.
-- CI: The previous JSON importer dry‑run workflow has been disabled. Importer now reads from typed mocks.
+- CI: The previous JSON importer dry‑run workflow was consolidated; importer now handles report output by default.
 
 ## References
 

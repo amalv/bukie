@@ -3,7 +3,7 @@ pre-commit:
   commands:
     biome:
       run: bunx biome check --no-errors-on-unmatched {staged_files}
-      glob: "*.{js,ts,jsx,tsx,json}"
+      glob: "*.{js,ts,jsx,tsx,json,css}"
     vitest:
       run: bun run test -- {staged_files}
       # Only run unit tests from src/ in pre-commit; exclude E2E tests under tests/

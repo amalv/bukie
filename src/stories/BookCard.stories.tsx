@@ -1,4 +1,4 @@
-import { darkThemeClass, lightThemeClass } from "@/design/tokens.css";
+import { darkThemeClass, lightThemeClass } from "@/design/tokens";
 import { BookCard } from "@/features/books/BookCard";
 
 export default {

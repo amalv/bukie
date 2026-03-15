@@ -1,11 +1,10 @@
 /// <reference types="vitest/config" />
 import react from "@vitejs/plugin-react";
-import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 import { defineConfig } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), react(), vanillaExtractPlugin()],
+  plugins: [tsconfigPaths(), react()],
   test: {
     environment: "jsdom",
     globals: true,
@@ -29,8 +28,6 @@ export default defineConfig({
         // Types-only modules
         "**/types.ts",
         "**/*.d.ts",
-        // Styles-only modules (no executable logic)
-        "**/*.css.ts",
         // Database and providers (covered via integration/e2e; out of scope for unit coverage)
         "src/db/**",
         // Non-critical admin/debug/seed API routes (manual ops, not part of unit targets)

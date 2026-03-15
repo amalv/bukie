@@ -1,12 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import * as bl from "@/features/books/BookList.css";
 import * as data from "@/features/books/data";
 import * as repo from "@/features/books/repo";
 import type { Book } from "@/features/books/types";
 import Page from "./page";
-import * as s from "./page.css";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
@@ -49,9 +47,9 @@ describe("Page", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: /New Arrivals/i }),
     ).toBeInTheDocument();
-    const svg = container.querySelector(`.${s.sectionHeaderIcon}`);
+    const svg = container.querySelector(".book-section-header-icon");
     expect(svg).toBeTruthy();
-    const dense = container.querySelector(`.${bl.gridTopDense}`);
+    const dense = container.querySelector(".book-list-grid-top-dense");
     expect(dense).toBeTruthy();
   });
 
@@ -71,9 +69,9 @@ describe("Page", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: /Top Rated/i }),
     ).toBeInTheDocument();
-    const svg = container.querySelector(`.${s.sectionHeaderIcon}`);
+    const svg = container.querySelector(".book-section-header-icon");
     expect(svg).toBeTruthy();
-    const dense = container.querySelector(`.${bl.gridTopDense}`);
+    const dense = container.querySelector(".book-list-grid-top-dense");
     expect(dense).toBeTruthy();
   });
 
@@ -93,9 +91,9 @@ describe("Page", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: /Trending Now/i }),
     ).toBeInTheDocument();
-    const svg = container.querySelector(`.${s.sectionHeaderIcon}`);
+    const svg = container.querySelector(".book-section-header-icon");
     expect(svg).toBeTruthy();
-    const dense = container.querySelector(`.${bl.gridTopDense}`);
+    const dense = container.querySelector(".book-list-grid-top-dense");
     expect(dense).toBeTruthy();
   });
 
@@ -253,8 +251,10 @@ describe("Page", () => {
     const { container } = render(Comp);
 
     // when sectionItems is falsy, the section header and BookList should not render
-    expect(container.querySelector(`.${s.sectionHeader}`)).toBeNull();
-    expect(container.querySelector(`.${s.sectionTitle}`)).toBeNull();
+    expect(container.querySelector(".book-section-header")).toBeNull();
+    expect(
+      screen.queryByRole("heading", { level: 2, name: /new arrivals/i }),
+    ).toBeNull();
     const bookList = container.querySelector("[data-testid='book-list']");
     // BookList renders as normal markup; ensure no list present for sectionItems
     expect(bookList).toBeNull();

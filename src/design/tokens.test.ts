@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lightThemeClass, tokens } from "./tokens.css";
+import { lightThemeClass, tokens } from "./tokens";
 
 describe("design tokens module", () => {
   it("exports a theme class and a typed contract", () => {

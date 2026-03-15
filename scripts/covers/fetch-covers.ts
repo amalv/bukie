@@ -5,11 +5,17 @@
  * - Downloads the largest image, converts to WebP via sharp, saves to public/covers.
  * - Updates DB cover field to the new local path when successful.
  * - Supports --dry-run, --limit, --concurrency, --id=<bookId>.
+ * - Default behavior downloads ONLY for missing covers (placeholder) to avoid unnecessary requests.
+ *   Use --force to refetch even if a cover exists; use --check-files to also fetch when the DB path exists
+ *   but the corresponding file is missing on disk.
  *   In --dry-run mode, uses mock books instead of DB to avoid local driver issues.
  */
-import { mkdir, writeFile } from "node:fs/promises";
-import { basename } from "node:path";
-import { buildOpenLibraryCandidates } from "./helpers";
+import { mkdir, writeFile, stat } from "node:fs/promises";
+import { basename, join } from "node:path";
+import {
+  findOpenLibraryCandidates,
+  getOpenLibraryHeaders,
+} from "./helpers";
 import { books as mockBooks } from "../../mocks/books";
 
 type Book = {
@@ -29,29 +35,25 @@ type Flags = {
   concurrency: number;
   onlyId?: string;
   noOptimize: boolean;
-  seoFilenames?: boolean;
   force?: boolean;
+  onlyMissing?: boolean; // explicit alias; default true
+  checkFiles?: boolean; // also treat non-placeholder covers as missing if file not found
 };
 
 function parseFlags(argv: string[]): Flags {
-  const flags: Flags = { dryRun: false, concurrency: 4, noOptimize: false };
+  const flags: Flags = { dryRun: false, concurrency: 4, noOptimize: false, onlyMissing: true };
   for (const arg of argv) {
     if (arg === "--dry-run") flags.dryRun = true;
     else if (arg.startsWith("--limit=")) flags.limit = Number(arg.split("=")[1]);
     else if (arg.startsWith("--concurrency=")) flags.concurrency = Number(arg.split("=")[1]);
     else if (arg.startsWith("--id=")) flags.onlyId = arg.split("=")[1];
     else if (arg === "--no-optimize") flags.noOptimize = true;
-    else if (arg === "--seo-filenames") flags.seoFilenames = true;
   else if (arg === "--force") flags.force = true;
+    else if (arg === "--all") flags.onlyMissing = false;
+    else if (arg === "--only-missing") flags.onlyMissing = true;
+    else if (arg === "--check-files") flags.checkFiles = true;
   }
   return flags;
-}
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 let sharpSingleton: any | undefined;
@@ -64,7 +66,10 @@ async function getSharpOnce(): Promise<any> {
 }
 
 async function downloadCover(url: string, baseName: string, optimize: boolean): Promise<string> {
-  const res = await fetch(url, { redirect: "follow" });
+  const res = await fetch(url, {
+    redirect: "follow",
+    headers: getOpenLibraryHeaders(),
+  });
   if (!res.ok) throw new Error(`download failed: ${res.status} ${res.statusText}`);
   const buf = Buffer.from(await res.arrayBuffer());
   let rel = "";
@@ -92,6 +97,18 @@ function isPlaceholder(cover: string | undefined): boolean {
   return cover.includes("placeholder") || cover.endsWith(".svg") || cover === "/file.svg";
 }
 
+async function fileExistsForCoverPath(cover: string | undefined): Promise<boolean> {
+  if (!cover) return false;
+  if (!cover.startsWith("/covers/")) return false;
+  const full = join(process.cwd(), "public", cover.replace(/^\//, ""));
+  try {
+    await stat(full);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function main() {
   const flags = parseFlags(process.argv.slice(2));
   let all: Book[];
@@ -116,9 +133,26 @@ async function main() {
       skipDbUpdate = true;
     }
   }
-  const candidates = all
-    .filter((b) => (flags.onlyId ? b.id === flags.onlyId : true))
-    .filter((b) => (flags.force ? true : isPlaceholder(b.cover)));
+  let candidates = all.filter((b) => (flags.onlyId ? b.id === flags.onlyId : true));
+  if (!flags.force) {
+    // Default: only missing (placeholder). If --check-files, include rows whose file is missing.
+    const filtered: Book[] = [];
+    for (const b of candidates) {
+      if (flags.onlyMissing !== false) {
+        if (isPlaceholder(b.cover)) {
+          filtered.push(b);
+          continue;
+        }
+        if (flags.checkFiles) {
+          const exists = await fileExistsForCoverPath(b.cover);
+          if (!exists) filtered.push(b);
+        }
+      } else {
+        filtered.push(b);
+      }
+    }
+    candidates = filtered;
+  }
 
   const limited = typeof flags.limit === "number" ? candidates.slice(0, flags.limit) : candidates;
   if (limited.length === 0) {
@@ -142,13 +176,11 @@ async function main() {
       const book = queue.shift() as Book | undefined;
       if (!book) break;
       try {
-        const candidates = buildOpenLibraryCandidates(book);
+        const candidates = await findOpenLibraryCandidates(book);
         let usedUrl: string | undefined;
         for (const candidate of candidates) {
           try {
-            const baseName = flags.seoFilenames
-              ? `${book.id}-${slugify(book.title)}`
-              : book.id;
+            const baseName = book.id;
             const localPath = await downloadCover(
               candidate,
               baseName,

@@ -16,7 +16,7 @@ import { BooksCount } from "./components/BooksCount";
 import { SectionHeader } from "./components/SectionHeader";
 import { normalizeAfter, normalizeQ } from "./helpers/pageParams";
 import { getSectionHeader } from "./helpers/sectionHeader";
-import * as s from "./page.css";
+import { pageStyles as s } from "./pageStyles";
 import { SearchForm } from "./SearchForm";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
@@ -77,7 +77,7 @@ export default async function Page({
                   <li>
                     <a
                       href="/?section=all"
-                      className={s.tabLink}
+                      className={s.tabLink(section === "all")}
                       aria-current={section === "all" ? "page" : undefined}
                     >
                       All
@@ -86,7 +86,7 @@ export default async function Page({
                   <li>
                     <a
                       href="/?section=new"
-                      className={s.tabLink}
+                      className={s.tabLink(section === "new")}
                       aria-current={section === "new" ? "page" : undefined}
                     >
                       <Clock width={16} height={16} aria-hidden /> New Arrivals
@@ -95,7 +95,7 @@ export default async function Page({
                   <li>
                     <a
                       href="/?section=top"
-                      className={s.tabLink}
+                      className={s.tabLink(section === "top")}
                       aria-current={section === "top" ? "page" : undefined}
                     >
                       <Medal width={16} height={16} aria-hidden /> Top Rated
@@ -104,7 +104,7 @@ export default async function Page({
                   <li>
                     <a
                       href="/?section=trending"
-                      className={s.tabLink}
+                      className={s.tabLink(section === "trending")}
                       aria-current={section === "trending" ? "page" : undefined}
                     >
                       <TrendingUp width={16} height={16} aria-hidden /> Trending

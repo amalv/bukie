@@ -1,26 +1,44 @@
 import { NextRequest } from "next/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import * as repo from "@/features/books/repo";
 import { POST } from "../route";
 import { DELETE, GET, PUT } from "./route";
 
+const fixtureBook = {
+  id: "fixture-book-id",
+  title: "Fixture Book",
+  author: "Fixture Author",
+  cover: "/covers/placeholder.svg",
+};
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe("GET /api/books/[id]", () => {
   it("returns a book for a valid id", async () => {
-    const request = new NextRequest("http://localhost:3000/api/books/1");
+    vi.spyOn(repo, "findBookById").mockResolvedValue(fixtureBook);
+    const request = new NextRequest(
+      `http://localhost:3000/api/books/${fixtureBook.id}`,
+    );
 
     const response = await GET(request, {
-      params: Promise.resolve({ id: "1" }),
+      params: Promise.resolve({ id: fixtureBook.id }),
     });
 
     const data = await response.json();
 
-    expect(data).toHaveProperty("id", "1");
+    expect(data).toHaveProperty("id", fixtureBook.id);
   });
 
   it("book has a title property", async () => {
-    const request = new NextRequest("http://localhost:3000/api/books/1");
+    vi.spyOn(repo, "findBookById").mockResolvedValue(fixtureBook);
+    const request = new NextRequest(
+      `http://localhost:3000/api/books/${fixtureBook.id}`,
+    );
 
     const response = await GET(request, {
-      params: Promise.resolve({ id: "1" }),
+      params: Promise.resolve({ id: fixtureBook.id }),
     });
 
     const data = await response.json();
@@ -29,10 +47,13 @@ describe("GET /api/books/[id]", () => {
   });
 
   it("book has an author property", async () => {
-    const request = new NextRequest("http://localhost:3000/api/books/1");
+    vi.spyOn(repo, "findBookById").mockResolvedValue(fixtureBook);
+    const request = new NextRequest(
+      `http://localhost:3000/api/books/${fixtureBook.id}`,
+    );
 
     const response = await GET(request, {
-      params: Promise.resolve({ id: "1" }),
+      params: Promise.resolve({ id: fixtureBook.id }),
     });
 
     const data = await response.json();

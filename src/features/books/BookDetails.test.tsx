@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { lightThemeClass } from "@/design/tokens.css";
+import { lightThemeClass } from "@/design/tokens";
 import { BookDetails } from "./BookDetails";
 
 // Mock next/image to make the unoptimized prop observable in DOM
@@ -82,7 +82,7 @@ describe("BookDetails UI", () => {
     expect(screen.getByText("3.5")).toBeInTheDocument();
     expect(screen.getByText("(12,847)")).toBeInTheDocument();
     // Exactly one star icon
-    const starSvgs = document.querySelectorAll('svg[class*="starIcon"]');
+    const starSvgs = document.querySelectorAll(".book-details-star-icon");
     expect(starSvgs.length).toBe(1);
   });
 

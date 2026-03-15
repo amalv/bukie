@@ -2,7 +2,6 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { BookList } from "./BookList";
-import { loadMoreButton } from "./BookList.css";
 import type { PageResult } from "./pagination";
 import type { Book } from "./types";
 
@@ -61,11 +60,11 @@ export function PaginatedBooks({
         ) : cursor ? (
           <button
             type="button"
-            className={loadMoreButton}
+            className="inline-flex items-center justify-center rounded-[var(--radius-lg)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] px-[var(--spacing-3)] py-[var(--spacing-1-5)] text-lg leading-[1.2] text-[var(--color-on-surface)] no-underline shadow-[var(--elevation-1)] transition-[box-shadow,transform,border-color] duration-200 ease-out hover:-translate-y-px hover:border-[color:var(--color-primary)] hover:shadow-[var(--elevation-2)] focus-visible:-translate-y-px focus-visible:border-[color:var(--color-primary)] focus-visible:shadow-[var(--elevation-2)] focus-visible:outline-none active:translate-y-0 active:shadow-[var(--elevation-1)] disabled:cursor-not-allowed disabled:opacity-70"
             onClick={loadMore}
             disabled={loading}
           >
-            {loading ? "Loading…" : "Load More Books"}
+            {loading ? "Loading..." : "Load More Books"}
           </button>
         ) : null
       }

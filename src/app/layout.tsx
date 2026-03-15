@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { randomUUID } from "node:crypto";
 import BookOpen from "lucide-react/dist/esm/icons/book-open.js";
 import { cookies } from "next/headers";
-import Script from "next/script";
 import { Container } from "@/design/layout/grid";
-import { darkThemeClass, lightThemeClass } from "@/design/tokens.css";
+import { darkThemeClass, lightThemeClass } from "@/design/tokens";
 import { ThemeToggle } from "../design/theme/ThemeToggle";
-import * as footerStyles from "./footer.css";
-import * as headerStyles from "./header.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,34 +31,20 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const pref = cookieStore.get("theme")?.value as "light" | "dark" | undefined;
   const themeClass = pref === "dark" ? darkThemeClass : lightThemeClass;
-  const initialThemeAttr = pref ?? "system";
-  const scriptId = randomUUID(); // Use randomUUID to generate a unique ID
+  const initialThemeAttr = pref ?? "light";
   return (
     <html lang="en" data-theme={initialThemeAttr}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${themeClass}`}
+        className={`${geistSans.variable} ${geistMono.variable} ${themeClass} font-sans`}
       >
-        <Script id={scriptId} strategy="beforeInteractive">{`
-          (function initTheme(){
-            try {
-              // Read theme cookie if present
-              var match = document.cookie.match(/(?:^|; )theme=([^;]+)/);
-              var cookiePref = match ? decodeURIComponent(match[1]) : null;
-              // Detect system preference
-              var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-              // Choose theme: cookie wins, else system
-              var theme = cookiePref || (prefersDark ? 'dark' : 'light');
-              document.documentElement.setAttribute('data-theme', theme);
-            } catch (e) {
-              console.error(e);
-            }
-          })();
-          `}</Script>
-        <header className={headerStyles.header}>
+        <header className="fixed inset-x-0 top-0 z-[100] border-b border-[color:var(--color-outline)] bg-[color:color-mix(in_srgb,var(--color-background)_94%,white_6%)] text-[var(--color-on-surface)]">
           <Container>
-            <div className={headerStyles.inner}>
-              <div className={headerStyles.brand}>
-                <BookOpen className={headerStyles.brandIcon} aria-hidden />
+            <div className="flex min-h-14 items-center justify-between px-[var(--spacing-1)] sm:px-[var(--spacing-2)]">
+              <div className="inline-flex items-center gap-[0.7rem] text-[1.05rem] font-bold tracking-[0.15px] text-[var(--color-on-background)]">
+                <BookOpen
+                  className="h-5 w-5 text-[var(--color-primary)]"
+                  aria-hidden
+                />
                 Bukie
               </div>
               <ThemeToggle />
@@ -70,13 +52,13 @@ export default async function RootLayout({
           </Container>
         </header>
         {/* offset for fixed header */}
-        <div className={headerStyles.offset} aria-hidden />
+        <div className="h-14" aria-hidden />
         {children}
-        <footer className={footerStyles.footer}>
+        <footer className="relative z-[1] mt-0 bg-[var(--color-background)] text-[var(--color-on-surface)]">
           <Container>
-            <div className={footerStyles.footerInner}>
+            <div className="flex items-center justify-center gap-[var(--spacing-1)] px-0 py-[var(--spacing-2)] text-center text-[var(--type-lg)] font-bold tracking-[0.2px] md:py-[var(--spacing-3)]">
               <BookOpen
-                className={footerStyles.brandIconSelector}
+                className="h-5 w-5 text-[var(--color-primary)]"
                 aria-hidden
               />
               Bukie

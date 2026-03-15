@@ -1,47 +1,47 @@
 import { describe, expect, it } from "vitest";
-import { resolveSpanClasses } from "./helpers";
+import { resolveSpanStyle } from "./helpers";
 
-describe("resolveSpanClasses", () => {
-  it("returns a single class for numeric span (base)", () => {
+describe("resolveSpanStyle", () => {
+  it("returns a base CSS variable for numeric span", () => {
     const span = 6;
 
-    const classes = resolveSpanClasses(span);
+    const style = resolveSpanStyle(span);
 
-    expect(Array.isArray(classes)).toBe(true);
-    expect(classes.length).toBe(1);
-    expect(typeof classes[0]).toBe("string");
+    expect(style["--col-base"]).toBe("6");
   });
 
-  it("returns classes for responsive object spans", () => {
+  it("returns CSS variables for responsive object spans", () => {
     const span = { base: 12, sm: 6, md: 4 } as const;
 
-    const classes = resolveSpanClasses(span);
+    const style = resolveSpanStyle(span);
 
-    expect(classes.length).toBe(3);
-    classes.forEach((c) => {
-      expect(typeof c).toBe("string");
-    });
+    expect(style["--col-base"]).toBe("12");
+    expect(style["--col-sm"]).toBe("6");
+    expect(style["--col-md"]).toBe("4");
   });
 });
 
-describe("resolveSpanClasses - branches", () => {
+describe("resolveSpanStyle - branches", () => {
   it("handles base-only object and no props gracefully", () => {
-    const classesBase = resolveSpanClasses({ base: 1 });
-    expect(classesBase.length).toBe(1);
+    const styleBase = resolveSpanStyle({ base: 1 });
+    expect(styleBase["--col-base"]).toBe("1");
 
-    const classesEmpty = resolveSpanClasses({});
-    expect(classesEmpty.length).toBe(0);
+    const styleEmpty = resolveSpanStyle({});
+    expect(Object.keys(styleEmpty).length).toBe(0);
   });
 
   it("clamps values below 1 and above 12 across breakpoints", () => {
-    const classes = resolveSpanClasses({
+    const style = resolveSpanStyle({
       base: 0,
       sm: 99,
       md: -5,
       lg: 13,
       xl: 2,
     });
-    expect(Array.isArray(classes)).toBe(true);
-    expect(classes.length).toBeGreaterThan(0);
+    expect(style["--col-base"]).toBe("1");
+    expect(style["--col-sm"]).toBe("12");
+    expect(style["--col-md"]).toBe("1");
+    expect(style["--col-lg"]).toBe("12");
+    expect(style["--col-xl"]).toBe("2");
   });
 });
