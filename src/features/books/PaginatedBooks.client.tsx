@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { BooksCount } from "@/app/components/BooksCount";
+import { pageStyles as page } from "@/app/pageStyles";
+import { Container } from "@/design/layout/grid";
 import { BookList } from "./BookList";
+import { DEFAULT_BOOKS_PAGE_SIZE } from "./pageSize";
 import type { PageResult } from "./pagination";
 import type { Book } from "./types";
 
@@ -9,6 +13,7 @@ type Props = {
   initial: Book[];
   initialNextCursor?: string;
   q?: string;
+  title?: string;
   limit?: number;
 };
 
@@ -16,7 +21,8 @@ export function PaginatedBooks({
   initial,
   initialNextCursor,
   q,
-  limit = 20,
+  title,
+  limit = DEFAULT_BOOKS_PAGE_SIZE,
 }: Props) {
   const [items, setItems] = useState<Book[]>(initial);
   const [cursor, setCursor] = useState<string | undefined>(initialNextCursor);
@@ -51,23 +57,33 @@ export function PaginatedBooks({
   }, [cursor, loading, params]);
 
   return (
-    <BookList
-      books={items}
-      q={q}
-      footer={
-        error ? (
-          <div role="alert">{error}</div>
-        ) : cursor ? (
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-[var(--radius-lg)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] px-[var(--spacing-3)] py-[var(--spacing-1-5)] text-lg leading-[1.2] text-[var(--color-on-surface)] no-underline shadow-[var(--elevation-1)] transition-[box-shadow,transform,border-color] duration-200 ease-out hover:-translate-y-px hover:border-[color:var(--color-primary)] hover:shadow-[var(--elevation-2)] focus-visible:-translate-y-px focus-visible:border-[color:var(--color-primary)] focus-visible:shadow-[var(--elevation-2)] focus-visible:outline-none active:translate-y-0 active:shadow-[var(--elevation-1)] disabled:cursor-not-allowed disabled:opacity-70"
-            onClick={loadMore}
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "Load More Books"}
-          </button>
-        ) : null
-      }
-    />
+    <>
+      {title ? (
+        <Container>
+          <header className={page.allBooksHeader}>
+            <h2 className={page.sectionTitle}>{title}</h2>
+            <BooksCount count={items.length} mode="shown" />
+          </header>
+        </Container>
+      ) : null}
+      <BookList
+        books={items}
+        q={q}
+        footer={
+          error ? (
+            <div role="alert">{error}</div>
+          ) : cursor ? (
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-[var(--radius-lg)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] px-[var(--spacing-3)] py-[var(--spacing-1-5)] text-lg leading-[1.2] text-[var(--color-on-surface)] no-underline shadow-[var(--elevation-1)] transition-[box-shadow,transform,border-color] duration-200 ease-out hover:-translate-y-px hover:border-[color:var(--color-primary)] hover:shadow-[var(--elevation-2)] focus-visible:-translate-y-px focus-visible:border-[color:var(--color-primary)] focus-visible:shadow-[var(--elevation-2)] focus-visible:outline-none active:translate-y-0 active:shadow-[var(--elevation-1)] disabled:cursor-not-allowed disabled:opacity-70"
+              onClick={loadMore}
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "Load More Books"}
+            </button>
+          ) : null
+        }
+      />
+    </>
   );
 }

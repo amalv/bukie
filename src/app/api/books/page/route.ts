@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getBooksPage } from "@/features/books/data";
+import { DEFAULT_BOOKS_PAGE_SIZE } from "@/features/books/pageSize";
 
 export async function GET(request: Request) {
   try {
@@ -7,7 +8,9 @@ export async function GET(request: Request) {
     const q = url.searchParams.get("q") ?? undefined;
     const after = url.searchParams.get("after") ?? undefined;
     const limitRaw = url.searchParams.get("limit");
-    const limit = limitRaw ? Math.max(1, Math.min(50, Number(limitRaw))) : 20;
+    const limit = limitRaw
+      ? Math.max(1, Math.min(50, Number(limitRaw)))
+      : DEFAULT_BOOKS_PAGE_SIZE;
     const page = await getBooksPage({ q, after, limit });
     return NextResponse.json(page);
   } catch (err) {

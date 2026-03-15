@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as data from "@/features/books/data";
+import { DEFAULT_BOOKS_PAGE_SIZE } from "@/features/books/pageSize";
 import { GET } from "./route";
 
 describe("GET /api/books/page", () => {
@@ -37,7 +38,7 @@ describe("GET /api/books/page", () => {
     expect(spy).toHaveBeenCalledWith({
       q: undefined,
       after: undefined,
-      limit: 20,
+      limit: DEFAULT_BOOKS_PAGE_SIZE,
     });
     spy.mockRestore();
   });

@@ -8,4 +8,10 @@ describe("BooksCount", () => {
 
     expect(screen.getByText("42 books found")).toBeInTheDocument();
   });
+
+  it("supports paginated lists that show visible items", () => {
+    render(<BooksCount count={24} mode="shown" />);
+
+    expect(screen.getByText("24 books shown")).toBeInTheDocument();
+  });
 });

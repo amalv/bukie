@@ -1,5 +1,6 @@
 import { ensureDb } from "@/db/client";
 import { provider } from "@/db/provider";
+import { DEFAULT_BOOKS_PAGE_SIZE } from "./pageSize";
 import type { PageResult } from "./pagination";
 import type { Book } from "./types";
 
@@ -15,7 +16,7 @@ export async function getBooksPage(params: {
   limit?: number;
 }): Promise<PageResult<Book>> {
   await ensureDb();
-  const limit = params.limit ?? 20;
+  const limit = params.limit ?? DEFAULT_BOOKS_PAGE_SIZE;
   if (params.q && params.q.trim().length > 0) {
     return provider.searchBooksPage({
       q: params.q,

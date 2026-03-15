@@ -7,6 +7,7 @@ import { Container } from "@/design/layout/grid";
 import { BookList } from "@/features/books/BookList";
 import { getBooksPage } from "@/features/books/data";
 import { PaginatedBooks } from "@/features/books/PaginatedBooks.client";
+import { DEFAULT_BOOKS_PAGE_SIZE } from "@/features/books/pageSize";
 import {
   getNewArrivals,
   getTopRated,
@@ -36,7 +37,11 @@ export default async function Page({
     const afterRaw = resolved?.after;
     const after = normalizeAfter(afterRaw);
 
-    const { items, nextCursor } = await getBooksPage({ q, after, limit: 20 });
+    const { items, nextCursor } = await getBooksPage({
+      q,
+      after,
+      limit: DEFAULT_BOOKS_PAGE_SIZE,
+    });
 
     const showSections = !q;
     const sectionItems = showSections
@@ -136,19 +141,12 @@ export default async function Page({
               // Only show the All header when we actually have items or a next
               // cursor (prevents an empty header when the initial page is empty)
               items.length > 0 || nextCursor ? (
-                <>
-                  <Container>
-                    <header className={s.allBooksHeader}>
-                      <h2 className={s.sectionTitle}>All Books</h2>
-                      <BooksCount count={items.length} />
-                    </header>
-                  </Container>
-                  <PaginatedBooks
-                    initial={items}
-                    initialNextCursor={nextCursor}
-                    q={q}
-                  />
-                </>
+                <PaginatedBooks
+                  initial={items}
+                  initialNextCursor={nextCursor}
+                  q={q}
+                  title="All Books"
+                />
               ) : null
             ) : null}
           </section>

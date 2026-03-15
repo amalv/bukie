@@ -41,9 +41,11 @@ describe("PaginatedBooks client", () => {
         ]}
         initialNextCursor={"cursor"}
         q={undefined}
+        title="All Books"
       />,
     );
     expect(screen.getByText("A")).toBeTruthy();
+    expect(screen.getByText("1 book shown")).toBeTruthy();
     const btn = await screen.findByRole("button");
     await act(async () => {
       fireEvent.click(btn);
@@ -51,6 +53,7 @@ describe("PaginatedBooks client", () => {
     // Wait for fetch to resolve and new item to render
     const newItem = await screen.findByText("D");
     expect(newItem).toBeTruthy();
+    expect(screen.getByText("2 books shown")).toBeTruthy();
   });
 
   it("shows error when loadMore fails", async () => {
