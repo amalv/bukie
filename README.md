@@ -3,7 +3,6 @@
 [![TypeScript](https://img.shields.io/badge/-TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Bun](https://img.shields.io/badge/bun-282a36?style=flat-square&logo=bun&logoColor=fbf0df)](https://bun.sh/)
-[![Elysia](https://img.shields.io/badge/Elysia-00C7B7?style=flat-square&logoColor=white)](https://elysiajs.com/)
 [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white)](https://github.com/features/actions)
 [![Actions Status](https://github.com/amalv/bukie/actions/workflows/test.yml/badge.svg)](https://github.com/amalv/bukie/actions/workflows/test.yml)
 [![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=flat-square&logo=playwright)](https://playwright.dev/)
@@ -21,7 +20,7 @@ Bukie is a book database platform for discovering and tracking books. It feature
 ## Features
 
 ### Available Now
-- Built with TypeScript, Next.js, Bun, and PostgreSQL support
+- Built with TypeScript, Next.js, Bun, and Drizzle-backed PostgreSQL/SQLite support
 - Unit testing with Vitest
 - End-to-end testing with Playwright
 - Linting and formatting with Biome
@@ -35,13 +34,19 @@ Bukie is a book database platform for discovering and tracking books. It feature
 
 See [ROADMAP.md](./ROADMAP.md) for planned milestones and upcoming features.
 
+## Toolchain
+
+- Bun `1.3.10`
+- Node.js `24.14.0` (see [.nvmrc](./.nvmrc))
+- CI installs dependencies with `bun install --frozen-lockfile`
+
 ## Styling
 
 - Tailwind CSS is the primary styling solution.
 - Theme values live as CSS variables in [src/app/globals.css](./src/app/globals.css).
 - Shared token references for tests and stories live in [src/design/tokens.ts](./src/design/tokens.ts).
-- The app follows the default Next.js Turbopack-friendly path instead of a webpack-only styling plugin.
-- On Windows, local `dev` and `build` commands use a temporary webpack+wasm fallback because the current Next 16 native SWC binary is missing the required lockfile bindings there.
+- The repo uses the default Next.js Turbopack path with plain `next dev`, `next build`, and `next start` scripts.
+- The earlier Windows-only webpack fallback was removed after the Next 16.2 canary upgrade fixed the local Turbopack path for this project.
 
 ## Testing
 

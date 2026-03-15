@@ -24,6 +24,17 @@ const config: StorybookConfig = {
 	staticDirs: ["../public"],
 	viteFinal: async (baseConfig) => ({
 		...baseConfig,
+		build: {
+			...baseConfig.build,
+			chunkSizeWarningLimit: 1500,
+			rolldownOptions: {
+				...baseConfig.build?.rolldownOptions,
+				checks: {
+					...baseConfig.build?.rolldownOptions?.checks,
+					pluginTimings: false,
+				},
+			},
+		},
 		resolve: {
 			...baseConfig.resolve,
 			alias: {

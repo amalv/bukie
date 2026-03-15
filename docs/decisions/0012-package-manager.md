@@ -7,7 +7,7 @@ Bukie requires a fast, reliable, and modern package manager for managing depende
 ## 🎯 Decision Drivers
 - Speed and efficiency
 - Disk space usage
-- Compatibility with Bun/Elysia and Remix
+- Compatibility with Next.js, Bun runtime scripts, and modern frontend tooling
 - Community support and documentation
 - Reliability and stability
 
@@ -21,7 +21,7 @@ Bukie requires a fast, reliable, and modern package manager for managing depende
 bun is chosen as the package manager for Bukie.
 
 ### 💡 Rationale
- - Bun is extremely fast, modern, and works natively with Elysia and Remix.
+ - Bun is extremely fast, modern, and works well for this repo's Next.js app plus Bun-based scripts and tooling.
  - Bun is now mature, widely used, and includes features like `bun audit` for security.
  - Excellent documentation, community support, and compatibility with most modern tooling.
  - pnpm, npm, and yarn are solid alternatives, but Bun offers the best performance and developer experience for Bukie's stack.
@@ -31,7 +31,7 @@ bun is chosen as the package manager for Bukie.
 **👍 Pros:**
 - Extremely fast
 - Modern features
-- Native support for Elysia and Bun ecosystem
+- Native support for Bun runtime workflows, `bunx`, and repository scripts
 - Mature, widely used, and includes security features like `bun audit`
 - Great documentation and community
 **👎 Cons:**
@@ -44,7 +44,7 @@ bun is chosen as the package manager for Bukie.
 - Reliable and widely adopted
 - Great documentation
 **👎 Cons:**
-- Not native to Bun/Elysia
+- Not native to the Bun-based workflow used in this repo
 
 ### npm
 **👍 Pros:**

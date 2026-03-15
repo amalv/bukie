@@ -1,10 +1,12 @@
 /// <reference types="vitest/config" />
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), react()],
+  plugins: [react()],
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     environment: "jsdom",
     globals: true,
@@ -14,8 +16,6 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["lcov", "text"],
-      // Only measure coverage for app source files and ignore build/config/test scaffolding
-      all: true,
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
         // Top-level and tool configs
