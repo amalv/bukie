@@ -1,3 +1,21 @@
+# [0.30.0](https://github.com/amalv/bukie/compare/v0.29.0...v0.30.0) (2026-03-15)
+
+
+### Bug Fixes
+
+* **build:** normalize sci-fi catalog encoding ([3f80457](https://github.com/amalv/bukie/commit/3f80457086925fb552694c01725df8fedbe90423))
+* **ci:** repair PR test and storybook checks ([2c2bdda](https://github.com/amalv/bukie/commit/2c2bdda59183cf7c2c9aef431c8f3bf68a72ea84))
+* **ci:** update storybook for next 16 ([4eae254](https://github.com/amalv/bukie/commit/4eae254daacaf13cfa5f80b6289ee0681328618e))
+* **deps:** upgrade next.js to latest ([52bd96d](https://github.com/amalv/bukie/commit/52bd96d326ebaa99172bfb9d59948d1d90dd6596))
+* **e2e:** accept canonical book ids in detail navigation ([1f26174](https://github.com/amalv/bukie/commit/1f26174235901fa3edad3fc4bd5ee12f353bf3f4))
+
+
+### Features
+
+* **data-curation:** expand base catalog to 500 books ([b8cf840](https://github.com/amalv/bukie/commit/b8cf840bfe6da547e9c0bb160be92434a0eb4cad))
+* **data-curation:** normalize sci-fi batch and cover workflow ([f3af9b7](https://github.com/amalv/bukie/commit/f3af9b73b8d410719b6c81e2565d56d7e8c7cf45))
+* **importer,covers,artifacts:** sci-fi batch; idempotent upserts; covers only when missing ([fc4175a](https://github.com/amalv/bukie/commit/fc4175a0fd7d0b7b7ea58aabb22a56a7cb503c42))
+
 # [0.29.0](https://github.com/amalv/bukie/compare/v0.28.0...v0.29.0) (2025-08-30)
 
 
