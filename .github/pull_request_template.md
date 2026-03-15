@@ -10,6 +10,7 @@
 <!-- Example: Closes #95 -->
 
 - Closes #
+- Labels aligned with linked issue: 
 
 ## Changes
 
@@ -79,6 +80,7 @@ Main risks and mitigations:
 ## Checklist
 
 - [ ] scope matches the linked issue
+- [ ] PR labels match the linked issue labels where applicable
 - [ ] touched code is cleaner than before
 - [ ] tests cover the changed behavior
 - [ ] docs were updated where needed

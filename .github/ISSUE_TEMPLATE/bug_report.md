@@ -28,6 +28,13 @@ Bound the work so the issue is implementation-ready.
 - 
 - 
 
+## Suggested Labels
+
+Keep the base `bug` label and add any domain/priority labels that should match the eventual PR.
+
+- 
+- 
+
 ## Acceptance Criteria
 
 Use flat bullets and make them testable.
