@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import * as data from "@/features/books/data";
+import { DEFAULT_BOOKS_PAGE_SIZE } from "@/features/books/pageSize";
 import * as repo from "@/features/books/repo";
 import type { Book } from "@/features/books/types";
 import Page from "./page";
@@ -143,7 +144,11 @@ describe("Page", () => {
     render(Comp);
 
     // getBooksPage should have been called with the first element of the arrays
-    expect(spy).toHaveBeenCalledWith({ q: "", after: "cursor-1", limit: 20 });
+    expect(spy).toHaveBeenCalledWith({
+      q: "",
+      after: "cursor-1",
+      limit: DEFAULT_BOOKS_PAGE_SIZE,
+    });
     expect(spyTop).toHaveBeenCalled();
   });
 
@@ -160,7 +165,11 @@ describe("Page", () => {
     render(Comp);
 
     // when q is an empty array and after is an empty array, fallbacks should be used
-    expect(spy).toHaveBeenCalledWith({ q: "", after: undefined, limit: 20 });
+    expect(spy).toHaveBeenCalledWith({
+      q: "",
+      after: undefined,
+      limit: DEFAULT_BOOKS_PAGE_SIZE,
+    });
   });
 
   it("accepts q as an array with a value and uses the first element", async () => {
@@ -178,7 +187,7 @@ describe("Page", () => {
     expect(spy).toHaveBeenCalledWith({
       q: "array-q",
       after: undefined,
-      limit: 20,
+      limit: DEFAULT_BOOKS_PAGE_SIZE,
     });
     expect(
       screen.getByText(/Showing results for "array-q"/),
@@ -200,7 +209,11 @@ describe("Page", () => {
     });
     render(Comp);
 
-    expect(spy).toHaveBeenCalledWith({ q: "", after: undefined, limit: 20 });
+    expect(spy).toHaveBeenCalledWith({
+      q: "",
+      after: undefined,
+      limit: DEFAULT_BOOKS_PAGE_SIZE,
+    });
   });
 
   it("handles q explicitly set to null (runtime) and falls back to empty string", async () => {
@@ -218,7 +231,11 @@ describe("Page", () => {
     });
     render(Comp);
 
-    expect(spy).toHaveBeenCalledWith({ q: "", after: undefined, limit: 20 });
+    expect(spy).toHaveBeenCalledWith({
+      q: "",
+      after: undefined,
+      limit: DEFAULT_BOOKS_PAGE_SIZE,
+    });
   });
 
   it("handles missing q property and falls back to empty string", async () => {
@@ -233,7 +250,11 @@ describe("Page", () => {
     });
     render(Comp);
 
-    expect(spy).toHaveBeenCalledWith({ q: "", after: undefined, limit: 20 });
+    expect(spy).toHaveBeenCalledWith({
+      q: "",
+      after: undefined,
+      limit: DEFAULT_BOOKS_PAGE_SIZE,
+    });
   });
 
   it("renders no section header or list when repo returns undefined sectionItems", async () => {
