@@ -19,7 +19,7 @@ This guide describes how we’ll curate and ingest books in batches of 100 so ev
 - Covers
   - `covers:fetch` — downloads covers and updates `books.cover`.
   - `images:optimize` — converts/optimizes cover assets (e.g., WebP) under `public/covers`.
-  - `db:sync:covers` — syncs DB cover paths to slugged filenames based on files present.
+  - `db:sync:covers` — syncs DB cover paths to canonical id-based filenames based on files present.
 - Database lifecycle
   - `db:migrate:pg` / `db:init:pg` — Postgres migrations/initialization for preview/prod.
   - `db:seed` (SQLite) / `db:seed:pg` (Postgres) — seeders using `mocks/books.ts`.
@@ -75,7 +75,7 @@ See all script entries in `package.json`.
    bun run covers:fetch -- --limit=100 --concurrency=2 --no-optimize
    ```
 
-   - You can also target specific ids with `--id=<bookId>` and enable `--seo-filenames` once titles are final.
+   - You can also target specific ids with `--id=<bookId>`.
 
 4) Optimize images (optional for dev, recommended for preview/prod)
 
@@ -112,7 +112,7 @@ Required/primary fields per book:
 - pages (number | null)
 - description (string | null)
 - categories (array of strings; will become canonical tags)
-- cover (string URL/path like `/covers/<id>-<title-slug>.<ext>`) — filled by covers workflow
+- cover (string URL/path like `/covers/<id>.<ext>`) — filled by covers workflow
 
 Note: We previously considered JSON batch files under `artifacts/`, and the importer can read them with `--input` and `--category`.
 
@@ -137,7 +137,7 @@ bun run db:report -- --report=./artifacts/report-YYYY-MM-DD.json --out=./artifac
 ## Troubleshooting
 
 - Reset local DB if rows get out of sync: `bun run db:reset` then re‑seed and sync covers.
-- If covers don’t update in UI, ensure files exist under `public/covers` and that `db:sync:covers` ran.
+- If covers don’t update in UI, ensure files exist under `public/covers` and that `db:sync:covers` ran. When a local file is still missing, the app falls back to `/covers/placeholder.svg` instead of requesting a broken asset path.
 - CI: The previous JSON importer dry‑run workflow was consolidated; importer now handles report output by default.
 
 ## References
