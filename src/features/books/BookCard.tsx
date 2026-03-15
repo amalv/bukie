@@ -1,11 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatOneDecimal } from "./rating";
+import { formatCount, formatOneDecimal } from "./rating";
 import type { Book } from "./types";
 
 export type BookCardProps = { book: Book };
 
 export function BookCard({ book }: BookCardProps) {
+  const hasMeta = book.rating != null || book.year != null;
+  const hasDescription = Boolean(book.description?.trim());
+
   return (
     <div className="group book-card flex h-full flex-col overflow-hidden rounded-[var(--radius-md)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] shadow-[var(--elevation-1)] transition-[box-shadow,transform,border-color] duration-200 ease-out hover:-translate-y-[2px] hover:border-[color:var(--color-primary)] hover:shadow-[var(--elevation-3)] focus-within:-translate-y-[2px] focus-within:border-[color:var(--color-primary)] focus-within:shadow-[var(--elevation-3)]">
       <div className="relative w-full overflow-hidden aspect-[2/3]">
@@ -59,17 +62,28 @@ export function BookCard({ book }: BookCardProps) {
               {book.title}
             </Link>
           </h3>
-          {typeof book.rating === "number" && (
+          {typeof book.rating === "number" ? (
             <span className="mt-px inline-flex shrink-0 items-center gap-[var(--spacing-0-5)] text-[var(--type-xs)] text-[var(--color-on-surface)] opacity-70">
-              <span className="sr-only">{`Rating: ${formatOneDecimal(book.rating)} out of 5`}</span>
+              <span className="sr-only">{`Rating ${formatOneDecimal(book.rating)} out of 5`}</span>
               <SingleStarIcon />
               <span aria-hidden="true">{formatOneDecimal(book.rating)}</span>
             </span>
-          )}
+          ) : null}
         </div>
         <p className="m-0 text-left text-[var(--type-xs)] leading-[var(--line-normal)] text-[var(--color-on-surface)] opacity-75">
-          {book.author}
+          <span className="sr-only">{`by ${book.author}`}</span>
+          <span aria-hidden="true">{book.author}</span>
         </p>
+        {hasMeta ? (
+          <div className="sr-only">
+            {typeof book.rating === "number" &&
+            typeof book.ratingsCount === "number"
+              ? `(${formatCount(book.ratingsCount)} reviews)`
+              : null}
+            {book.year != null ? <span>{book.year}</span> : null}
+          </div>
+        ) : null}
+        {hasDescription ? <p className="sr-only">{book.description}</p> : null}
         <div className="mt-auto pt-px">
           <Link
             href={`/books/${book.id}/add`}
