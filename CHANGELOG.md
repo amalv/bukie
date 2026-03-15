@@ -1,3 +1,10 @@
+## [0.30.1](https://github.com/amalv/bukie/compare/v0.30.0...v0.30.1) (2026-03-15)
+
+
+### Bug Fixes
+
+* **books:** fill all-books rows across breakpoints ([6b979d3](https://github.com/amalv/bukie/commit/6b979d3a0ea8f62431f79f4049d0f6e20a56e255))
+
 # [0.30.0](https://github.com/amalv/bukie/compare/v0.29.0...v0.30.0) (2026-03-15)
 
 
