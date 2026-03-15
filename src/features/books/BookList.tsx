@@ -38,7 +38,7 @@ export function BookList({
       <Container>
         <Grid gap="lg">
           {skeletonKeys.map((key) => (
-            <Column key={key} span={{ base: 12, sm: 6, md: 3 }}>
+            <Column key={key} span={{ base: 12, sm: 6, md: 3, lg: 2 }}>
               <BookCardSkeleton />
             </Column>
           ))}
@@ -93,7 +93,7 @@ export function BookList({
     >
       <Grid gap="lg">
         {books?.map((b) => (
-          <Column key={b.id} span={{ base: 12, sm: 6, md: 3 }}>
+          <Column key={b.id} span={{ base: 12, sm: 6, md: 3, lg: 2 }}>
             <BookCard book={b} />
           </Column>
         ))}
