@@ -1,6 +1,6 @@
 {
   "name": "bukie",
-  "version": "0.30.2",
+  "version": "0.30.3",
   "private": true,
   "scripts": {
     "build": "bun run db:migrate:pg && bun run db:seed:pg && next build",
