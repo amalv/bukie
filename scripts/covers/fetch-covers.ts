@@ -17,6 +17,7 @@ import {
   findOpenLibraryCandidates,
   getOpenLibraryHeaders,
 } from "./helpers";
+import { runCoverJobs } from "./run-cover-jobs";
 import { books as mockBooks } from "../../mocks/books";
 
 type Book = {
@@ -221,55 +222,60 @@ async function main() {
     flags.force ? " [force]" : "",
   );
 
-  // Simple concurrency
-  const queue = [...limited];
-  const workers = Array.from({ length: Math.max(1, flags.concurrency) }, async () => {
-    while (queue.length) {
-      const book = queue.shift() as Book | undefined;
-      if (!book) break;
-      try {
-        const candidates = await findOpenLibraryCandidates(book);
-        let usedUrl: string | undefined;
-        let localPath: string | undefined;
-        for (const candidate of candidates) {
-          try {
-            localPath = await downloadCover(
-              candidate,
-              book.id,
-              !flags.noOptimize,
-            );
-            usedUrl = candidate;
-            break;
-          } catch {
-            // try next candidate
-          }
+  await runCoverJobs(
+    limited,
+    flags.concurrency,
+    async (book) => {
+      const candidates = await findOpenLibraryCandidates(book);
+      let usedUrl: string | undefined;
+      let localPath: string | undefined;
+      for (const candidate of candidates) {
+        try {
+          localPath = await downloadCover(
+            candidate,
+            book.id,
+            !flags.noOptimize,
+          );
+          usedUrl = candidate;
+          break;
+        } catch {
+          // Try the next candidate.
         }
-        if (!usedUrl || !localPath) {
-          // eslint-disable-next-line no-console
-          console.warn("[covers] no match for '%s' by '%s' (%s)", book.title, book.author, book.id);
-          continue;
-        }
-        if (flags.uploadR2 && !flags.dryRun) {
-          await uploadCoverToR2(localPath.replace(/^\//, "public/"));
-        }
-        if (!flags.dryRun && !skipDbUpdate) {
-          const { updateBook } = await import("../../src/features/books/repo");
-          await updateBook(book.id, { cover: localPath });
-        }
-        // eslint-disable-next-line no-console
-        console.info(
-          "[covers] %s -> %s%s",
-          book.id,
-          localPath,
-          flags.uploadR2 && !flags.dryRun ? " [uploaded to R2]" : "",
-        );
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error("[covers] error for %s: %s", book.id, (e as Error).message);
       }
-    }
-  });
-  await Promise.all(workers);
+      if (!usedUrl || !localPath) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          "[covers] no match for '%s' by '%s' (%s)",
+          book.title,
+          book.author,
+          book.id,
+        );
+        return;
+      }
+      if (flags.uploadR2 && !flags.dryRun) {
+        await uploadCoverToR2(localPath.replace(/^\//, "public/"));
+      }
+      if (!flags.dryRun && !skipDbUpdate) {
+        const { updateBook } = await import("../../src/features/books/repo");
+        await updateBook(book.id, { cover: localPath });
+      }
+      // eslint-disable-next-line no-console
+      console.info(
+        "[covers] %s -> %s%s",
+        book.id,
+        localPath,
+        flags.uploadR2 && !flags.dryRun ? " [uploaded to R2]" : "",
+      );
+    },
+    (book, error) => {
+      // eslint-disable-next-line no-console
+      console.error(
+        "[covers] error for %s: %s",
+        book.id,
+        error instanceof Error ? error.message : String(error),
+      );
+    },
+  );
 }
 
 main().catch((e) => {

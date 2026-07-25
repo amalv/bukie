@@ -60,11 +60,17 @@ describe("media cover helpers", () => {
     expect(isRemoteAssetUrl("/covers/book.webp")).toBe(false);
   });
 
-  it("only unoptimizes svg, proxied, or non-production image sources", () => {
+  it("unoptimizes remote, svg, proxied, or non-production image sources", () => {
     expect(shouldUnoptimizeImage("/covers/book.webp", "test")).toBe(true);
     expect(shouldUnoptimizeImage("/covers/book.webp", "production")).toBe(
       false,
     );
+    expect(
+      shouldUnoptimizeImage(
+        "https://covers.example.com/book.webp",
+        "production",
+      ),
+    ).toBe(true);
     expect(shouldUnoptimizeImage("/covers/placeholder.svg", "production")).toBe(
       true,
     );

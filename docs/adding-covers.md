@@ -45,6 +45,9 @@ This command:
 4. uploads it to `R2_BUCKET/covers/<book-id>.webp`;
 5. updates the database cover path when a database connection is available.
 
+The database is updated only after the upload succeeds. If any publishing job
+fails, the command finishes the remaining queue and exits nonzero.
+
 Upload the object before deploying catalog or database changes that reference
 it. Until the object exists, the app deliberately displays the placeholder.
 

@@ -56,6 +56,7 @@ export function shouldUnoptimizeImage(
 ): boolean {
   return (
     nodeEnv !== "production" ||
+    isRemoteAssetUrl(src) ||
     src.includes(".svg") ||
     src.startsWith(`${COVER_CACHE_ROUTE_PREFIX}/`)
   );
