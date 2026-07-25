@@ -33,6 +33,23 @@ describe("BookCard", () => {
     expect(img).toBeInTheDocument();
   });
 
+  it("only exposes working detail links while library actions are unavailable", () => {
+    render(
+      <div className={lightThemeClass}>
+        <BookCard book={book} />
+      </div>,
+    );
+
+    expect(
+      screen.queryByRole("link", { name: /add to library/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link")).toHaveLength(2);
+    for (const link of screen.getAllByRole("link")) {
+      expect(link).toHaveAttribute("href", "/books/42");
+    }
+  });
+
   it("renders optional badge, rating (single-star) with one decimal and formatted count, and year", () => {
     render(
       <div className={lightThemeClass}>

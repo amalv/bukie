@@ -25,7 +25,7 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ chore(nextjs): align Windows local builds with Next 16 Turbopack default (see issue #98)
 * ⏳ chore(deps): refresh runtime and tooling baseline before auth (see issue #100)
 * ⏳ feat(auth): add authentication foundation for user-specific flows with Clerk (see issue #101)
-* ⏳ fix(books): resolve broken `Add to Library` CTA with a valid auth-aware destination (see issue #92)
+* ✅ fix(books): remove unavailable library actions until an authenticated library flow exists (see issue #92)
 
 ### Design System & Layout
 * ✅ feat: custom Storybook setup
@@ -72,7 +72,7 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 ### User & UI Enhancements
 * ✅ feat(design-system): dark/light mode theming (SSR-safe, no FOUC, accessible toggle)
 * ✅ feat(design-system): enhance BookCard UI — reviews count label, optional short description,
-    uniform media height across cards, actions row (Add to Library/Preview), polished hover,
+    uniform media height across cards, polished hover,
     aligned skeleton media height, and normalized section spacing for All Books (see issue #75)
 * ⏳ feat: user profiles
 * ⏳ feat: UI/UX improvements
@@ -93,7 +93,7 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 The next milestone is focused on platform readiness and authenticated user flows:
 * Refresh the runtime/tooling baseline and contributor setup expectations before feature work continues (see issue #100).
 * Add the authentication foundation with Clerk and update the ADR/setup docs for the current Next.js architecture (see issue #101).
-* Resolve the broken `Add to Library` CTA once auth-backed routing and state exist, or gate it safely if auth work slips (see issue #92).
+* Keep unavailable library actions out of production until auth-backed routing and persistence exist (see issues #92 and #101).
 * Continue with add-book, user-library, and profile work after the auth foundation is in place.
 
 ---
