@@ -1,3 +1,10 @@
+## [0.31.2](https://github.com/amalv/bukie/compare/v0.31.1...v0.31.2) (2026-07-25)
+
+
+### Bug Fixes
+
+* **design-system:** keep theme toggle interactive ([0b72d3f](https://github.com/amalv/bukie/commit/0b72d3f80836315e373f9d103cec6c1724e60255))
+
 ## [0.31.1](https://github.com/amalv/bukie/compare/v0.31.0...v0.31.1) (2026-07-25)
 
 
