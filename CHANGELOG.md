@@ -1,3 +1,10 @@
+## [0.31.1](https://github.com/amalv/bukie/compare/v0.31.0...v0.31.1) (2026-07-25)
+
+
+### Bug Fixes
+
+* **books:** remove unavailable library actions ([9b0ff27](https://github.com/amalv/bukie/commit/9b0ff2729fd0e71230736ace842e5f148eccb8d0))
+
 # [0.31.0](https://github.com/amalv/bukie/compare/v0.30.3...v0.31.0) (2026-07-25)
 
 
