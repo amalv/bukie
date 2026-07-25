@@ -1,3 +1,16 @@
+# [0.31.0](https://github.com/amalv/bukie/compare/v0.30.3...v0.31.0) (2026-07-25)
+
+
+### Bug Fixes
+
+* **media:** fall back for unavailable covers ([f278d63](https://github.com/amalv/bukie/commit/f278d63d7fb46727896a752e6cd6372c7a1eb59b))
+* **media:** harden cover publishing ([1b5224b](https://github.com/amalv/bukie/commit/1b5224b3caa49130b33766cbf56f00534c850dc0))
+
+
+### Features
+
+* **media:** serve covers from private R2 ([b747718](https://github.com/amalv/bukie/commit/b7477183ab7b9bb1052e599bb579e7b727784262))
+
 ## [0.30.3](https://github.com/amalv/bukie/compare/v0.30.2...v0.30.3) (2026-03-16)
 
 
