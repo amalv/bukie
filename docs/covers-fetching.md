@@ -19,7 +19,8 @@ For the end-to-end batch workflow, see `docs/books-steps.md`.
 - `mocks/books.ts` - exports the combined typed catalog used by `--dry-run`.
 - `src/features/books/repo.ts` - `updateBook()` updates the `cover` field after a successful download.
 - `src/media/covers.ts` - resolves provider-agnostic cover values into local, cached, or R2-backed URLs.
-- `public/covers/` - destination folder for downloaded images served statically by Next.js.
+- `public/covers/` - ignored local staging folder; production reads published
+  objects from private R2.
 
 ## How it finds covers
 
@@ -38,6 +39,7 @@ Image format:
 - The book's `cover` field is set to `/covers/<bookId>.<ext>`.
 - The placeholder image is `public/covers/placeholder.svg`.
 - This workflow is for curated seed catalog covers. See `docs/decisions/0015-image-storage.md` for the policy decision and `docs/media-storage.md` for the Cloudflare R2 preparation path.
+- See `docs/adding-covers.md` for the supported publish and verification steps.
 
 ## CLI usage
 
@@ -102,6 +104,14 @@ To compare the current committed covers folder against the ADR 0015 migration th
 bun run covers:report
 ```
 
+## Publishing
+
+Fetching alone only creates an ignored local staging file. It does not publish
+to R2 unless `--upload-r2` is selected through `covers:fetch:r2`.
+
+For the recommended single-cover command, review-first alternative, batch
+backfill, and build-safety rules, see `docs/adding-covers.md`.
+
 ## End-to-end flow
 
 ```mermaid
@@ -111,6 +121,7 @@ sequenceDiagram
   participant OL as Open Library
   participant FS as File System public-covers
   participant DB as Database books.cover
+  participant R2 as Private R2
   participant App as Next.js App UI
 
   Dev->>Fetcher: Run with flags id limit concurrency
@@ -124,6 +135,9 @@ sequenceDiagram
     Fetcher->>OL: GET candidate
     alt 200 OK
       Fetcher->>FS: write /public/covers/<id>.<ext>
+      opt upload-r2 enabled
+        Fetcher->>R2: PUT covers/<id>.<ext>
+      end
       alt DB available and not dry-run
         Fetcher->>DB: update book.cover -> "/covers/<id>.<ext>"
       end
@@ -134,8 +148,12 @@ sequenceDiagram
 
   App->>DB: getBooks()
   DB-->>App: rows with cover paths (/covers/...)
-  App->>FS: Next/Image reads static files
-  FS-->>App: image bytes displayed in UI
+  App->>R2: authenticated GET through media route
+  alt object exists
+    R2-->>App: image bytes
+  else missing or unavailable
+    App->>FS: read placeholder.svg
+  end
 ```
 
 ## Testing the UI

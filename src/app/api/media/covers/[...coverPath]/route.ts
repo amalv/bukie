@@ -2,11 +2,14 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { getMediaConfig } from "@/media/config";
+import { PLACEHOLDER_COVER } from "@/media/covers";
 import { R2ConfigurationError, readR2Object } from "@/media/r2";
 
 export const runtime = "nodejs";
 
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
+const FALLBACK_CACHE_CONTROL = "public, max-age=60";
+const FALLBACK_CDN_CACHE_CONTROL = "public, max-age=300";
 
 const CONTENT_TYPES = new Map([
   [".avif", "image/avif"],
@@ -68,8 +71,22 @@ function createCoverResponse(
   return new Response(responseBody, { status: 200, headers });
 }
 
+function createPlaceholderRedirect(
+  request: Request,
+  reason: "configuration" | "local" | "origin" | "r2-missing",
+): NextResponse {
+  const response = NextResponse.redirect(
+    new URL(PLACEHOLDER_COVER, request.url),
+    307,
+  );
+  response.headers.set("cache-control", FALLBACK_CACHE_CONTROL);
+  response.headers.set("vercel-cdn-cache-control", FALLBACK_CDN_CACHE_CONTROL);
+  response.headers.set("x-bukie-cover-fallback", reason);
+  return response;
+}
+
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ coverPath: string[] }> },
 ) {
   const { coverPath } = await context.params;
@@ -98,37 +115,25 @@ export async function GET(
   }
 
   if (config.backend !== "r2") {
-    return NextResponse.json(
-      { error: "Cover not found", source: "local" },
-      { status: 404 },
-    );
+    return createPlaceholderRedirect(request, "local");
   }
 
   try {
     const object = await readR2Object(`covers/${relativePath}`);
     if (!object) {
-      return NextResponse.json(
-        { error: "Cover not found", source: "r2" },
-        { status: 404 },
-      );
+      return createPlaceholderRedirect(request, "r2-missing");
     }
 
     return createCoverResponse(object.body, relativePath, object);
   } catch (error) {
     if (error instanceof R2ConfigurationError) {
-      return NextResponse.json(
-        { error: "Media storage is not configured" },
-        { status: 503 },
-      );
+      return createPlaceholderRedirect(request, "configuration");
     }
 
     console.error("Unable to read cover from R2", {
       coverPath: relativePath,
       error: error instanceof Error ? error.message : "Unknown R2 error",
     });
-    return NextResponse.json(
-      { error: "Unable to read cover" },
-      { status: 502 },
-    );
+    return createPlaceholderRedirect(request, "origin");
   }
 }

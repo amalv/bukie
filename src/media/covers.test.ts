@@ -5,7 +5,6 @@ import {
   resolveBookCoverSrc,
   shouldUnoptimizeImage,
   toCachedCoverRoute,
-  toR2PublicUrl,
 } from "./covers";
 
 describe("media cover helpers", () => {
@@ -27,13 +26,13 @@ describe("media cover helpers", () => {
     ).toBe("https://covers.example.com/covers/book.webp");
   });
 
-  it("maps local covers to the R2 public URL when the r2 backend is enabled", () => {
+  it("always maps r2 covers to the private media route", () => {
     expect(
       resolveBookCoverSrc("/covers/book.webp", {
         MEDIA_BACKEND: "r2",
         R2_PUBLIC_BASE_URL: "https://covers.example.com",
       }),
-    ).toBe("https://covers.example.com/covers/book.webp");
+    ).toBe("/api/media/covers/book.webp");
   });
 
   it("uses the private media route when r2 has no public origin", () => {
@@ -54,9 +53,6 @@ describe("media cover helpers", () => {
   });
 
   it("builds helper URLs consistently", () => {
-    expect(
-      toR2PublicUrl("/covers/book.webp", "https://covers.example.com/"),
-    ).toBe("https://covers.example.com/covers/book.webp");
     expect(toCachedCoverRoute("/covers/path/to/book.webp")).toBe(
       "/api/media/covers/path/to/book.webp",
     );

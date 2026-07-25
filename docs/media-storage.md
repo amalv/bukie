@@ -36,9 +36,9 @@ R2_SECRET_ACCESS_KEY=<bucket-scoped-secret>
 configured. `MEDIA_CACHE_ENABLED=1` optionally makes that route check
 `.cache/covers` before reading R2; it is normally left disabled in Vercel.
 
-`R2_PUBLIC_BASE_URL` is optional and enables direct public delivery. Leave it
-unset for private production delivery. An `r2.dev` development URL must not be
-used as the production delivery origin.
+Runtime delivery always uses the private media route. No public base URL is
+required, and an `r2.dev` development URL should remain disabled after the
+production cutover.
 
 ## Credentials
 
@@ -59,8 +59,8 @@ Store Vercel values as sensitive environment variables.
 - reads `covers/<file>` with Cloudflare's S3-compatible endpoint;
 - preserves R2 content type, ETag, length, and modification metadata;
 - applies immutable browser and Vercel CDN caching;
-- returns 404 for missing objects, 503 for missing configuration, and 502 for
-  origin failures.
+- redirects to the local placeholder when an object, configuration, or the R2
+  origin is unavailable.
 
 The UI bypasses Vercel Image Optimization for these already-optimized WebP
 files, avoiding unnecessary transformations and cache-write usage.
@@ -80,9 +80,10 @@ bun run covers:r2:reconcile
 bun run covers:r2:backfill
 ```
 
-The existing `bukie-covers-dev` bucket currently contains the backfilled cover
-set. Before a final production cutover, either rename the operational intent or
-create `bukie-covers-prod` and reconcile the same object set into it.
+The existing `bukie-covers-dev` bucket contains the canonical cover set and is
+configured for Preview and Production. Its historical name has no runtime
+effect. If strict environment isolation becomes useful later, create a separate
+production bucket and migrate it as an explicit operation.
 
 The backfill maps:
 
@@ -96,8 +97,10 @@ The placeholder is excluded because it remains part of the application.
 
 There are two supported modes:
 
-1. `MEDIA_BACKEND=local`: read the working set from `public/covers`.
-2. `MEDIA_BACKEND=r2`: exercise the same private route used in production.
+1. `MEDIA_BACKEND=local`: read an existing ignored working file from
+   `public/covers`; use the placeholder when it is absent.
+2. `MEDIA_BACKEND=r2`: exercise the same private route used in production; use
+   the placeholder when the object or R2 connection is unavailable.
 
 An optional disposable cache lives under `.cache/covers`. Hydrate it with:
 
@@ -126,20 +129,6 @@ production branch remains a recoverable fallback until the merge.
 
 ## Ongoing cover workflow
 
-For covers fetched locally:
-
-```powershell
-bun run covers:fetch
-bun run images:optimize
-bun run covers:r2:backfill
-```
-
-For immediate publishing through the existing scripts:
-
-```powershell
-bun run covers:fetch:r2
-bun run images:optimize:r2
-```
-
-Future tooling should upload to R2 first and treat local files as temporary
-staging artifacts rather than durable repository content.
+See `docs/adding-covers.md` for the single-cover and batch publishing workflows.
+Cover uploads are always explicit; application and Vercel builds never write to
+R2.

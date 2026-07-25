@@ -25,14 +25,6 @@ export function isRemoteAssetUrl(value: string | undefined): boolean {
   }
 }
 
-export function toR2PublicUrl(
-  coverPath: string,
-  publicBaseUrl: string,
-): string {
-  const relative = coverPath.replace(/^\/+/, "");
-  return `${publicBaseUrl.replace(/\/+$/, "")}/${relative}`;
-}
-
 export function toCachedCoverRoute(coverPath: string): string {
   const relative = coverPath
     .replace(/^\/?covers\//, "")
@@ -54,9 +46,6 @@ export function resolveBookCoverSrc(
   const config = getMediaConfig(env);
   if (config.backend !== "r2" || !normalized.startsWith(COVER_ROUTE_PREFIX)) {
     return normalized;
-  }
-  if (config.r2PublicBaseUrl) {
-    return toR2PublicUrl(normalized, config.r2PublicBaseUrl);
   }
   return toCachedCoverRoute(normalized);
 }

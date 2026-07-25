@@ -18,6 +18,8 @@ This document explains how cover images flow from the catalog source to the UI, 
 - `public/covers` is a temporary local working set for fetch, optimization, and
   backfill commands. It is not the production source of truth after cutover.
 - The R2 and local-cache workflow is documented in `docs/media-storage.md`.
+- The publishing workflow for new covers is documented in
+  `docs/adding-covers.md`.
 
 ## Flow at a glance
 
@@ -45,17 +47,19 @@ flowchart LR
 
   subgraph Assets
     F[scripts/covers/fetch-covers.ts\nOpen Library] --> G[public/covers/*.webp]
-    G --> H[db:sync:covers\nprefer local id-based files]
-    H --> E
+    G --> H[explicit Wrangler publish]
+    G --> N[db:sync:covers\nprefer local id-based files]
+    N --> E
     G --> I[covers:prune\nremove unreferenced files]
   end
+  H --> M[(Private R2 bucket)]
 
   subgraph App
     E --> J[Next.js UI]
     J --> K[src/media/covers.ts\nresolve local or R2 src]
     K --> G
     K --> L[Vercel media route]
-    L --> M[(Private R2 bucket)]
+    L --> M
   end
 ```
 
@@ -64,7 +68,8 @@ flowchart LR
 - Input: typed `Book` items with `cover` and optional `isbn`.
 - Output: app-facing `cover` paths that are local assets, private R2-backed
   `/api/media/covers/*` URLs, or the local placeholder.
-- Error mode: missing files fall back to `/covers/placeholder.svg`.
+- Error mode: missing local files resolve to `/covers/placeholder.svg`; private
+  route misses and R2 failures redirect there.
 
 ## Pruning unused covers
 

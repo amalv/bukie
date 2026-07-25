@@ -58,6 +58,8 @@ See [ROADMAP.md](./ROADMAP.md) for planned milestones and upcoming features.
   directly from private R2.
 - Use `bun run covers:r2:backfill` to upload a local working set into
   Cloudflare R2 via Wrangler.
+- See [docs/adding-covers.md](./docs/adding-covers.md) before publishing new
+  covers. Uploads are explicit and never run as part of a build.
 - Only the placeholder and deliberate test/design fixtures belong in Git after
   the production cutover is verified.
 

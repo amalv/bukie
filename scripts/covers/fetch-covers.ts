@@ -156,6 +156,12 @@ async function fileExistsForCoverPath(cover: string | undefined): Promise<boolea
 }
 
 async function main() {
+  try {
+    process.loadEnvFile(join(process.cwd(), ".env"));
+  } catch {
+    // Environment variables may already be supplied by the calling shell.
+  }
+
   const flags = parseFlags(process.argv.slice(2));
   let all: Book[];
   let skipDbUpdate = false;

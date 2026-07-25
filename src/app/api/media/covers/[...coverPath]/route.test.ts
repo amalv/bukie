@@ -1,6 +1,7 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { R2ConfigurationError } from "@/media/r2";
 import { GET } from "./route";
 
 const { readR2Object } = vi.hoisted(() => ({
@@ -25,6 +26,7 @@ describe("private cover route", () => {
   afterEach(async () => {
     vi.unstubAllEnvs();
     readR2Object.mockReset();
+    vi.restoreAllMocks();
     await cleanupCache();
   });
 
@@ -97,7 +99,7 @@ describe("private cover route", () => {
     expect(await response.text()).toBe("from-r2");
   });
 
-  it("returns 404 when the R2 object does not exist", async () => {
+  it("redirects to the placeholder when the R2 object does not exist", async () => {
     vi.stubEnv("MEDIA_BACKEND", "r2");
     readR2Object.mockResolvedValue(undefined);
 
@@ -108,7 +110,57 @@ describe("private cover route", () => {
       },
     );
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(
+      "http://localhost/covers/placeholder.svg",
+    );
+    expect(response.headers.get("x-bukie-cover-fallback")).toBe("r2-missing");
+  });
+
+  it("redirects to the placeholder when local mode misses", async () => {
+    const response = await GET(
+      new Request("http://localhost/api/media/covers/missing.webp"),
+      {
+        params: Promise.resolve({ coverPath: ["missing.webp"] }),
+      },
+    );
+
+    expect(readR2Object).not.toHaveBeenCalled();
+    expect(response.status).toBe(307);
+    expect(response.headers.get("x-bukie-cover-fallback")).toBe("local");
+  });
+
+  it("redirects to the placeholder when R2 is not configured", async () => {
+    vi.stubEnv("MEDIA_BACKEND", "r2");
+    readR2Object.mockRejectedValue(new R2ConfigurationError());
+
+    const response = await GET(
+      new Request("http://localhost/api/media/covers/book.webp"),
+      {
+        params: Promise.resolve({ coverPath: ["book.webp"] }),
+      },
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("x-bukie-cover-fallback")).toBe(
+      "configuration",
+    );
+  });
+
+  it("redirects to the placeholder when the R2 origin fails", async () => {
+    vi.stubEnv("MEDIA_BACKEND", "r2");
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    readR2Object.mockRejectedValue(new Error("temporary origin failure"));
+
+    const response = await GET(
+      new Request("http://localhost/api/media/covers/book.webp"),
+      {
+        params: Promise.resolve({ coverPath: ["book.webp"] }),
+      },
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("x-bukie-cover-fallback")).toBe("origin");
   });
 
   it("rejects path traversal attempts", async () => {
