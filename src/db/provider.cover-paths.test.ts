@@ -67,4 +67,25 @@ describe("normalizeBookCover", () => {
       ),
     ).toBe("/covers/placeholder.svg");
   });
+
+  it("preserves provider-agnostic cover paths when R2 is the source of truth", () => {
+    expect(
+      normalizeBookCover(
+        "33333333-3333-3333-3333-333333333333",
+        "/covers/missing-locally.webp",
+        undefined,
+        undefined,
+        { MEDIA_BACKEND: "r2" },
+      ),
+    ).toBe("/covers/missing-locally.webp");
+  });
+
+  it("preserves remote cover URLs for future object storage backends", () => {
+    expect(
+      normalizeBookCover(
+        "44444444-4444-4444-4444-444444444444",
+        "https://covers.example.com/covers/remote.webp",
+      ),
+    ).toBe("https://covers.example.com/covers/remote.webp");
+  });
 });

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { shouldUnoptimizeImage } from "@/media/covers";
 import { formatCount, formatOneDecimal } from "./rating";
 import type { Book } from "./types";
 
@@ -8,6 +9,7 @@ export type BookCardProps = { book: Book };
 export function BookCard({ book }: BookCardProps) {
   const hasMeta = book.rating != null || book.year != null;
   const hasDescription = Boolean(book.description?.trim());
+  const coverSrc = book.cover?.trim() || "/covers/placeholder.svg";
 
   return (
     <div className="group book-card flex h-full flex-col overflow-hidden rounded-[var(--radius-md)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] shadow-[var(--elevation-1)] transition-[box-shadow,transform,border-color] duration-200 ease-out hover:-translate-y-[2px] hover:border-[color:var(--color-primary)] hover:shadow-[var(--elevation-3)] focus-within:-translate-y-[2px] focus-within:border-[color:var(--color-primary)] focus-within:shadow-[var(--elevation-3)]">
@@ -35,14 +37,11 @@ export function BookCard({ book }: BookCardProps) {
           className="absolute inset-0 block"
         >
           <Image
-            src={book.cover?.trim() ? book.cover : "/covers/placeholder.svg"}
+            src={coverSrc}
             alt={`Cover of ${book.title} by ${book.author}`}
             fill
             className="absolute inset-0 block h-full w-full object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
-            unoptimized={
-              process.env.NODE_ENV !== "production" ||
-              book.cover?.includes(".svg") === true
-            }
+            unoptimized={shouldUnoptimizeImage(coverSrc)}
           />
         </Link>
         <div className="pointer-events-none absolute inset-0 bg-transparent transition-colors duration-200 ease-out group-hover:bg-[var(--color-overlay)]" />

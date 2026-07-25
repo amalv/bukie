@@ -1,0 +1,9 @@
+# Production covers are served from private R2 through the media route.
+.env*
+!.env.example
+coverage
+playwright-report
+storybook-static
+test-results
+public/covers/*
+!public/covers/placeholder.svg

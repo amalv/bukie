@@ -27,6 +27,7 @@
     "test:playwright": "bunx playwright test",
     "test:storybook": "bunx vitest --config vitest.config.storybook.ts",
     "images:optimize": "bun ./scripts/optimize-images.ts --webp --maxWidth 450 --quality 80",
+    "images:optimize:r2": "bun run images:optimize && bun run covers:r2:backfill",
     "db:list": "bunx tsx ./scripts/db/list-books.ts",
     "db:import": "bunx tsx ./scripts/db/import-batch.ts",
     "db:purge:genre": "bunx tsx ./scripts/db/purge-genre.ts",
@@ -40,12 +41,19 @@
     "db:report": "bunx tsx ./scripts/db/report-summary.ts",
     "db:sync:covers": "bunx tsx ./scripts/db/sync-covers.ts",
     "covers:fetch": "bunx tsx ./scripts/covers/fetch-covers.ts",
+    "covers:fetch:r2": "bun run covers:fetch -- --upload-r2",
     "covers:prune": "bunx tsx ./scripts/covers/prune-unused.ts",
     "covers:suggest": "bunx tsx ./scripts/covers/suggest-mappings.ts",
     "covers:rename:id": "bunx tsx ./scripts/covers/rename-to-id.ts",
-    "covers:canonicalize": "bunx tsx ./scripts/covers/canonicalize.ts"
+    "covers:canonicalize": "bunx tsx ./scripts/covers/canonicalize.ts",
+    "covers:cache:hydrate": "bunx tsx ./scripts/covers/hydrate-cache.ts",
+    "covers:report": "bunx tsx ./scripts/covers/report-footprint.ts",
+    "covers:r2:backfill": "powershell -ExecutionPolicy Bypass -File ./scripts/covers/r2-sync.ps1 upload",
+    "covers:r2:status": "powershell -ExecutionPolicy Bypass -File ./scripts/covers/r2-sync.ps1 status",
+    "covers:r2:reconcile": "powershell -ExecutionPolicy Bypass -File ./scripts/covers/r2-sync.ps1 reconcile"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1095.0",
     "better-sqlite3": "^12.8.0",
     "drizzle-orm": "^0.45.1",
     "lucide-react": "^0.577.0",
@@ -94,6 +102,7 @@
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",
     "vite": "^8.0.0",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "wrangler": "^4.114.0"
   }
 }

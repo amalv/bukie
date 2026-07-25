@@ -48,6 +48,21 @@ See [ROADMAP.md](./ROADMAP.md) for planned milestones and upcoming features.
 - The repo uses the default Next.js Turbopack path with plain `next dev`, `next build`, and `next start` scripts.
 - The earlier Windows-only webpack fallback was removed after the Next 16.2 canary upgrade fixed the local Turbopack path for this project.
 
+## Media Storage
+
+- Production covers are stored in a private Cloudflare R2 bucket and served
+  through Bukie's Vercel-hosted `/api/media/covers/*` route.
+- The R2 adapter, environment variables, private delivery path, and rollout
+  procedure are documented in [docs/media-storage.md](./docs/media-storage.md).
+- Use `bun run covers:cache:hydrate` to rebuild the optional local cache
+  directly from private R2.
+- Use `bun run covers:r2:backfill` to upload a local working set into
+  Cloudflare R2 via Wrangler.
+- See [docs/adding-covers.md](./docs/adding-covers.md) before publishing new
+  covers. Uploads are explicit and never run as part of a build.
+- Only the placeholder and deliberate test/design fixtures belong in Git after
+  the production cutover is verified.
+
 ## Testing
 
 See the full testing guide in [docs/testing.md](./docs/testing.md), covering unit tests, Storybook tests, Playwright E2E, and CI integration.

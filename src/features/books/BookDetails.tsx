@@ -3,6 +3,7 @@ import Calendar from "lucide-react/dist/esm/icons/calendar.js";
 import User from "lucide-react/dist/esm/icons/user.js";
 import Image from "next/image";
 import { useId } from "react";
+import { shouldUnoptimizeImage } from "@/media/covers";
 import { formatCount, formatOneDecimal } from "./rating";
 import type { Book } from "./types";
 
@@ -30,6 +31,7 @@ export function BookDetails({ book }: BookDetailsProps) {
   const pages = book.pages ?? mock.pages;
   const publisher = book.publisher ?? mock.publisher;
   const isbn = book.isbn ?? mock.isbn;
+  const coverSrc = book.cover?.trim() || "/covers/placeholder.svg";
 
   return (
     <article
@@ -46,15 +48,12 @@ export function BookDetails({ book }: BookDetailsProps) {
         <div className="grid grid-cols-1 items-start gap-[var(--spacing-3)] md:grid-cols-[auto_1fr] md:gap-[var(--spacing-4)]">
           <div className="relative h-[270px] w-[180px] md:h-[540px] md:w-[360px]">
             <Image
-              src={book.cover}
+              src={coverSrc}
               alt={`Cover of ${book.title} by ${book.author}`}
               width={180}
               height={270}
               className="mt-[var(--spacing-2)] h-full w-full rounded-[var(--radius-md)] object-cover shadow-[var(--elevation-1)]"
-              unoptimized={
-                process.env.NODE_ENV !== "production" ||
-                book.cover.includes(".svg")
-              }
+              unoptimized={shouldUnoptimizeImage(coverSrc)}
               sizes="(max-width: 640px) 40vw, 180px"
             />
           </div>

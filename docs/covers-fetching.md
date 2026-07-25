@@ -13,10 +13,14 @@ For the end-to-end batch workflow, see `docs/books-steps.md`.
 ## Key files
 
 - `scripts/covers/fetch-covers.ts` - main CLI that downloads covers and writes them locally.
+- `scripts/covers/hydrate-cache.ts` - rebuilds the optional local cache from private R2.
+- `scripts/covers/report-footprint.ts` - reports current committed cover count/size against ADR 0015 guardrails.
 - `scripts/covers/helpers.ts` - builds Open Library URL candidates from ISBNs, Search API results, and a few manual fallbacks.
 - `mocks/books.ts` - exports the combined typed catalog used by `--dry-run`.
 - `src/features/books/repo.ts` - `updateBook()` updates the `cover` field after a successful download.
-- `public/covers/` - destination folder for downloaded images served statically by Next.js.
+- `src/media/covers.ts` - resolves provider-agnostic cover values into local, cached, or R2-backed URLs.
+- `public/covers/` - ignored local staging folder; production reads published
+  objects from private R2.
 
 ## How it finds covers
 
@@ -34,6 +38,8 @@ Image format:
 - Files are written to `public/covers/<bookId>.<ext>`.
 - The book's `cover` field is set to `/covers/<bookId>.<ext>`.
 - The placeholder image is `public/covers/placeholder.svg`.
+- This workflow is for curated seed catalog covers. See `docs/decisions/0015-image-storage.md` for the policy decision and `docs/media-storage.md` for the Cloudflare R2 preparation path.
+- See `docs/adding-covers.md` for the supported publish and verification steps.
 
 ## CLI usage
 
@@ -79,6 +85,33 @@ Behavior:
   - prefers `.webp`, then `.jpg`, then `.png`
 - Does not create missing rows; logs any missing ids.
 
+## Optional R2-backed local cache
+
+Once the private R2 credentials are configured, you can rebuild the untracked
+local cache from R2 instead of re-fetching from Open Library:
+
+```powershell
+bun run covers:cache:hydrate
+```
+
+This is intended for the migration-prep workflow in `docs/media-storage.md`, not for replacing the current seeded-cover pipeline by default.
+
+## Footprint guardrail report
+
+To compare the current committed covers folder against the ADR 0015 migration thresholds:
+
+```powershell
+bun run covers:report
+```
+
+## Publishing
+
+Fetching alone only creates an ignored local staging file. It does not publish
+to R2 unless `--upload-r2` is selected through `covers:fetch:r2`.
+
+For the recommended single-cover command, review-first alternative, batch
+backfill, and build-safety rules, see `docs/adding-covers.md`.
+
 ## End-to-end flow
 
 ```mermaid
@@ -88,6 +121,7 @@ sequenceDiagram
   participant OL as Open Library
   participant FS as File System public-covers
   participant DB as Database books.cover
+  participant R2 as Private R2
   participant App as Next.js App UI
 
   Dev->>Fetcher: Run with flags id limit concurrency
@@ -101,6 +135,9 @@ sequenceDiagram
     Fetcher->>OL: GET candidate
     alt 200 OK
       Fetcher->>FS: write /public/covers/<id>.<ext>
+      opt upload-r2 enabled
+        Fetcher->>R2: PUT covers/<id>.<ext>
+      end
       alt DB available and not dry-run
         Fetcher->>DB: update book.cover -> "/covers/<id>.<ext>"
       end
@@ -111,8 +148,12 @@ sequenceDiagram
 
   App->>DB: getBooks()
   DB-->>App: rows with cover paths (/covers/...)
-  App->>FS: Next/Image reads static files
-  FS-->>App: image bytes displayed in UI
+  App->>R2: authenticated GET through media route
+  alt object exists
+    R2-->>App: image bytes
+  else missing or unavailable
+    App->>FS: read placeholder.svg
+  end
 ```
 
 ## Testing the UI

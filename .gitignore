@@ -1,4 +1,7 @@
 .data/
+.cache/
+/public/covers/*
+!/public/covers/placeholder.svg
 *.db
 *.sqlite
 *.sqlite-journal
@@ -43,6 +46,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel

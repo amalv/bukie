@@ -10,12 +10,14 @@
  *   but the corresponding file is missing on disk.
  *   In --dry-run mode, uses mock books instead of DB to avoid local driver issues.
  */
-import { mkdir, writeFile, stat } from "node:fs/promises";
+import { spawn } from "node:child_process";
+import { mkdir, stat, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import {
   findOpenLibraryCandidates,
   getOpenLibraryHeaders,
 } from "./helpers";
+import { runCoverJobs } from "./run-cover-jobs";
 import { books as mockBooks } from "../../mocks/books";
 
 type Book = {
@@ -35,25 +37,70 @@ type Flags = {
   concurrency: number;
   onlyId?: string;
   noOptimize: boolean;
+  uploadR2: boolean;
   force?: boolean;
   onlyMissing?: boolean; // explicit alias; default true
   checkFiles?: boolean; // also treat non-placeholder covers as missing if file not found
 };
 
 function parseFlags(argv: string[]): Flags {
-  const flags: Flags = { dryRun: false, concurrency: 4, noOptimize: false, onlyMissing: true };
+  const flags: Flags = {
+    dryRun: false,
+    concurrency: 4,
+    noOptimize: false,
+    uploadR2: false,
+    onlyMissing: true,
+  };
   for (const arg of argv) {
     if (arg === "--dry-run") flags.dryRun = true;
     else if (arg.startsWith("--limit=")) flags.limit = Number(arg.split("=")[1]);
     else if (arg.startsWith("--concurrency=")) flags.concurrency = Number(arg.split("=")[1]);
     else if (arg.startsWith("--id=")) flags.onlyId = arg.split("=")[1];
     else if (arg === "--no-optimize") flags.noOptimize = true;
-  else if (arg === "--force") flags.force = true;
+    else if (arg === "--upload-r2") flags.uploadR2 = true;
+    else if (arg === "--force") flags.force = true;
     else if (arg === "--all") flags.onlyMissing = false;
     else if (arg === "--only-missing") flags.onlyMissing = true;
     else if (arg === "--check-files") flags.checkFiles = true;
   }
   return flags;
+}
+
+async function uploadCoverToR2(localPath: string): Promise<void> {
+  const bucket = process.env.R2_BUCKET?.trim();
+  if (!bucket) {
+    throw new Error("R2_BUCKET is required when --upload-r2 is enabled.");
+  }
+
+  const filename = basename(localPath);
+  const contentType = localPath.endsWith(".webp")
+    ? "image/webp"
+    : localPath.endsWith(".png")
+      ? "image/png"
+      : "image/jpeg";
+  const executable = process.platform === "win32" ? "bunx.cmd" : "bunx";
+  const exitCode = await new Promise<number>((resolve, reject) => {
+    const child = spawn(
+      executable,
+      [
+      "wrangler",
+      "r2",
+      "object",
+      "put",
+      `${bucket}/covers/${filename}`,
+      `--file=${localPath}`,
+      `--content-type=${contentType}`,
+      "--cache-control=public, max-age=31536000, immutable",
+      "--remote",
+      ],
+      { stdio: "inherit" },
+    );
+    child.once("error", reject);
+    child.once("exit", (code) => resolve(code ?? 1));
+  });
+  if (exitCode !== 0) {
+    throw new Error(`Wrangler upload failed with exit code ${exitCode}.`);
+  }
 }
 
 let sharpSingleton: any | undefined;
@@ -110,6 +157,12 @@ async function fileExistsForCoverPath(cover: string | undefined): Promise<boolea
 }
 
 async function main() {
+  try {
+    process.loadEnvFile(join(process.cwd(), ".env"));
+  } catch {
+    // Environment variables may already be supplied by the calling shell.
+  }
+
   const flags = parseFlags(process.argv.slice(2));
   let all: Book[];
   let skipDbUpdate = false;
@@ -169,46 +222,60 @@ async function main() {
     flags.force ? " [force]" : "",
   );
 
-  // Simple concurrency
-  const queue = [...limited];
-  const workers = Array.from({ length: Math.max(1, flags.concurrency) }, async () => {
-    while (queue.length) {
-      const book = queue.shift() as Book | undefined;
-      if (!book) break;
-      try {
-        const candidates = await findOpenLibraryCandidates(book);
-        let usedUrl: string | undefined;
-        for (const candidate of candidates) {
-          try {
-            const baseName = book.id;
-            const localPath = await downloadCover(
-              candidate,
-              baseName,
-              !flags.noOptimize,
-            );
-            usedUrl = candidate;
-            if (!flags.dryRun && !skipDbUpdate) {
-              const { updateBook } = await import("../../src/features/books/repo");
-              await updateBook(book.id, { cover: localPath });
-            }
-            // eslint-disable-next-line no-console
-            console.info("[covers] %s -> %s", book.id, localPath);
-            break;
-          } catch {
-            // try next candidate
-          }
+  await runCoverJobs(
+    limited,
+    flags.concurrency,
+    async (book) => {
+      const candidates = await findOpenLibraryCandidates(book);
+      let usedUrl: string | undefined;
+      let localPath: string | undefined;
+      for (const candidate of candidates) {
+        try {
+          localPath = await downloadCover(
+            candidate,
+            book.id,
+            !flags.noOptimize,
+          );
+          usedUrl = candidate;
+          break;
+        } catch {
+          // Try the next candidate.
         }
-        if (!usedUrl) {
-          // eslint-disable-next-line no-console
-          console.warn("[covers] no match for '%s' by '%s' (%s)", book.title, book.author, book.id);
-        }
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error("[covers] error for %s: %s", book.id, (e as Error).message);
       }
-    }
-  });
-  await Promise.all(workers);
+      if (!usedUrl || !localPath) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          "[covers] no match for '%s' by '%s' (%s)",
+          book.title,
+          book.author,
+          book.id,
+        );
+        return;
+      }
+      if (flags.uploadR2 && !flags.dryRun) {
+        await uploadCoverToR2(localPath.replace(/^\//, "public/"));
+      }
+      if (!flags.dryRun && !skipDbUpdate) {
+        const { updateBook } = await import("../../src/features/books/repo");
+        await updateBook(book.id, { cover: localPath });
+      }
+      // eslint-disable-next-line no-console
+      console.info(
+        "[covers] %s -> %s%s",
+        book.id,
+        localPath,
+        flags.uploadR2 && !flags.dryRun ? " [uploaded to R2]" : "",
+      );
+    },
+    (book, error) => {
+      // eslint-disable-next-line no-console
+      console.error(
+        "[covers] error for %s: %s",
+        book.id,
+        error instanceof Error ? error.message : String(error),
+      );
+    },
+  );
 }
 
 main().catch((e) => {
