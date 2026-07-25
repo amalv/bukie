@@ -14,23 +14,6 @@ export function BookCard({ book }: BookCardProps) {
   return (
     <div className="group book-card flex h-full flex-col overflow-hidden rounded-[var(--radius-md)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] shadow-[var(--elevation-1)] transition-[box-shadow,transform,border-color] duration-200 ease-out hover:-translate-y-[2px] hover:border-[color:var(--color-primary)] hover:shadow-[var(--elevation-3)] focus-within:-translate-y-[2px] focus-within:border-[color:var(--color-primary)] focus-within:shadow-[var(--elevation-3)]">
       <div className="relative w-full overflow-hidden aspect-[2/3]">
-        {/* Floating favorite icon for visual parity with expected design; non-functional placeholder */}
-        <div
-          className="pointer-events-none absolute top-[var(--spacing-1)] left-[var(--spacing-1)] z-[1] inline-flex h-[28px] w-[28px] items-center justify-center rounded-full border border-[color:var(--color-outline)] bg-[var(--color-surface)] text-[var(--color-on-surface)] shadow-[var(--elevation-1)] transition-[transform,box-shadow] duration-150 ease-out group-hover:scale-105 group-hover:shadow-[var(--elevation-2)]"
-          aria-hidden="true"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="h-[14px] w-[14px]"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path
-              d="M12 21s-1-.55-2.35-1.63C6.4 16.85 4 14.73 4 11.9 4 9.79 5.7 8 7.8 8c1.12 0 2.2.52 2.9 1.34.7-.82 1.78-1.34 2.9-1.34 2.1 0 3.8 1.79 3.8 3.9 0 2.83-2.4 4.95-5.65 7.47C13 20.45 12 21 12 21z"
-              fill="currentColor"
-            />
-          </svg>
-        </div>
         <Link
           href={`/books/${book.id}`}
           aria-label={`View details for ${book.title}`}
@@ -83,14 +66,6 @@ export function BookCard({ book }: BookCardProps) {
           </div>
         ) : null}
         {hasDescription ? <p className="sr-only">{book.description}</p> : null}
-        <div className="mt-auto pt-px">
-          <Link
-            href={`/books/${book.id}/add`}
-            className="inline-flex min-h-[30px] w-full items-center justify-center rounded-[var(--radius-md)] border border-[color:var(--color-primary)] bg-[var(--color-primary)] px-[var(--spacing-1-5)] py-[var(--spacing-0-5)] text-[var(--type-xs)] leading-[var(--line-normal)] font-semibold whitespace-nowrap text-[var(--color-on-primary)] no-underline shadow-[var(--elevation-1)] transition-shadow duration-150 ease-out hover:shadow-[var(--elevation-2)] focus-visible:shadow-[var(--elevation-3)] focus-visible:outline-none"
-          >
-            Add to Library
-          </Link>
-        </div>
       </div>
     </div>
   );
