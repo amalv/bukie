@@ -177,7 +177,10 @@ export function extractOpenLibrarySearchCandidates(
 
 export async function findOpenLibraryCandidates(
   book: CoverLookupBook,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ) => Promise<Response> = fetch,
 ): Promise<string[]> {
   const isbnCandidates = buildOpenLibraryCandidates(book);
   const manualCandidates = MANUAL_CANDIDATES[normalize(book.title)] ?? [];

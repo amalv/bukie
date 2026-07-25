@@ -13,9 +13,12 @@ For the end-to-end batch workflow, see `docs/books-steps.md`.
 ## Key files
 
 - `scripts/covers/fetch-covers.ts` - main CLI that downloads covers and writes them locally.
+- `scripts/covers/hydrate-cache.ts` - rebuilds the optional local cache from private R2.
+- `scripts/covers/report-footprint.ts` - reports current committed cover count/size against ADR 0015 guardrails.
 - `scripts/covers/helpers.ts` - builds Open Library URL candidates from ISBNs, Search API results, and a few manual fallbacks.
 - `mocks/books.ts` - exports the combined typed catalog used by `--dry-run`.
 - `src/features/books/repo.ts` - `updateBook()` updates the `cover` field after a successful download.
+- `src/media/covers.ts` - resolves provider-agnostic cover values into local, cached, or R2-backed URLs.
 - `public/covers/` - destination folder for downloaded images served statically by Next.js.
 
 ## How it finds covers
@@ -34,6 +37,7 @@ Image format:
 - Files are written to `public/covers/<bookId>.<ext>`.
 - The book's `cover` field is set to `/covers/<bookId>.<ext>`.
 - The placeholder image is `public/covers/placeholder.svg`.
+- This workflow is for curated seed catalog covers. See `docs/decisions/0015-image-storage.md` for the policy decision and `docs/media-storage.md` for the Cloudflare R2 preparation path.
 
 ## CLI usage
 
@@ -78,6 +82,25 @@ Behavior:
 - For each kept book, sets `cover` to `/covers/<id>.<ext>` using extension precedence:
   - prefers `.webp`, then `.jpg`, then `.png`
 - Does not create missing rows; logs any missing ids.
+
+## Optional R2-backed local cache
+
+Once the private R2 credentials are configured, you can rebuild the untracked
+local cache from R2 instead of re-fetching from Open Library:
+
+```powershell
+bun run covers:cache:hydrate
+```
+
+This is intended for the migration-prep workflow in `docs/media-storage.md`, not for replacing the current seeded-cover pipeline by default.
+
+## Footprint guardrail report
+
+To compare the current committed covers folder against the ADR 0015 migration thresholds:
+
+```powershell
+bun run covers:report
+```
 
 ## End-to-end flow
 

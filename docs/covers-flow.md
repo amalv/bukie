@@ -6,8 +6,18 @@ This document explains how cover images flow from the catalog source to the UI, 
 
 - Type safety and SSR: keep the canonical catalog as typed TS in `artifacts/catalog/*.ts`.
 - Deterministic rendering: each book resolves to a stable `cover` URL before the app renders.
-- Performance: prefer optimized local WebP files under `public/covers`.
+- Performance: pre-optimize WebP covers before uploading them to R2.
 - Maintainability: use one canonical filename shape, `/covers/<id>.webp`, plus a temporary legacy fallback while older files are being cleaned up.
+
+## Storage policy
+
+- Cloudflare R2 is the production source of truth for curated covers.
+- Catalogs and database rows retain provider-neutral `/covers/<id>.webp` values.
+- Vercel serves those objects through `/api/media/covers/*` with immutable CDN
+  caching, so the bucket remains private.
+- `public/covers` is a temporary local working set for fetch, optimization, and
+  backfill commands. It is not the production source of truth after cutover.
+- The R2 and local-cache workflow is documented in `docs/media-storage.md`.
 
 ## Flow at a glance
 
@@ -15,8 +25,11 @@ This document explains how cover images flow from the catalog source to the UI, 
 - Catalog output: `artifacts/catalog/build.ts` emits canonical id-based cover paths using `/covers/<id>.webp`.
 - Import: category-specific `bun run db:import:*` commands ingest each batch into the DB and persist fields including `cover`.
 - Fetching: `bun run covers:fetch` downloads from Open Library (ISBN first, then Search API and manual fallbacks) and writes assets under `public/covers`.
+- Resolution: `src/media/covers.ts` turns provider-agnostic cover values into local URLs or the private R2-backed media route depending on env flags.
 - Sync: `bun run db:sync:covers` updates DB rows to the best local extension for the current typed catalog.
 - Prune: `bun run covers:prune` reports, and with `--commit` deletes, files not referenced by the current catalog.
+- Cache hydrate: `bun run covers:cache:hydrate` rebuilds `.cache/covers`
+  directly from private R2 when local cached files are useful.
 
 ## Mermaid: end-to-end
 
@@ -39,14 +52,18 @@ flowchart LR
 
   subgraph App
     E --> J[Next.js UI]
-    J --> G
+    J --> K[src/media/covers.ts\nresolve local or R2 src]
+    K --> G
+    K --> L[Vercel media route]
+    L --> M[(Private R2 bucket)]
   end
 ```
 
 ## Contracts
 
 - Input: typed `Book` items with `cover` and optional `isbn`.
-- Output: app-facing `cover` paths that are either existing local assets (`/covers/*.webp|jpg|png`) or the placeholder.
+- Output: app-facing `cover` paths that are local assets, private R2-backed
+  `/api/media/covers/*` URLs, or the local placeholder.
 - Error mode: missing files fall back to `/covers/placeholder.svg`.
 
 ## Pruning unused covers
@@ -61,3 +78,6 @@ flowchart LR
 - New category batches should be exported from `artifacts/catalog/index.ts` so cover tooling sees them automatically.
 - Generated catalog IDs are deterministic, so the cover filename contract stays stable across re-imports.
 - Generated importer reports are local-only artifacts and should not be committed.
+- This document describes the current curated-cover pipeline, not a future
+  user-upload pipeline.
+- The optional cache is untracked and should be rehydrated from R2, not treated as the source of truth.

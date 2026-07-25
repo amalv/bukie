@@ -20,3 +20,4 @@ Some early ADRs are retained as historical context and marked `superseded` when 
 | 0012   | Package Manager    | accepted     | Bun chosen for package management and repo runtime workflows | [0012-package-manager.md](./0012-package-manager.md) |
 | 0013   | Release System      | accepted     | Semantic Release chosen for automated versioning and changelog | [0013-release-system.md](./0013-release-system.md) |
 | 0014   | Code Quality       | accepted     | Qlty.sh chosen for maintainability and coverage visibility | [0014-qltysh-code-quality.md](./0014-qltysh-code-quality.md) |
+| 0015   | Image Storage      | accepted     | Private Cloudflare R2 selected for production covers | [0015-image-storage.md](./0015-image-storage.md) |

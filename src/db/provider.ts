@@ -9,6 +9,12 @@ import {
   type PageResult,
 } from "@/features/books/pagination";
 import type { Book } from "@/features/books/types";
+import { getMediaConfig, type MediaEnvironment } from "@/media/config";
+import {
+  isRemoteAssetUrl,
+  PLACEHOLDER_COVER,
+  resolveBookCoverSrc,
+} from "@/media/covers";
 import { getSqliteDb } from "./client";
 import { getDbEnv } from "./env";
 import { getPgDb } from "./pg";
@@ -16,7 +22,6 @@ import { bookMetricsTable, booksTable as booksSqlite } from "./schema";
 import { bookMetricsTablePg, booksTablePg } from "./schema.pg";
 
 const COVER_EXTENSIONS = ["webp", "jpg", "png"] as const;
-const PLACEHOLDER_COVER = "/covers/placeholder.svg";
 const catalogByIsbn = new Map(
   baseCatalog
     .filter((book) => typeof book.isbn === "string" && book.isbn.length > 0)
@@ -53,8 +58,13 @@ function resolveCanonicalCoverPath(id: string): string | undefined {
   return undefined;
 }
 
-function resolveStoredCoverPath(cover: string | undefined): string | undefined {
+function resolveStoredCoverPath(
+  cover: string | undefined,
+  env: MediaEnvironment,
+): string | undefined {
+  if (isRemoteAssetUrl(cover)) return cover;
   if (!cover?.startsWith("/covers/")) return undefined;
+  if (getMediaConfig(env).backend === "r2") return cover;
   const full = path.join(process.cwd(), "public", cover.replace(/^\//, ""));
   return existsSync(full) ? cover : undefined;
 }
@@ -64,15 +74,16 @@ export function normalizeBookCover(
   cover: string | undefined,
   canonicalId?: string,
   canonicalCover?: string,
+  env: MediaEnvironment = process.env,
 ): string {
   const canonicalPath =
     (canonicalId ? resolveCanonicalCoverPath(canonicalId) : undefined) ??
-    (canonicalCover ? resolveStoredCoverPath(canonicalCover) : undefined);
+    (canonicalCover ? resolveStoredCoverPath(canonicalCover, env) : undefined);
 
   return (
     canonicalPath ??
     resolveCanonicalCoverPath(id) ??
-    resolveStoredCoverPath(cover) ??
+    resolveStoredCoverPath(cover, env) ??
     PLACEHOLDER_COVER
   );
 }
@@ -85,11 +96,13 @@ function normalizeBook(row: Book): Book {
 
   return {
     ...row,
-    cover: normalizeBookCover(
-      row.id,
-      row.cover,
-      catalogMatch?.id,
-      catalogMatch?.cover,
+    cover: resolveBookCoverSrc(
+      normalizeBookCover(
+        row.id,
+        row.cover,
+        catalogMatch?.id,
+        catalogMatch?.cover,
+      ),
     ),
   };
 }
