@@ -141,4 +141,28 @@ test.describe("Book presentation", () => {
     await expect(card).toHaveCSS("transform", "none");
     await expect(card.locator("img")).toHaveCSS("transform", "none");
   });
+
+  test("the cover area activates the card's single detail link", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 1000 });
+    await page.goto("/?section=all", { waitUntil: "domcontentloaded" });
+
+    const firstLink = page
+      .getByRole("link", { name: /view details for/i })
+      .first();
+    const card = firstLink.locator("xpath=ancestor::article");
+    const coverBox = await card.locator(":scope > div").first().boundingBox();
+    expect(coverBox).not.toBeNull();
+
+    await Promise.all([
+      page.waitForURL(/\/books\/[^/]+$/),
+      page.mouse.click(
+        (coverBox?.x ?? 0) + (coverBox?.width ?? 0) / 2,
+        (coverBox?.y ?? 0) + (coverBox?.height ?? 0) / 2,
+      ),
+    ]);
+
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  });
 });

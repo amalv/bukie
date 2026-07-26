@@ -65,7 +65,7 @@ export function BookCard({
           <Link
             href={`/books/${book.id}`}
             aria-label={`View details for ${book.title}`}
-            className="text-inherit no-underline outline-none after:pointer-events-none after:absolute after:inset-0 after:rounded-[var(--radius-md)] focus-visible:text-[var(--color-primary)] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-[var(--color-primary)]"
+            className="text-inherit no-underline outline-none after:absolute after:inset-0 after:rounded-[var(--radius-md)] focus-visible:text-[var(--color-primary)] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-[var(--color-primary)]"
           >
             {book.title}
           </Link>
