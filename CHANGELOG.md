@@ -1,3 +1,10 @@
+# [0.32.0](https://github.com/amalv/bukie/compare/v0.31.2...v0.32.0) (2026-07-26)
+
+
+### Features
+
+* **ci:** skip app checks for docs-only changes ([6a90250](https://github.com/amalv/bukie/commit/6a902506b520f74259721f895727b81b3a640fa0))
+
 ## [0.31.2](https://github.com/amalv/bukie/compare/v0.31.1...v0.31.2) (2026-07-25)
 
 
