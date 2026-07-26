@@ -3,6 +3,9 @@ name: Storybook Tests
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
 
 jobs:
   storybook-tests:

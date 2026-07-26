@@ -1,0 +1,7 @@
+{
+  "config": {
+    "default": false,
+    "MD018": true, // Require a space after an ATX heading marker.
+    "MD047": true // Require one final newline.
+  }
+}

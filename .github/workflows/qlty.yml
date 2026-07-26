@@ -3,9 +3,15 @@ name: Qlty.sh Coverage & Quality
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
   push:
     branches:
       - main
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
 
 jobs:
   qlty:
