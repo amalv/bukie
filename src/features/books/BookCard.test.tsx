@@ -3,133 +3,113 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { lightThemeClass } from "@/design/tokens";
 import { BookCard } from "./BookCard";
-import type { Book } from "./types";
 
 const book = {
   id: "42",
   title: "The Answer",
   author: "Adams",
+  authors: ["Douglas Adams", "Another Author", "Third Author"],
   cover: "/42.jpg",
-  genre: "Sci-Fi",
+  genre: "Science Fiction",
   rating: 4.5,
   ratingsCount: 12847,
   year: 1979,
 };
 
 describe("BookCard", () => {
-  it("links to detail page and exposes accessible labels", () => {
-    render(
+  it("exposes one canonical detail link and a decorative cover", () => {
+    const { container } = render(
       <div className={lightThemeClass}>
         <BookCard book={book} />
       </div>,
     );
 
     const link = screen.getByRole("link", {
-      name: /view details for the answer/i,
+      name: "View details for The Answer",
     });
     expect(link).toHaveAttribute("href", "/books/42");
-
-    const img = screen.getByAltText(/cover of the answer by adams/i);
-    expect(img).toBeInTheDocument();
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+    expect(container.querySelector("img")).toHaveAttribute("alt", "");
   });
 
-  it("only exposes working detail links while library actions are unavailable", () => {
-    render(
-      <div className={lightThemeClass}>
-        <BookCard book={book} />
-      </div>,
-    );
+  it("renders ordered authors and supported bibliographic metadata", () => {
+    render(<BookCard book={book} />);
 
     expect(
-      screen.queryByRole("link", { name: /add to library/i }),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link")).toHaveLength(2);
-    for (const link of screen.getAllByRole("link")) {
-      expect(link).toHaveAttribute("href", "/books/42");
-    }
+      screen.getByText("Douglas Adams · Another Author and 1 more"),
+    ).toBeVisible();
+    expect(
+      screen.getByText("Douglas Adams, Another Author, Third Author"),
+    ).toHaveClass("sr-only");
+    expect(screen.getByText("Science Fiction · 1979")).toBeVisible();
   });
 
-  it("renders optional badge, rating (single-star) with one decimal and formatted count, and year", () => {
-    render(
-      <div className={lightThemeClass}>
-        <BookCard book={book} />
-      </div>,
-    );
+  it("does not trust raw catalog rating fields automatically", () => {
+    render(<BookCard book={book} />);
 
-    expect(screen.getByText(/sci-fi/i)).toBeInTheDocument();
-    expect(screen.getByText("4.5")).toBeInTheDocument();
-    expect(screen.getByText("(12,847 reviews)")).toBeInTheDocument();
-    expect(screen.getByText(/1979/)).toBeInTheDocument();
+    expect(screen.queryByText(/4\.5/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/12,847 ratings/)).not.toBeInTheDocument();
   });
 
-  it("does not render genre badge when genre is missing", () => {
+  it("renders an explicitly eligible rating with its sample size", () => {
     const { container } = render(
       <BookCard
-        book={{ id: "n1", title: "Alpha", author: "A", cover: "/c.jpg" }}
+        book={book}
+        ratingPresentation={{ state: "eligible", average: 4.46, count: 12847 }}
       />,
     );
 
-    expect(container.querySelector("[class*='badge']")).toBeNull();
+    expect(screen.getByText("4.5 · 12,847 ratings")).toBeVisible();
+    expect(
+      screen.getByText("Rating 4.5 out of 5 from 12,847 ratings"),
+    ).toHaveClass("sr-only");
+    expect(container.querySelectorAll(".book-card-star-icon")).toHaveLength(1);
   });
 
-  it("hides meta wrapper when neither rating nor year provided", () => {
+  it.each([
+    ["unrated", "Not rated"],
+    ["unavailable", "Rating unavailable"],
+  ] as const)("renders the explicit %s rating state", (state, label) => {
+    render(<BookCard book={book} ratingPresentation={{ state }} />);
+
+    expect(
+      screen.getByText(label, { selector: "[aria-hidden='true']" }),
+    ).toBeVisible();
+    expect(screen.queryByText(/4\.5/)).not.toBeInTheDocument();
+  });
+
+  it("collapses missing metadata without separators or invented content", () => {
     const { container } = render(
-      <BookCard
-        book={{ id: "n2", title: "No Meta", author: "A", cover: "/c.jpg" }}
-      />,
-    );
-
-    expect(screen.queryByText(/\.\d$/)).not.toBeInTheDocument();
-    expect(container.querySelector("[class*='meta']")).toBeNull();
-  });
-
-  it("renders year-only path which skips rating block", () => {
-    render(
       <BookCard
         book={{
-          id: "y1",
-          title: "Year Only",
-          author: "A",
-          cover: "/c.jpg",
-          year: 2000,
+          id: "minimal",
+          title: "Minimal",
+          author: "",
+          cover: "",
+          description: "Not card content",
         }}
       />,
     );
 
-    expect(screen.getByText("2000")).toBeInTheDocument();
-    expect(screen.queryByText(/\d\.\d/)).not.toBeInTheDocument();
-  });
-
-  it("clamps rating to [0,5] and shows one decimal only", () => {
-    const base = { id: "st", title: "Starry", author: "Sky", cover: "/c.jpg" };
-    const { rerender } = render(<BookCard book={{ ...base, rating: -10 }} />);
-    expect(screen.getByText("0.0")).toBeInTheDocument();
-    rerender(<BookCard book={{ ...base, rating: 5.5 }} />);
-    expect(screen.getByText("5.0")).toBeInTheDocument();
-  });
-
-  it("renders optional short description when provided and hides when empty string", () => {
-    const withDesc: Book = {
-      id: "d1",
-      title: "Desc",
-      author: "A",
-      cover: "/c.jpg",
-      description: "A short, enticing snippet about the book.",
-    };
-    const { rerender } = render(<BookCard book={withDesc} />);
-    expect(screen.getByText(/enticing snippet/i)).toBeInTheDocument();
-
-    rerender(
-      <BookCard book={{ ...withDesc, id: "d2", description: "" } as Book} />,
+    expect(screen.getByText("Minimal")).toBeVisible();
+    expect(screen.queryByText("Not card content")).not.toBeInTheDocument();
+    expect(container).not.toHaveTextContent("·");
+    expect(container.querySelector("img")).toHaveAttribute(
+      "src",
+      expect.stringContaining("placeholder.svg"),
     );
-    expect(screen.queryByText(/enticing snippet/i)).toBeNull();
   });
 
-  it("renders exactly one star icon for rating row", () => {
-    const { container } = render(<BookCard book={book} />);
-    const stars = container.querySelectorAll(".book-card-star-icon");
-    expect(stars.length).toBe(1);
+  it("renders the compact treatment without changing its link semantics", () => {
+    const { container } = render(
+      <BookCard book={book} presentation="compact" />,
+    );
+
+    expect(container.querySelector("article")).toHaveAttribute(
+      "data-presentation",
+      "compact",
+    );
+    expect(screen.getAllByRole("link")).toHaveLength(1);
   });
 
   describe("Image unoptimized flag branches", () => {
@@ -141,7 +121,7 @@ describe("BookCard", () => {
       process.env = OLD_ENV;
     });
 
-    it("evaluates includes('.svg')/env branch by stubbing production on non-svg", () => {
+    it("evaluates the production non-SVG image branch", () => {
       vi.stubEnv("NODE_ENV", "production");
       render(
         <BookCard

@@ -28,6 +28,7 @@ export function PaginatedBooks({
   const [cursor, setCursor] = useState<string | undefined>(initialNextCursor);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const sectionTitle = title ?? (q ? "Search Results" : undefined);
 
   const params = useMemo(() => {
     const usp = new URLSearchParams();
@@ -58,16 +59,17 @@ export function PaginatedBooks({
 
   return (
     <>
-      {title ? (
+      {sectionTitle ? (
         <Container>
           <header className={page.allBooksHeader}>
-            <h2 className={page.sectionTitle}>{title}</h2>
+            <h2 className={page.sectionTitle}>{sectionTitle}</h2>
             <BooksCount count={items.length} mode="shown" />
           </header>
         </Container>
       ) : null}
       <BookList
         books={items}
+        presentation={q ? "compact" : "grid"}
         q={q}
         footer={
           error ? (

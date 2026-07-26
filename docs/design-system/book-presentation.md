@@ -1,9 +1,10 @@
 # Book card and list presentation
 
-- Status: selected direction
+- Status: implemented
 - Date: 2026-07-26
 - Owner: catalog and discovery
 - Related issue: #108
+- Implementation issue: #120
 - Depends on: [catalog metadata and provenance](../decisions/0016-catalog-metadata-provenance.md)
 
 ## Outcome
@@ -19,8 +20,8 @@ can support honestly. It does not expose synthetic popularity, unqualified
 rating averages, unavailable library actions or edition facts without a
 selected preferred edition.
 
-This document is a design specification. It does not change production
-components.
+This document is the design specification implemented by the production book
+card and list components.
 
 ## Decision criteria
 
@@ -469,7 +470,7 @@ The component implementation is ready only when:
 ## Implementation sequencing
 
 1. Consolidate grid breakpoints and add the selected summary/compact primitives
-   with representative stories.
+   with representative stories. Implemented in #120.
 2. Adopt the compact treatment in #110 search/filter results.
 3. Apply the selected collection treatment in #109.
 4. Reuse the hierarchy and missing-data language in #112 details without

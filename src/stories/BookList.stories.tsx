@@ -1,4 +1,4 @@
-import { lightThemeClass } from "@/design/tokens";
+import { darkThemeClass, lightThemeClass } from "@/design/tokens";
 import { BookList } from "@/features/books/BookList";
 import { books } from "../../mocks/books";
 
@@ -8,15 +8,53 @@ export default {
   title: "Book List",
 };
 
-export const Basic = () => (
+export const GridLight = () => (
   <div className={lightThemeClass}>
     <BookList books={sampleBooks} />
   </div>
 );
 
-export const Loading = () => (
+export const GridDark = () => (
+  <div
+    className={darkThemeClass}
+    style={{ background: "var(--color-background)", minHeight: "100vh" }}
+  >
+    <BookList books={sampleBooks} />
+  </div>
+);
+
+export const Compact = () => (
+  <div className={lightThemeClass}>
+    <BookList books={sampleBooks.slice(0, 4)} presentation="compact" />
+  </div>
+);
+
+export const GridLoading = () => (
   <div className={lightThemeClass}>
     <BookList loading />
+  </div>
+);
+
+export const CompactLoading = () => (
+  <div className={lightThemeClass}>
+    <BookList loading presentation="compact" />
+  </div>
+);
+
+export const ExplicitEligibleRatings = () => (
+  <div className={lightThemeClass}>
+    <BookList
+      books={sampleBooks.slice(0, 6)}
+      getRatingPresentation={(book) =>
+        typeof book.rating === "number" && typeof book.ratingsCount === "number"
+          ? {
+              state: "eligible",
+              average: book.rating,
+              count: book.ratingsCount,
+            }
+          : { state: "unrated" }
+      }
+    />
   </div>
 );
 

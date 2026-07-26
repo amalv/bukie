@@ -1,73 +1,109 @@
 import Image from "next/image";
 import Link from "next/link";
 import { shouldUnoptimizeImage } from "@/media/covers";
-import { formatCount, formatOneDecimal } from "./rating";
+import {
+  presentAuthors,
+  presentBibliographicMeta,
+  presentRating,
+  type RatingPresentation,
+} from "./presentation";
 import type { Book } from "./types";
 
-export type BookCardProps = { book: Book };
+export type BookCardProps = {
+  book: Book;
+  presentation?: "grid" | "compact";
+  ratingPresentation?: RatingPresentation;
+};
 
-export function BookCard({ book }: BookCardProps) {
-  const hasMeta = book.rating != null || book.year != null;
-  const hasDescription = Boolean(book.description?.trim());
+export function BookCard({
+  book,
+  presentation = "grid",
+  ratingPresentation,
+}: BookCardProps) {
+  const isCompact = presentation === "compact";
+  const authors = presentAuthors(book);
+  const bibliographicMeta = presentBibliographicMeta(book);
+  const rating = presentRating(ratingPresentation);
   const coverSrc = book.cover?.trim() || "/covers/placeholder.svg";
 
   return (
-    <div className="group book-card flex h-full flex-col overflow-hidden rounded-[var(--radius-md)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] shadow-[var(--elevation-1)] transition-[box-shadow,transform,border-color] duration-200 ease-out hover:-translate-y-[2px] hover:border-[color:var(--color-primary)] hover:shadow-[var(--elevation-3)] focus-within:-translate-y-[2px] focus-within:border-[color:var(--color-primary)] focus-within:shadow-[var(--elevation-3)]">
-      <div className="relative w-full overflow-hidden aspect-[2/3]">
-        <Link
-          href={`/books/${book.id}`}
-          aria-label={`View details for ${book.title}`}
-          className="absolute inset-0 block"
-        >
-          <Image
-            src={coverSrc}
-            alt={`Cover of ${book.title} by ${book.author}`}
-            fill
-            className="absolute inset-0 block h-full w-full object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
-            unoptimized={shouldUnoptimizeImage(coverSrc)}
-          />
-        </Link>
-        <div className="pointer-events-none absolute inset-0 bg-transparent transition-colors duration-200 ease-out group-hover:bg-[var(--color-overlay)]" />
-        {book.genre ? (
-          <span className="book-card-badge absolute top-[var(--spacing-1)] right-[var(--spacing-1)] z-[1] rounded-[var(--radius-sm)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] px-[var(--spacing-0-5)] py-px text-[var(--type-xs)] leading-[var(--line-tight)] text-[var(--color-on-surface)] shadow-[var(--elevation-1)]">
-            {book.genre}
-          </span>
-        ) : null}
+    <article
+      className={[
+        "group book-card relative flex h-full min-w-0 rounded-[var(--radius-md)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] shadow-[var(--elevation-1)] motion-safe:transition-[box-shadow,transform,border-color] motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:-translate-y-[2px] motion-safe:hover:border-[color:var(--color-primary)] motion-safe:hover:shadow-[var(--elevation-3)]",
+        isCompact ? "min-h-[132px] flex-row sm:min-h-[144px]" : "flex-col",
+      ].join(" ")}
+      data-presentation={presentation}
+    >
+      <div
+        className={[
+          "relative shrink-0 overflow-hidden bg-[var(--color-overlay)]",
+          isCompact
+            ? "h-[132px] w-[88px] rounded-l-[var(--radius-md)] sm:h-[144px] sm:w-[96px]"
+            : "w-full rounded-t-[var(--radius-md)] aspect-[2/3]",
+        ].join(" ")}
+      >
+        <Image
+          src={coverSrc}
+          alt=""
+          fill
+          sizes={
+            isCompact
+              ? "(min-width: 640px) 96px, 88px"
+              : "(min-width: 1280px) 16vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+          }
+          className="absolute inset-0 block h-full w-full object-cover object-center motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:scale-105"
+          unoptimized={shouldUnoptimizeImage(coverSrc)}
+        />
       </div>
-      <div className="flex flex-1 translate-y-0 flex-col gap-px p-[var(--spacing-0-5)] transition-transform duration-200 ease-out group-hover:-translate-y-px">
-        <div className="flex items-start gap-[var(--spacing-0-5)]">
-          <h3 className="m-0 flex-1 overflow-hidden text-left text-[var(--type-md)] leading-[var(--line-tight)] font-bold text-[var(--color-on-surface)] transition-colors duration-200 ease-out [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] group-hover:text-[var(--color-primary)]">
-            <Link
-              href={`/books/${book.id}`}
-              className="text-inherit no-underline outline-none focus-visible:text-[var(--color-primary)]"
+      <div
+        className={[
+          "flex min-w-0 flex-1 flex-col gap-[var(--spacing-0-5)] p-[var(--spacing-1-5)]",
+          isCompact ? "justify-center" : "",
+        ].join(" ")}
+      >
+        <h3 className="m-0 overflow-hidden text-left text-[var(--type-md)] leading-[var(--line-tight)] font-bold text-[var(--color-on-surface)] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+          <Link
+            href={`/books/${book.id}`}
+            aria-label={`View details for ${book.title}`}
+            className="text-inherit no-underline outline-none after:pointer-events-none after:absolute after:inset-0 after:rounded-[var(--radius-md)] focus-visible:text-[var(--color-primary)] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-[var(--color-primary)]"
+          >
+            {book.title}
+          </Link>
+        </h3>
+        {authors ? (
+          <p className="m-0 truncate text-left text-[var(--type-sm)] leading-[var(--line-normal)] text-[var(--color-on-surface)]">
+            {authors.truncated ? (
+              <>
+                <span aria-hidden="true">{authors.visible}</span>
+                <span className="sr-only">{authors.full}</span>
+              </>
+            ) : (
+              authors.visible
+            )}
+          </p>
+        ) : null}
+        {bibliographicMeta ? (
+          <p className="m-0 truncate text-left text-[var(--type-xs)] leading-[var(--line-normal)] text-[color:var(--color-on-surface)]">
+            {bibliographicMeta}
+          </p>
+        ) : null}
+        {rating ? (
+          <p className="m-0 inline-flex min-h-5 items-center gap-[var(--spacing-0-5)] truncate text-left text-[var(--type-xs)] leading-[var(--line-normal)] text-[color:var(--color-on-surface)]">
+            <span className="sr-only">{rating.accessible}</span>
+            <span
+              aria-hidden="true"
+              className="inline-flex items-center gap-[var(--spacing-0-5)]"
             >
-              {book.title}
-            </Link>
-          </h3>
-          {typeof book.rating === "number" ? (
-            <span className="mt-px inline-flex shrink-0 items-center gap-[var(--spacing-0-5)] text-[var(--type-xs)] text-[var(--color-on-surface)] opacity-70">
-              <span className="sr-only">{`Rating ${formatOneDecimal(book.rating)} out of 5`}</span>
-              <SingleStarIcon />
-              <span aria-hidden="true">{formatOneDecimal(book.rating)}</span>
+              {ratingPresentation?.state === "eligible" &&
+              ratingPresentation.count > 0 ? (
+                <SingleStarIcon />
+              ) : null}
+              {rating.visible}
             </span>
-          ) : null}
-        </div>
-        <p className="m-0 text-left text-[var(--type-xs)] leading-[var(--line-normal)] text-[var(--color-on-surface)] opacity-75">
-          <span className="sr-only">{`by ${book.author}`}</span>
-          <span aria-hidden="true">{book.author}</span>
-        </p>
-        {hasMeta ? (
-          <div className="sr-only">
-            {typeof book.rating === "number" &&
-            typeof book.ratingsCount === "number"
-              ? `(${formatCount(book.ratingsCount)} reviews)`
-              : null}
-            {book.year != null ? <span>{book.year}</span> : null}
-          </div>
+          </p>
         ) : null}
-        {hasDescription ? <p className="sr-only">{book.description}</p> : null}
       </div>
-    </div>
+    </article>
   );
 }
 
