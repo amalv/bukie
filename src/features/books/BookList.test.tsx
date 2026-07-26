@@ -22,13 +22,7 @@ describe("BookList", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(3);
     expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(3);
     expect(screen.getAllByRole("link")).toHaveLength(3);
-    expect(screen.getAllByRole("listitem")[0]).toHaveStyle({
-      "--col-base": "6",
-      "--col-lg": "3",
-      "--col-md": "4",
-      "--col-sm": "4",
-      "--col-xl": "2",
-    });
+    expect(screen.getAllByRole("listitem")[0]).not.toHaveAttribute("style");
   });
 
   it("renders compact rows as one column", () => {
@@ -38,9 +32,7 @@ describe("BookList", () => {
       "data-presentation",
       "compact",
     );
-    expect(screen.getAllByRole("listitem")[0]).toHaveStyle({
-      "--col-base": "12",
-    });
+    expect(screen.getAllByRole("listitem")[0]).not.toHaveAttribute("style");
     expect(
       document.querySelectorAll("article[data-presentation='compact']"),
     ).toHaveLength(3);

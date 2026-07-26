@@ -1,6 +1,7 @@
-import { Column, Container, Grid } from "@/design/layout/grid";
+import { Container, Grid } from "@/design/layout/grid";
 import { BookCard } from "./BookCard";
 import { BookCardSkeleton } from "./BookCard.skeleton";
+import styles from "./BookList.module.css";
 import type { RatingPresentation } from "./presentation";
 import type { Book } from "./types";
 
@@ -31,7 +32,10 @@ export function BookList({
   spacing = "normal",
 }: BookListProps) {
   const isCompact = presentation === "compact";
-  const columnSpan = isCompact ? 12 : { base: 6, sm: 4, md: 4, lg: 3, xl: 2 };
+  const listClassName = [
+    "m-0 list-none p-0",
+    isCompact ? styles.compactGrid : styles.catalogGrid,
+  ].join(" ");
 
   if (loading) {
     const skeletonKeys = [
@@ -52,20 +56,15 @@ export function BookList({
         <Grid
           aria-hidden="true"
           as="ul"
-          className="m-0 list-none p-0"
+          className={listClassName}
           data-presentation={presentation}
           data-testid="book-list"
           gap="responsive"
         >
           {skeletonKeys.map((key) => (
-            <Column
-              as="li"
-              className="min-w-0 list-none"
-              key={key}
-              span={columnSpan}
-            >
+            <li className="min-w-0 list-none" key={key}>
               <BookCardSkeleton presentation={presentation} />
-            </Column>
+            </li>
           ))}
         </Grid>
       </Container>
@@ -118,24 +117,19 @@ export function BookList({
     >
       <Grid
         as="ul"
-        className="m-0 list-none p-0"
+        className={listClassName}
         data-presentation={presentation}
         data-testid="book-list"
         gap="responsive"
       >
         {books?.map((b) => (
-          <Column
-            as="li"
-            className="min-w-0 list-none"
-            key={b.id}
-            span={columnSpan}
-          >
+          <li className="min-w-0 list-none" key={b.id}>
             <BookCard
               book={b}
               presentation={presentation}
               ratingPresentation={getRatingPresentation?.(b)}
             />
-          </Column>
+          </li>
         ))}
       </Grid>
       {footer ? (

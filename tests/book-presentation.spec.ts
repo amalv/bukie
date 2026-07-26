@@ -4,6 +4,8 @@ const viewports = [
   { width: 320, columns: 2, compactCoverWidth: 88 },
   { width: 768, columns: 3, compactCoverWidth: 96 },
   { width: 1024, columns: 4, compactCoverWidth: 96 },
+  { width: 1100, columns: 5, compactCoverWidth: 96 },
+  { width: 1200, columns: 5, compactCoverWidth: 96 },
   { width: 1440, columns: 6, compactCoverWidth: 96 },
 ] as const;
 
