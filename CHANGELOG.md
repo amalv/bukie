@@ -1,3 +1,17 @@
+# [0.33.0](https://github.com/amalv/bukie/compare/v0.32.0...v0.33.0) (2026-07-26)
+
+
+### Bug Fixes
+
+* **books:** balance desktop card density ([32a8d03](https://github.com/amalv/bukie/commit/32a8d0376b5373d986b7452225d0ee1afe5edf5e))
+* **books:** cap wide catalog grids ([9222d12](https://github.com/amalv/bukie/commit/9222d12c416c614a40dd74f114853976074fa2cb))
+* **books:** make cards fully clickable ([418b918](https://github.com/amalv/bukie/commit/418b918e98f6c865011e7de7db57b35e2fde616e))
+
+
+### Features
+
+* **books:** add evidence-aware presentations ([57a6b10](https://github.com/amalv/bukie/commit/57a6b1085fadfef8a58de948512323beb2ad6ac4))
+
 # [0.32.0](https://github.com/amalv/bukie/compare/v0.31.2...v0.32.0) (2026-07-26)
 
 
