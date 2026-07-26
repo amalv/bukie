@@ -347,7 +347,7 @@ abruptly before the six-column desktop layout fits.
 | 320 | 16px side padding | 2 | 12px | 138px | No badge overlay; two-line title; whole card is the touch target |
 | 768 | 24px side padding | 3 | 24px | 224px | Full evidence-aware summary fits without overlap |
 | 1024 | 28px side padding | 4 | 24px | 224px | Stable four-up comparison density |
-| ~1052–1279 | 28px side padding | 5 | 24px | 180–226px | Intermediate density avoids oversized desktop cards |
+| ~1062–1279 | 28px side padding | 5 | 24px | 182–226px | Intermediate density avoids oversized desktop cards |
 | 1440 | 32px side padding | 6 | 24px | 209px | Six-up maximum; container prevents uncontrolled widening |
 
 The catalog grid uses these layout rules:
@@ -355,14 +355,15 @@ The catalog grid uses these layout rules:
 ```text
 base:               2 equal columns
 640px:              3 equal columns
-768px and wider:    auto-fill columns with a 180px minimum
+768px and wider:    auto-fill columns with a 182px minimum
 desktop maximum:    6 columns within the shared container
 ```
 
 The implementation slice must first remove the duplicate breakpoint sequences
 in `grid.module.css` and align them with the shared token values. Tests must
-assert the rendered columns at 320, 768, 1024, intermediate desktop widths and
-1440 rather than relying only on class names.
+assert the rendered columns at 320, 768, 1024, intermediate desktop widths,
+1440 and a wider capped-container viewport rather than relying only on class
+names.
 
 Compact rows remain one column at all four validation widths. The cover target
 is 88 by 132 pixels at 320, 96 by 144 pixels from 768 upward, with text allowed
