@@ -5,11 +5,11 @@ export type Book = {
   authors?: string[];
   author: string;
   cover: string;
-  /** Optional genre badge to show over the cover */
+  /** Optional primary category to show in bibliographic metadata */
   genre?: string;
-  /** Optional numeric rating 0-5; decimals allowed */
+  /** Raw catalog rating; UI display additionally requires an eligible evidence state */
   rating?: number;
-  /** Optional number of ratings/reviews to display alongside rating */
+  /** Raw catalog rating sample size */
   ratingsCount?: number;
   /** Optional timestamp (ms since epoch) when the book was added */
   addedAt?: number;

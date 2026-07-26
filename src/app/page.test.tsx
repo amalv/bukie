@@ -22,7 +22,7 @@ describe("Page", () => {
     const Comp = await Page({ searchParams: Promise.resolve({ q: "" }) });
     render(Comp);
     expect(screen.getByText("A")).toBeInTheDocument();
-    expect(screen.getByText(/by\s*B/)).toBeInTheDocument();
+    expect(screen.getByText("B")).toBeInTheDocument();
   });
 
   it("renders error state when fetch fails", async () => {
@@ -117,11 +117,17 @@ describe("Page", () => {
     const { container } = render(Comp);
     // search meta should be visible when q is provided
     expect(screen.getByText(/Showing results for "dune"/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Search Results" }),
+    ).toBeInTheDocument();
     // PaginatedBooks branch renders a footer/button when nextCursor is present
     const btn =
       screen.queryByRole("button", { name: /Load More Books/i }) ||
       container.querySelector("button");
     expect(btn).toBeTruthy();
+    expect(
+      container.querySelector("[data-presentation='compact']"),
+    ).toBeTruthy();
   });
 
   it("parses array params for section and after and calls repos appropriately", async () => {

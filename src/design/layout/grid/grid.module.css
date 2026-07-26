@@ -62,6 +62,16 @@
   gap: 2rem;
 }
 
+.gapResponsive {
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .gapResponsive {
+    gap: 1.5rem;
+  }
+}
+
 .column {
   grid-column: span var(--col-base, 12) / span var(--col-base, 12);
 }
@@ -91,46 +101,6 @@
 }
 
 @media (min-width: 1280px) {
-  .column {
-    grid-column:
-      span
-      var(
-        --col-xl,
-        var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12))))
-      )
-      / span
-      var(
-        --col-xl,
-        var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12))))
-      );
-  }
-}
-
-@media (min-width: 600px) {
-  .column {
-    grid-column:
-      span var(--col-sm, var(--col-base, 12)) / span
-      var(--col-sm, var(--col-base, 12));
-  }
-}
-
-@media (min-width: 905px) {
-  .column {
-    grid-column:
-      span var(--col-md, var(--col-sm, var(--col-base, 12))) / span
-      var(--col-md, var(--col-sm, var(--col-base, 12)));
-  }
-}
-
-@media (min-width: 1240px) {
-  .column {
-    grid-column:
-      span var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12)))) /
-      span var(--col-lg, var(--col-md, var(--col-sm, var(--col-base, 12))));
-  }
-}
-
-@media (min-width: 1440px) {
   .column {
     grid-column:
       span

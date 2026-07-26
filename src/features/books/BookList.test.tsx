@@ -3,69 +3,103 @@ import { describe, expect, it } from "vitest";
 import { lightThemeClass } from "@/design/tokens";
 import { BookList } from "./BookList";
 
-describe("BookList empty states", () => {
-  it("shows empty message when no books and no q", () => {
-    render(<BookList books={[]} q={undefined} />);
-    expect(screen.getByText(/No books found/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Try searching by title, author, or genre/i),
-    ).toBeInTheDocument();
-  });
-
-  it("shows contextual message when q is provided", () => {
-    render(<BookList books={[]} q={"dune"} />);
-    expect(
-      screen.getByText(/We couldn't find any results matching/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/"dune"/)).toBeInTheDocument();
-  });
-});
+const books = [
+  { id: "1", title: "A", author: "Auth A", cover: "/a.jpg" },
+  { id: "2", title: "B", author: "Auth B", cover: "/b.jpg" },
+  { id: "3", title: "C", author: "Auth C", cover: "/c.jpg" },
+];
 
 const wrap = (ui: React.ReactElement) => (
   <div className={lightThemeClass}>{ui}</div>
 );
 
 describe("BookList", () => {
-  it("renders a grid with provided books", () => {
-    const books = [
-      { id: "1", title: "A", author: "Auth A", cover: "/a.jpg" },
-      { id: "2", title: "B", author: "Auth B", cover: "/b.jpg" },
-      { id: "3", title: "C", author: "Auth C", cover: "/c.jpg" },
-    ];
-
+  it("renders a semantic responsive grid with list items", () => {
     render(wrap(<BookList books={books} />));
 
-    expect(screen.getAllByRole("heading", { level: 3 }).length).toBe(3);
-    expect(screen.getByText("A")).toBeInTheDocument();
-    expect(screen.getByText("B")).toBeInTheDocument();
-    expect(screen.getByText("C")).toBeInTheDocument();
+    const list = screen.getByRole("list");
+    expect(list).toHaveAttribute("data-presentation", "grid");
+    expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(3);
+    expect(screen.getAllByRole("link")).toHaveLength(3);
+    expect(screen.getAllByRole("listitem")[0]).not.toHaveAttribute("style");
+  });
+
+  it("renders compact rows as one column", () => {
+    render(wrap(<BookList books={books} presentation="compact" />));
+
+    expect(screen.getByRole("list")).toHaveAttribute(
+      "data-presentation",
+      "compact",
+    );
+    expect(screen.getAllByRole("listitem")[0]).not.toHaveAttribute("style");
+    expect(
+      document.querySelectorAll("article[data-presentation='compact']"),
+    ).toHaveLength(3);
+  });
+
+  it("passes only explicit rating evidence to cards", () => {
+    render(
+      wrap(
+        <BookList
+          books={[
+            {
+              ...books[0],
+              rating: 4.5,
+              ratingsCount: 20,
+            },
+          ]}
+          getRatingPresentation={() => ({
+            state: "eligible",
+            average: 4.5,
+            count: 20,
+          })}
+        />,
+      ),
+    );
+
+    expect(screen.getByText("4.5 · 20 ratings")).toBeVisible();
+  });
+
+  it("announces loading once and hides repeated skeletons", () => {
+    const { container } = render(wrap(<BookList loading />));
+
+    expect(screen.getByRole("status")).toHaveTextContent("Loading books");
+    expect(container.getElementsByClassName("book-card-skeleton")).toHaveLength(
+      8,
+    );
+    expect(
+      container.querySelector("[data-testid='book-list']"),
+    ).toHaveAttribute("aria-hidden", "true");
   });
 
   it("renders error state with message", () => {
     render(wrap(<BookList error="Oops, failed" />));
-    expect(screen.getByText(/oops, failed/i)).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("Oops, failed");
   });
 
-  it("renders 8 skeletons when loading", () => {
-    const { container } = render(wrap(<BookList loading />));
-    const skeletons = container.getElementsByClassName("book-card-skeleton");
-    expect(skeletons.length).toBe(8);
+  it("shows contextual and generic empty states", () => {
+    const { rerender } = render(wrap(<BookList books={[]} q="dune" />));
+    expect(
+      screen.getByText(/We couldn't find any results matching/i),
+    ).toBeVisible();
+    expect(screen.getByText(/"dune"/)).toBeVisible();
+
+    rerender(wrap(<BookList books={[]} />));
+    expect(
+      screen.getByText(/Try searching by title, author, or genre/i),
+    ).toBeVisible();
   });
 
-  it("renders empty state when no books are provided", () => {
-    render(wrap(<BookList books={[]} />));
-    expect(screen.getByText(/no books found/i)).toBeInTheDocument();
-  });
-
-  it("renders footer slot when provided", () => {
+  it("renders footer slot", () => {
     render(
       wrap(
         <BookList
-          books={[{ id: "1", title: "A", author: "Auth A", cover: "/a.jpg" }]}
+          books={[books[0]]}
           footer={<div data-testid="footer">Footer</div>}
         />,
       ),
     );
-    expect(screen.getByTestId("footer")).toBeInTheDocument();
+    expect(screen.getByTestId("footer")).toBeVisible();
   });
 });

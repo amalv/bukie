@@ -1,9 +1,10 @@
 # Book card and list presentation
 
-- Status: selected direction
+- Status: implemented
 - Date: 2026-07-26
 - Owner: catalog and discovery
 - Related issue: #108
+- Implementation issue: #120
 - Depends on: [catalog metadata and provenance](../decisions/0016-catalog-metadata-provenance.md)
 
 ## Outcome
@@ -19,8 +20,8 @@ can support honestly. It does not expose synthetic popularity, unqualified
 rating averages, unavailable library actions or edition facts without a
 selected preferred edition.
 
-This document is a design specification. It does not change production
-components.
+This document is the design specification implemented by the production book
+card and list components.
 
 ## Decision criteria
 
@@ -337,30 +338,32 @@ records between grid and row.
 
 ## Responsive specification
 
-The default grid uses a `2/3/4/6` column progression and keeps the cover at
-`2:3`.
+The default grid uses an adaptive `2/3/4/5/6` column progression and keeps the
+cover at `2:3`. The intermediate five-column state prevents cards from growing
+abruptly before the six-column desktop layout fits.
 
 | Viewport | Container target | Columns | Gap | Expected card width | Notes |
 |---:|---|---:|---:|---:|---|
 | 320 | 16px side padding | 2 | 12px | 138px | No badge overlay; two-line title; whole card is the touch target |
 | 768 | 24px side padding | 3 | 24px | 224px | Full evidence-aware summary fits without overlap |
 | 1024 | 28px side padding | 4 | 24px | 224px | Stable four-up comparison density |
+| ~1062–1279 | 28px side padding | 5 | 24px | 182–226px | Intermediate density avoids oversized desktop cards |
 | 1440 | 32px side padding | 6 | 24px | 209px | Six-up maximum; container prevents uncontrolled widening |
 
-The intended 12-column spans are:
+The catalog grid uses these layout rules:
 
 ```text
-base: 6  → 2-up
-sm:   4  → 3-up
-md:   4  → 3-up
-lg:   3  → 4-up
-xl:   2  → 6-up
+base:               2 equal columns
+640px:              3 equal columns
+768px and wider:    auto-fill columns with a 182px minimum
+desktop maximum:    6 columns within the shared container
 ```
 
 The implementation slice must first remove the duplicate breakpoint sequences
 in `grid.module.css` and align them with the shared token values. Tests must
-assert the selected spans at 320, 768, 1024 and 1440 rather than relying only
-on class names.
+assert the rendered columns at 320, 768, 1024, intermediate desktop widths,
+1440 and a wider capped-container viewport rather than relying only on class
+names.
 
 Compact rows remain one column at all four validation widths. The cover target
 is 88 by 132 pixels at 320, 96 by 144 pixels from 768 upward, with text allowed
@@ -469,7 +472,7 @@ The component implementation is ready only when:
 ## Implementation sequencing
 
 1. Consolidate grid breakpoints and add the selected summary/compact primitives
-   with representative stories.
+   with representative stories. Implemented in #120.
 2. Adopt the compact treatment in #110 search/filter results.
 3. Apply the selected collection treatment in #109.
 4. Reuse the hierarchy and missing-data language in #112 details without

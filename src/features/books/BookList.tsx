@@ -1,12 +1,18 @@
-import { Column, Container, Grid } from "@/design/layout/grid";
+import { Container, Grid } from "@/design/layout/grid";
 import { BookCard } from "./BookCard";
 import { BookCardSkeleton } from "./BookCard.skeleton";
+import styles from "./BookList.module.css";
+import type { RatingPresentation } from "./presentation";
 import type { Book } from "./types";
 
 export type BookListProps = {
   books?: Book[];
   loading?: boolean;
   error?: string;
+  /** Presentation selected by the containing surface. */
+  presentation?: "grid" | "compact";
+  /** Explicit, policy-approved rating state; raw catalog values are ignored. */
+  getRatingPresentation?: (book: Book) => RatingPresentation | undefined;
   /** Optional footer slot for pagination controls or extra actions */
   footer?: React.ReactNode;
   /** Optional current search string to improve empty-state copy */
@@ -19,10 +25,18 @@ export function BookList({
   books,
   loading,
   error,
+  presentation = "grid",
+  getRatingPresentation,
   footer,
   q,
   spacing = "normal",
 }: BookListProps) {
+  const isCompact = presentation === "compact";
+  const listClassName = [
+    "m-0 list-none p-0",
+    isCompact ? styles.compactGrid : styles.catalogGrid,
+  ].join(" ");
+
   if (loading) {
     const skeletonKeys = [
       "sk-1",
@@ -36,11 +50,21 @@ export function BookList({
     ] as const;
     return (
       <Container>
-        <Grid gap="lg">
+        <p className="sr-only" role="status">
+          Loading books
+        </p>
+        <Grid
+          aria-hidden="true"
+          as="ul"
+          className={listClassName}
+          data-presentation={presentation}
+          data-testid="book-list"
+          gap="responsive"
+        >
           {skeletonKeys.map((key) => (
-            <Column key={key} span={{ base: 12, sm: 6, md: 3, lg: 2 }}>
-              <BookCardSkeleton />
-            </Column>
+            <li className="min-w-0 list-none" key={key}>
+              <BookCardSkeleton presentation={presentation} />
+            </li>
           ))}
         </Grid>
       </Container>
@@ -91,11 +115,21 @@ export function BookList({
           : "book-list-grid-top mt-[var(--spacing-2)] pt-[var(--spacing-1)] pb-[var(--spacing-2)]"
       }
     >
-      <Grid gap="lg">
+      <Grid
+        as="ul"
+        className={listClassName}
+        data-presentation={presentation}
+        data-testid="book-list"
+        gap="responsive"
+      >
         {books?.map((b) => (
-          <Column key={b.id} span={{ base: 12, sm: 6, md: 3, lg: 2 }}>
-            <BookCard book={b} />
-          </Column>
+          <li className="min-w-0 list-none" key={b.id}>
+            <BookCard
+              book={b}
+              presentation={presentation}
+              ratingPresentation={getRatingPresentation?.(b)}
+            />
+          </li>
         ))}
       </Grid>
       {footer ? (
