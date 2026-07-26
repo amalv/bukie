@@ -2,6 +2,9 @@ name: Playwright E2E Tests
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
 jobs:
   test:
     timeout-minutes: 60

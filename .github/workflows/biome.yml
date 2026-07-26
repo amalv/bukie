@@ -3,6 +3,9 @@ name: Biome Lint & Format
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
 
 jobs:
   biome:
