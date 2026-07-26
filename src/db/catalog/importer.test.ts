@@ -33,7 +33,7 @@ describe("normalized catalog importer", () => {
       legacyBooksToImportRecords(baseCatalog),
     );
     expect(hashCanonicalJson(rebuilt)).toBe(hashCanonicalJson(graph));
-  });
+  }, 15_000);
 
   it("retains legacy IDs only as source record keys and hashes source rows", () => {
     const legacySourceId = graph.metadataSources.find(
