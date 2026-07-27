@@ -16,16 +16,21 @@ BEGIN
           AND EXISTS (
             SELECT 1
             FROM "source_record_links" work_link
+            JOIN "works" normalized_work
+              ON normalized_work.id = work_link.entity_id
             WHERE work_link.source_record_id = source_record.id
               AND work_link.entity_type = 'work'
               AND work_link.state = 'active'
-          )
-          AND EXISTS (
-            SELECT 1
-            FROM "source_record_links" edition_link
-            WHERE edition_link.source_record_id = source_record.id
-              AND edition_link.entity_type = 'edition'
-              AND edition_link.state = 'active'
+              AND EXISTS (
+                SELECT 1
+                FROM "source_record_links" edition_link
+                JOIN "editions" normalized_edition
+                  ON normalized_edition.id = edition_link.entity_id
+                WHERE edition_link.source_record_id = source_record.id
+                  AND edition_link.entity_type = 'edition'
+                  AND edition_link.state = 'active'
+                  AND normalized_edition.work_id = normalized_work.id
+              )
           )
       )
     )
