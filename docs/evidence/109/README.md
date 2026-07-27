@@ -5,8 +5,9 @@ The baseline is the ready Vercel production deployment
 That is three seconds after main commit
 `3105773937547a8674fb6bc127d9fd874d7a1958`, the post-PR #127 release commit.
 
-The after captures use the same catalog and light theme from the issue #109
-branch build. Full-page screenshots deliberately include the complete initial
+The after captures use the ready PR #128 Vercel preview deployment
+`dpl_5irC2XdKqiQbeWdSKw7MTFj1yTaZ` and the same catalog and light theme.
+Full-page screenshots deliberately include the complete initial
 server-rendered catalog page so section order, responsive density, and
 continuation paths can be compared.
 
