@@ -2,12 +2,8 @@
 import { mkdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import baseCatalog from "../../artifacts/catalog";
+import type { LegacyCatalogArtifactRecord } from "../../artifacts/catalog/types";
 import { readR2Object } from "../../src/media/r2";
-
-type Book = {
-  id: string;
-  cover?: string;
-};
 
 type Flags = {
   concurrency: number;
@@ -73,15 +69,15 @@ async function main() {
   const flags = parseFlags(process.argv.slice(2));
   const cacheDir = path.resolve(".cache/covers");
 
-  let books = (baseCatalog as Book[]).filter((book) =>
-    flags.onlyId ? book.id === flags.onlyId : true,
+  let records: LegacyCatalogArtifactRecord[] = baseCatalog.filter((record) =>
+    flags.onlyId ? record.id === flags.onlyId : true,
   );
-  if (typeof flags.limit === "number") books = books.slice(0, flags.limit);
+  if (typeof flags.limit === "number") records = records.slice(0, flags.limit);
 
-  const queue = books
-    .map((book) => ({
-      id: book.id,
-      relativePath: toRelativeCoverPath(book.cover),
+  const queue = records
+    .map((record) => ({
+      id: record.id,
+      relativePath: toRelativeCoverPath(record.cover),
     }))
     .filter(
       (entry): entry is { id: string; relativePath: string } =>

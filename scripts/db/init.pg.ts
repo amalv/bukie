@@ -1,34 +1,16 @@
-import postgres from "postgres";
+import { initializeCatalogPostgres } from "@/db/catalog/runtime-init.pg";
 
-const url = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
+const url =
+  process.env.DATABASE_URL ??
+  process.env.DATABASE_URL_UNPOOLED ??
+  process.env.POSTGRES_URL ??
+  process.env.POSTGRES_URL_NON_POOLING;
+
 if (!url) {
-  // eslint-disable-next-line no-console
-  console.error("DATABASE_URL/POSTGRES_URL is required for Postgres init");
-  process.exit(1);
+  throw new Error(
+    "DATABASE_URL (or *_UNPOOLED/POSTGRES_URL[_NON_POOLING]) is required",
+  );
 }
 
-const sql = postgres(url, { max: 1 });
-
-async function main() {
-  try {
-    // Minimal bootstrap to ensure the books table exists in preview/prod.
-    await sql`
-      CREATE TABLE IF NOT EXISTS books (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        author TEXT NOT NULL,
-        cover TEXT NOT NULL
-      )
-    `;
-    // eslint-disable-next-line no-console
-    console.log("[db:init:pg] ensured books table");
-  } finally {
-    await sql.end({ timeout: 5_000 });
-  }
-}
-
-main().catch((err) => {
-  // eslint-disable-next-line no-console
-  console.error("Postgres init failed:", err);
-  process.exit(1);
-});
+await initializeCatalogPostgres(url);
+console.log("[db:init:pg] normalized catalog is ready");

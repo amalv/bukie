@@ -1,10 +1,10 @@
-import type { Book } from "@/features/books/types";
 import { combineCatalogs } from "./build";
 import classicsCatalog from "./classics";
 import fantasyCatalog from "./fantasy";
 import mysteryThrillerCatalog from "./mystery-thriller";
 import nonFictionCatalog from "./non-fiction";
 import sciFiCatalog from "./sci-fi";
+import type { LegacyCatalogArtifactRecord } from "./types";
 
 export {
   classicsCatalog,
@@ -14,7 +14,7 @@ export {
   sciFiCatalog,
 };
 
-export const baseCatalog: Book[] = combineCatalogs(
+export const baseCatalog: LegacyCatalogArtifactRecord[] = combineCatalogs(
   sciFiCatalog,
   fantasyCatalog,
   mysteryThrillerCatalog,

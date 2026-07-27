@@ -5,7 +5,7 @@
  */
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
-import type { Book } from "@/features/books/types";
+import type { LegacyCatalogArtifactRecord } from "@/../artifacts/catalog/types";
 import sciFi from "@/../artifacts/catalog/sci-fi";
 
 const COVERS_DIR = join(process.cwd(), "public", "covers");
@@ -23,7 +23,7 @@ async function main() {
   const files = await readdir(COVERS_DIR);
   const webpFiles = files.filter((f) => f.toLowerCase().endsWith(".webp"));
 
-  const missing = (sciFi as Book[]).filter((b) =>
+  const missing = (sciFi as LegacyCatalogArtifactRecord[]).filter((b) =>
     !b.cover || b.cover.includes("placeholder.svg")
   );
 

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { lightThemeClass } from "@/design/tokens";
 import { BookDetails } from "@/features/books/BookDetails";
+import { workDetailFixture, workSummaryFixture } from "@/test/catalog-fixtures";
 
 const meta = {
   title: "Books/BookDetails",
@@ -15,30 +16,22 @@ const meta = {
 } satisfies Meta<typeof BookDetails>;
 
 export default meta;
-
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {
-    book: {
-      id: "42",
-      title: "The Pragmatic Programmer",
-      author: "Andrew Hunt, David Thomas",
-      cover: "https://placehold.co/180x270",
-      genre: "Non-fiction",
-      rating: 4.5,
-      year: 1999,
-    },
-  },
+  args: { work: workDetailFixture },
 };
 
-export const NoOptionalFields: Story = {
+export const MissingMetadata: Story = {
   args: {
-    book: {
-      id: "7",
-      title: "Clean Code",
-      author: "Robert C. Martin",
-      cover: "https://placehold.co/180x270",
+    work: {
+      ...workSummaryFixture,
+      authors: [],
+      primaryCategory: undefined,
+      preferredEdition: undefined,
+      description: undefined,
+      categories: [],
+      editions: [],
     },
   },
 };

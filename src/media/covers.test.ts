@@ -8,9 +8,9 @@ import {
 } from "./covers";
 
 describe("media cover helpers", () => {
-  it("keeps local covers unchanged when local backend is active", () => {
+  it("routes catalog covers through the fallback-aware endpoint", () => {
     expect(resolveBookCoverSrc("/covers/book.webp", {})).toBe(
-      "/covers/book.webp",
+      "/api/media/covers/book.webp",
     );
     expect(resolveBookCoverSrc("/img.jpg", {})).toBe("/img.jpg");
   });

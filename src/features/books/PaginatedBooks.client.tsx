@@ -7,10 +7,10 @@ import { Container } from "@/design/layout/grid";
 import { BookList } from "./BookList";
 import { DEFAULT_BOOKS_PAGE_SIZE } from "./pageSize";
 import type { PageResult } from "./pagination";
-import type { Book } from "./types";
+import type { WorkSummary } from "./types";
 
 type Props = {
-  initial: Book[];
+  initial: WorkSummary[];
   initialNextCursor?: string;
   q?: string;
   title?: string;
@@ -24,18 +24,18 @@ export function PaginatedBooks({
   title,
   limit = DEFAULT_BOOKS_PAGE_SIZE,
 }: Props) {
-  const [items, setItems] = useState<Book[]>(initial);
+  const [items, setItems] = useState<WorkSummary[]>(initial);
   const [cursor, setCursor] = useState<string | undefined>(initialNextCursor);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const sectionTitle = title ?? (q ? "Search Results" : undefined);
 
   const params = useMemo(() => {
-    const usp = new URLSearchParams();
-    if (q) usp.set("q", q);
-    if (cursor) usp.set("after", cursor);
-    usp.set("limit", String(limit));
-    return usp.toString();
+    const search = new URLSearchParams();
+    if (q) search.set("q", q);
+    if (cursor) search.set("after", cursor);
+    search.set("limit", String(limit));
+    return search.toString();
   }, [q, cursor, limit]);
 
   const loadMore = useCallback(async () => {
@@ -43,12 +43,12 @@ export function PaginatedBooks({
     setLoading(true);
     setError(undefined);
     try {
-      const res = await fetch(`/api/books/page?${params}`, {
+      const response = await fetch(`/api/books/page?${params}`, {
         cache: "no-store",
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = (await res.json()) as PageResult<Book>;
-      setItems((prev) => [...prev, ...data.items]);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = (await response.json()) as PageResult<WorkSummary>;
+      setItems((current) => [...current, ...data.items]);
       setCursor(data.nextCursor);
     } catch {
       setError("Failed to load more books");
@@ -68,7 +68,7 @@ export function PaginatedBooks({
         </Container>
       ) : null}
       <BookList
-        books={items}
+        works={items}
         presentation={q ? "compact" : "grid"}
         q={q}
         footer={

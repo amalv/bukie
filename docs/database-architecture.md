@@ -1,128 +1,87 @@
-# Database and API Architecture
+# Database and catalog architecture
 
-This document explains how the database layer and API endpoints work in this project, with links to the main files and visual diagrams.
+Bukie has one runtime catalog model: the normalized work/edition schema defined
+by [ADR 0016](./decisions/0016-catalog-metadata-provenance.md).
 
-## Overview
+- SQLite is the local-development provider.
+- Postgres is the preview and production provider.
+- `src/db/catalog/schema.ts` and `schema.pg.ts` define the same 21 logical
+  tables and constraints.
+- `src/db/catalog/repository.ts` implements provider-neutral work-first reads.
+- `src/features/books/types.ts` defines the public `WorkSummary`,
+  `EditionSummary`, and `WorkDetail` contracts.
+- `src/features/books/repo.ts` selects the active provider and exposes
+  read-only catalog operations.
 
-- Runtime environments
-  - Development: SQLite (local file). Migrations run in-process; seeded with mock data.
-  - Preview/Production (Vercel): Postgres (Neon). Migrations run during build using Drizzle migrator.
-- Drivers
-  - SQLite: better-sqlite3 + drizzle-orm/better-sqlite3
-  - Postgres: postgres-js + drizzle-orm/postgres-js
-- Env switching
-  - `VERCEL_ENV=preview|production` -> Postgres
-  - Otherwise SQLite unless a Postgres URL is explicitly present
-
-## Key files
-
-- `src/db/env.ts`: resolves the active driver and Postgres URL
-- `src/db/client.ts`: creates the DB client (SQLite or Postgres) and ensures the local dev DB exists/seeded
-- `src/db/provider.ts`: CRUD functions implemented with Drizzle
-- `src/features/books/data.ts`: high-level data fetch orchestrator
-- `src/features/books/repo.ts`: domain-level repo methods invoking provider CRUD
-- `src/app/api/books/route.ts`: API route for listing/creating books
-- `scripts/db/migrate.pg.ts`: build-time Postgres migrations
-
-## Request flow (read)
+## Runtime read flow
 
 ```mermaid
 sequenceDiagram
-  participant Client as Browser
-  participant API as Next.js Route /api/books
+  participant UI as Next.js page or API
   participant Repo as features/books/repo
-  participant Provider as db/provider
-  participant DB as Drizzle + Driver
+  participant Catalog as catalog/repository
+  participant DB as SQLite or Postgres
 
-  Client->>API: GET /api/books
-  API->>Repo: getBooks()
-  Repo->>Provider: listBooks()
-  Provider->>DB: SELECT * FROM books
-  DB-->>Provider: rows
-  Provider-->>Repo: rows
-  Repo-->>API: rows
-  API-->>Client: JSON list
+  UI->>Repo: page/search/detail request
+  Repo->>Catalog: normalized query
+  Catalog->>DB: select work IDs in stable order
+  Catalog->>DB: bounded relation queries
+  DB-->>Catalog: works, editions, ordered relations
+  Catalog-->>Repo: WorkSummary or WorkDetail
+  Repo-->>UI: normalized contract
 ```
 
-## Request flow (write)
+Browse and search are ordered by `(works.sort_title, works.id)`. Cursors carry
+both values. New arrivals use preferred-edition `cataloged_at` descending and
+work ID as the deterministic tie-break. Detail and canonical `/books/<id>`
+routes use `works.id`.
 
-```mermaid
-sequenceDiagram
-  participant Client as Browser
-  participant API as Next.js Route /api/books
-  participant Repo as features/books/repo
-  participant Provider as db/provider
-  participant DB as Drizzle + Driver
+The repository first selects the page of works and then loads preferred
+editions, authors, categories, publishers, languages, identifiers, and covers
+with bounded follow-up queries. This avoids a Cartesian product and preserves
+relationship order.
 
-  Client->>API: POST /api/books (title, author, cover)
-  API->>Repo: createBook()
-  Repo->>Provider: createBookRow()
-  Provider->>DB: INSERT INTO books ... RETURNING *
-  DB-->>Provider: created row
-  Provider-->>Repo: created row
-  Repo-->>API: created row
-  API-->>Client: JSON 201
-```
+## Initialization
 
-## Component relationships
+`bun run db:init` migrates and idempotently imports the deterministic artifact
+into local SQLite. `bun run db:init:pg` does the same for Postgres and is the
+database step used by preview/deployment builds.
 
-```mermaid
-graph TD
-  A[env.ts] -->|driver + url| B[client.ts]
-  B -->|db instance| C[provider.ts]
-  C -->|CRUD| D[features/books/repo.ts]
-  D -->|domain methods| E[features/books/data.ts]
-  E -->|used by| F[app/api/books/route.ts]
-  F -->|HTTP| G[Clients]
-```
+For an isolated SQLite target, run `bun run db:verify` after initialization.
+It checks work and edition counts, artifact provenance links, dangling links,
+and confirms that the retired legacy tables are absent.
 
-## Environment variables
+The importer:
 
-The app supports these variants for Postgres connection strings (first match wins):
+- derives stable target IDs from source keys;
+- preserves provider-neutral cover object keys;
+- stores each old catalog record ID as a `legacy_catalog` source-record key;
+- retains imported and synthetic legacy claims as audit observations;
+- never projects synthetic descriptions, ratings, counts, or popularity into
+  product reads.
 
-- `DATABASE_URL`
-- `DATABASE_URL_UNPOOLED`
-- `POSTGRES_URL`
-- `POSTGRES_URL_NON_POOLING`
-- lowercase variants if injected (e.g., `database_url`)
+The disposable rebuild workflow remains documented in
+[catalog-rebuild.md](./catalog-rebuild.md).
 
-Set `DEBUG_DB=1` to print which driver and target are used (without secrets) at runtime.
+## Legacy-table removal
 
-## Migrations
+Historical migrations remain immutable. Forward SQLite and Postgres migrations
+remove the old runtime tables only when every populated old catalog row has
+active `legacy_catalog` work and edition evidence and normalized projections
+are present. A clean database, where the historical table is empty, may proceed
+and is populated from the deterministic artifact after migrations.
 
-The additive normalized catalog schema and destructive disposable-target
-workflow are documented in
-[`docs/catalog-rebuild.md`](./catalog-rebuild.md). Those target tables do not
-replace application reads or modify the active legacy tables in this
-implementation slice.
+Do not apply the production cutover during ordinary development. Preview must
+first verify the matching application/database pair, and the prior export,
+database, and deployment must remain available for rollback.
 
-- The normalized catalog slice adds target-only migrations for SQLite and
-  Postgres. They create the new tables, constraints and indexes without
-  altering or dropping `books` or `book_metrics`.
-- The existing `authors[]` helper remains TypeScript-only for current legacy
-  reads until the work-first application cutover.
+## API
 
-- SQLite
-  - In development, `ensureDb()` runs SQLite migrations automatically and also patches missing columns with `ALTER TABLE` as a safety net. This means older local DBs will be brought up-to-date on first access without manual steps.
-  - You can run the sqlite migrator explicitly with the helper script: `scripts/db/migrate.ts`.
-  - If you introduce new columns/tables, generate migrations with Drizzle and commit them under `drizzle/`.
+- `GET /api/books?q=<query>` returns `WorkSummary[]`.
+- `GET /api/books/page?q=<query>&after=<cursor>&limit=<n>` returns a normalized
+  work page.
+- `GET /api/books/<work-id>` returns `WorkDetail`.
 
-- Postgres
-  - Migrations run during Vercel build via `bun run db:migrate:pg` (see `scripts/db/migrate.pg.ts`).
-  - For schema changes, generate migrations with Drizzle (configured via `drizzle.config.pg.ts`) and commit them under `drizzle/pg`.
-
-## Troubleshooting
-
-- If preview returns an empty list:
-  - Confirm that the migration ran successfully in the preview deployment logs.
-  - Ensure the Neon integration action "Create database branch for deployment" is ON for Preview.
-  - Inspect which DB URL is used by setting `DEBUG_DB=1` in Preview env vars and re-deploy.
-  - In Neon console, query the preview branch: `SELECT COUNT(*) FROM books;`.
-
-### Useful endpoints
-
-- `GET /api/debug/db` — returns a safe JSON payload with the active driver and target (host/db, pooled flag or sqlite path). No secrets are returned.
-- `POST /api/seed/preview` — seeds the books table in Postgres with mock data. Protected by a simple token:
-  - Set `SEED_TOKEN` (server) and `NEXT_PUBLIC_PREVIEW_SEED` (client/runtime) to the same secret value.
-  - Call the endpoint only in Preview.
-```
+Catalog mutation and HTTP seed endpoints were removed. Curated changes must
+eventually use the observation/resolution lifecycle rather than direct
+projection updates.

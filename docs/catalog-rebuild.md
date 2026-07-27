@@ -3,8 +3,9 @@
 This document covers the first implementation slice of
 [ADR 0016](./decisions/0016-catalog-metadata-provenance.md): creating and
 rebuilding the normalized catalog on a disposable SQLite or explicitly isolated
-Postgres target. The application continues to read the legacy `books` and
-`book_metrics` tables until a separately verified cutover.
+Postgres target. The application runtime now reads the normalized work-first
+model; this command remains a destructive rehearsal tool for disposable
+targets only.
 
 ## Safety boundary
 
@@ -155,18 +156,18 @@ The unit suite includes:
 - forced failure rollback and production-target refusal;
 - a gated live Postgres rebuild/parity test for an explicitly isolated URL.
 
-## Cutover handoff
+## Runtime cutover and rollout
 
-This slice does not change repositories, APIs, routes, SSR reads or production
-traffic. Before a later cutover:
+Repository, API, SSR, search, pagination, and detail reads use the normalized
+work-first contract. Forward migrations remove the old runtime tables only
+after validating populated old rows against active `legacy_catalog` work and
+edition evidence.
 
-1. Run the same pinned artifact against an isolated Postgres preview branch.
-2. Compare complete snapshots, counts, representative projections and query
-   plans with SQLite.
-3. Replace the flat `Book` repository and routes with the work-first contract.
-4. Verify preview SSR and cover responses against normalized work IDs and
-   preferred editions.
-5. Keep the previous application/database pair and export available for
-   rollback.
-6. Remove legacy tables only after the matching application/database pair has
-   passed the cutover rehearsal.
+Before applying those migrations outside disposable tests:
+
+1. Run the pinned artifact against an isolated Postgres preview branch.
+2. Compare complete snapshots, counts, repository projections, API responses,
+   query plans, and cover responses with disposable SQLite.
+3. Verify preview SSR, homepage search/pagination, and canonical work routes.
+4. Retain the prior export, database, and deployment for rollback.
+5. Obtain explicit approval for the production application/database cutover.

@@ -3,12 +3,11 @@
  * Fetch high-quality covers for existing books using Open Library.
  * - Looks up by ISBN when available (future-proof), otherwise title+author heuristics.
  * - Downloads the largest image, converts to WebP via sharp, saves to public/covers.
- * - Updates DB cover field to the new local path when successful.
- * - Supports --dry-run, --limit, --concurrency, --id=<bookId>.
+ * - Uses the frozen catalog artifact; it never mutates runtime catalog tables.
+ * - Supports --dry-run, --limit, --concurrency, --id=<legacyRecordId>.
  * - Default behavior downloads ONLY for missing covers (placeholder) to avoid unnecessary requests.
  *   Use --force to refetch even if a cover exists; use --check-files to also fetch when the DB path exists
  *   but the corresponding file is missing on disk.
- *   In --dry-run mode, uses mock books instead of DB to avoid local driver issues.
  */
 import { spawn } from "node:child_process";
 import { mkdir, stat, writeFile } from "node:fs/promises";
@@ -18,18 +17,8 @@ import {
   getOpenLibraryHeaders,
 } from "./helpers";
 import { runCoverJobs } from "./run-cover-jobs";
-import { books as mockBooks } from "../../mocks/books";
-
-type Book = {
-  id: string;
-  title: string;
-  author: string;
-  cover: string;
-  isbn?: string;
-  genre?: string;
-  rating?: number;
-  year?: number;
-};
+import baseCatalog from "../../artifacts/catalog";
+import type { LegacyCatalogArtifactRecord } from "../../artifacts/catalog/types";
 
 type Flags = {
   dryRun: boolean;
@@ -164,32 +153,11 @@ async function main() {
   }
 
   const flags = parseFlags(process.argv.slice(2));
-  let all: Book[];
-  let skipDbUpdate = false;
-  if (flags.dryRun) {
-    // Avoid initializing DB (better-sqlite3) in Windows/Bun during dry-run
-    all = mockBooks as Book[];
-    skipDbUpdate = true; // never update DB during dry-run
-  } else {
-    try {
-      const { ensureDb } = await import("../../src/db/client");
-      const { listBooks } = await import("../../src/db/provider");
-      await ensureDb();
-      all = (await listBooks()) as Book[];
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        "[covers] DB unavailable (%s). Falling back to mock data; DB updates will be skipped.",
-        (e as Error).message,
-      );
-      all = mockBooks as Book[];
-      skipDbUpdate = true;
-    }
-  }
+  const all = baseCatalog;
   let candidates = all.filter((b) => (flags.onlyId ? b.id === flags.onlyId : true));
   if (!flags.force) {
     // Default: only missing (placeholder). If --check-files, include rows whose file is missing.
-    const filtered: Book[] = [];
+    const filtered: LegacyCatalogArtifactRecord[] = [];
     for (const b of candidates) {
       if (flags.onlyMissing !== false) {
         if (isPlaceholder(b.cover)) {
@@ -254,10 +222,6 @@ async function main() {
       }
       if (flags.uploadR2 && !flags.dryRun) {
         await uploadCoverToR2(localPath.replace(/^\//, "public/"));
-      }
-      if (!flags.dryRun && !skipDbUpdate) {
-        const { updateBook } = await import("../../src/features/books/repo");
-        await updateBook(book.id, { cover: localPath });
       }
       // eslint-disable-next-line no-console
       console.info(

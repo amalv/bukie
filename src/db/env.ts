@@ -9,6 +9,11 @@ export type DbEnv = {
 export function getDbEnv(): DbEnv {
   const nodeEnv = process.env.NODE_ENV ?? "development";
   const vercelEnv = process.env.VERCEL_ENV; // development | preview | production
+  const forcedDriver =
+    process.env.BUKIE_DB_DRIVER === "sqlite" ||
+    process.env.BUKIE_DB_DRIVER === "postgres"
+      ? process.env.BUKIE_DB_DRIVER
+      : undefined;
   // Accept common variants from integrations and potential lowercase keys
   const postgresUrl =
     process.env.DATABASE_URL ||
@@ -22,13 +27,15 @@ export function getDbEnv(): DbEnv {
       .postgres_url_non_pooling;
 
   const driver: DbDriver =
-    vercelEnv === "production" || vercelEnv === "preview"
+    forcedDriver ??
+    (vercelEnv === "production" || vercelEnv === "preview"
       ? "postgres"
       : nodeEnv === "production" && postgresUrl
         ? "postgres"
-        : "sqlite";
+        : "sqlite");
 
-  const sqlitePath = ".data/dev.sqlite";
+  const sqlitePath =
+    process.env.BUKIE_SQLITE_PATH?.trim() || ".data/dev.sqlite";
 
   return { driver, sqlitePath, postgresUrl };
 }
