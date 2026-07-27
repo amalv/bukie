@@ -18,10 +18,15 @@ import {
 
 type Props = {
   categories: CatalogCategory[];
+  categoriesUnavailable?: boolean;
   query: CatalogQuery;
 };
 
-export function CatalogFilters({ categories, query }: Props) {
+export function CatalogFilters({
+  categories,
+  categoriesUnavailable = false,
+  query,
+}: Props) {
   const router = useRouter();
   const categoryLabel =
     categories.find((category) => category.slug === query.category)?.label ??
@@ -123,6 +128,15 @@ export function CatalogFilters({ categories, query }: Props) {
           ? `Active filters: ${context.join(" · ")}. ${catalogSortLabel(query.sort)}.`
           : `No active filters. ${catalogSortLabel(query.sort)}.`}
       </p>
+      {categoriesUnavailable ? (
+        <p
+          className="mb-0 mt-[var(--spacing-0-5)] text-[var(--type-sm)] text-[var(--color-error)]"
+          role="status"
+        >
+          Category options are temporarily unavailable. Search and the current
+          URL filters still work.
+        </p>
+      ) : null}
     </div>
   );
 }

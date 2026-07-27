@@ -59,6 +59,7 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ feat: search UX polish (styled input, result count, better empty state)
 * ✅ fix: search input focus when clicking container/icon
 * ✅ refactor(catalog): retain only evidence-backed All, Search, and New Arrivals sections
+* ✅ feat(discovery): make homepage sections meaningful and explainable (see issue #109)
 * ✅ feat(data-curation): expand base catalog — 5 main categories × 100 books each (~500 total) (see issue #89)
 * ⏳ feat: provenance-aware catalog curation workflow
 * ⏳ docs: usage instructions

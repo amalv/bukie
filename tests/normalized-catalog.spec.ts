@@ -3,16 +3,21 @@ import { expect, test } from "@playwright/test";
 test.describe("Normalized catalog browsing", () => {
   test("homepage exposes only supported discovery sections", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("link", { name: "All" })).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /New Arrivals/ }),
+      page.getByRole("heading", { level: 2, name: "Browse by Category" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 2, name: "New Arrivals" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 2, name: "All Books" }),
     ).toBeVisible();
     await expect(page.getByText("Top Rated")).toHaveCount(0);
     await expect(page.getByText("Trending Now")).toHaveCount(0);
   });
 
   test("search pagination keeps work IDs unique", async ({ page }) => {
-    await page.goto("/?q=the", { waitUntil: "domcontentloaded" });
+    await page.goto("/?q=the", { waitUntil: "networkidle" });
     const links = page.getByRole("link", { name: /view details for/i });
     await expect(links.first()).toBeVisible();
     const before = await links.evaluateAll((items) =>

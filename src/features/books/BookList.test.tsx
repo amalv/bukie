@@ -28,4 +28,18 @@ describe("BookList", () => {
     );
     expect(screen.getByRole("button", { name: "More" })).toBeInTheDocument();
   });
+
+  it("supports section-specific empty copy without search suggestions", () => {
+    render(
+      <BookList
+        works={[]}
+        emptyTitle="No arrivals yet"
+        emptyMessage="Browse all books instead."
+        emptySuggestions={[]}
+      />,
+    );
+    expect(screen.getByText("No arrivals yet")).toBeInTheDocument();
+    expect(screen.getByText("Browse all books instead.")).toBeInTheDocument();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+  });
 });

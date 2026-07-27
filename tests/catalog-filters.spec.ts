@@ -7,7 +7,7 @@ const zeroResultUrl =
 
 async function expectDefaultControls(page: Page) {
   await expect(page.getByRole("searchbox")).toHaveValue("");
-  await expect(page.getByLabel("Category")).toHaveValue("");
+  await expect(page.locator('select[name="category"]')).toHaveValue("");
   await expect(page.getByLabel("Publication period")).toHaveValue("");
   await expect(page.getByLabel("Sort by")).toHaveValue("title");
 }
@@ -79,7 +79,9 @@ test.describe("URL-driven catalog filters", () => {
     await page.goto(combinedUrl, { waitUntil: "domcontentloaded" });
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(combinedUrl);
-    await expect(page.getByLabel("Category")).toHaveValue("science-fiction");
+    await expect(page.locator('select[name="category"]')).toHaveValue(
+      "science-fiction",
+    );
     await expect(page.getByLabel("Publication period")).toHaveValue(
       "1950-1999",
     );
@@ -94,7 +96,9 @@ test.describe("URL-driven catalog filters", () => {
     await expect(page).toHaveURL(combinedUrl);
     await expect(page.getByText("24 of 25 books shown")).toBeVisible();
     await expect(page.getByRole("searchbox")).toHaveValue("the");
-    await expect(page.getByLabel("Category")).toHaveValue("science-fiction");
+    await expect(page.locator('select[name="category"]')).toHaveValue(
+      "science-fiction",
+    );
     await expect(page.getByLabel("Publication period")).toHaveValue(
       "1950-1999",
     );

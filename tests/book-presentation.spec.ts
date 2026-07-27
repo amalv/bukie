@@ -17,6 +17,7 @@ test.describe("Book presentation", () => {
     for (const viewport of viewports) {
       await page.setViewportSize({ width: viewport.width, height: 1000 });
       await page.goto("/?section=all", { waitUntil: "domcontentloaded" });
+      await expect(page.getByText("24 of 500 books shown")).toBeVisible();
 
       const list = page.locator(
         '[data-testid="book-list"][data-presentation="grid"]',
@@ -108,11 +109,12 @@ test.describe("Book presentation", () => {
     await page.goto("/?section=all", { waitUntil: "domcontentloaded" });
 
     const firstLink = page
+      .getByTestId("book-list")
       .getByRole("link", { name: /view details for/i })
       .first();
     await expect(firstLink).toBeVisible();
 
-    for (let attempt = 0; attempt < 20; attempt += 1) {
+    for (let attempt = 0; attempt < 40; attempt += 1) {
       if (await firstLink.evaluate((link) => link === document.activeElement)) {
         break;
       }
