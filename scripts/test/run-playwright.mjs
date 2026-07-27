@@ -1,8 +1,16 @@
 import { spawn, spawnSync } from "node:child_process";
+import { rmSync } from "node:fs";
 import path from "node:path";
 
 const port = "3011";
 const baseURL = `http://127.0.0.1:${port}`;
+const workspaceRoot = path.resolve(".");
+const testDistDir = path.resolve(".next-playwright");
+if (path.dirname(testDistDir) !== workspaceRoot) {
+  throw new Error(`Refusing to clear unexpected test build path: ${testDistDir}`);
+}
+rmSync(testDistDir, { force: true, recursive: true });
+
 const runtimeEnv = {
   ...process.env,
   BUKIE_DB_DRIVER: "sqlite",
