@@ -90,8 +90,17 @@ Set `DEBUG_DB=1` to print which driver and target are used (without secrets) at 
 
 ## Migrations
 
-- Do we need a migration for recent changes?
-  - No. The new `authors[]` is a TypeScript-only helper; we still persist a single `author` text field. All other fields we use (ratingsCount, addedAt, description, pages, publisher, isbn) already exist in both schemas.
+The additive normalized catalog schema and destructive disposable-target
+workflow are documented in
+[`docs/catalog-rebuild.md`](./catalog-rebuild.md). Those target tables do not
+replace application reads or modify the active legacy tables in this
+implementation slice.
+
+- The normalized catalog slice adds target-only migrations for SQLite and
+  Postgres. They create the new tables, constraints and indexes without
+  altering or dropping `books` or `book_metrics`.
+- The existing `authors[]` helper remains TypeScript-only for current legacy
+  reads until the work-first application cutover.
 
 - SQLite
   - In development, `ensureDb()` runs SQLite migrations automatically and also patches missing columns with `ALTER TABLE` as a safety net. This means older local DBs will be brought up-to-date on first access without manual steps.
