@@ -5,14 +5,22 @@ import * as repo from "@/features/books/repo";
 import { workSummaryFixture } from "@/test/catalog-fixtures";
 import Page from "./page";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 describe("homepage", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.spyOn(repo, "getWorksPage").mockResolvedValue({
       items: [workSummaryFixture],
       hasNext: false,
+      total: 1,
     });
     vi.spyOn(repo, "getNewArrivals").mockResolvedValue([workSummaryFixture]);
+    vi.spyOn(repo, "getCatalogCategories").mockResolvedValue([
+      { slug: "fiction", label: "Fiction" },
+    ]);
   });
 
   it("renders the honest supported catalog sections", async () => {
@@ -42,13 +50,41 @@ describe("homepage", () => {
     const page = vi.spyOn(repo, "getWorksPage");
     render(await Page({ searchParams: Promise.resolve({ q: "example" }) }));
     expect(
-      screen.getByText(/Showing results for "example"/),
+      screen.getByText(/Active filters: Search: “example”/),
     ).toBeInTheDocument();
     expect(page).toHaveBeenCalledWith({
-      q: "example",
+      query: {
+        q: "example",
+        category: undefined,
+        period: undefined,
+        sort: "title",
+      },
       after: undefined,
       limit: 24,
     });
+  });
+
+  it("renders canonical active-filter context and zero-result recovery", async () => {
+    vi.spyOn(repo, "getWorksPage").mockResolvedValue({
+      items: [],
+      hasNext: false,
+      total: 0,
+    });
+    render(
+      await Page({
+        searchParams: Promise.resolve({
+          category: "fiction",
+          period: "2000-2009",
+          sort: "publication",
+        }),
+      }),
+    );
+    expect(
+      screen.getByText(/Active filters: Category: Fiction/),
+    ).toHaveTextContent("Published: 2000–2009");
+    expect(
+      screen.getByRole("link", { name: "Reset all filters" }),
+    ).toHaveAttribute("href", "/");
   });
 
   it("renders an error state when catalog reads fail", async () => {

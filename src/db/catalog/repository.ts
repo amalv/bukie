@@ -1,4 +1,9 @@
 import {
+  type CatalogCategory,
+  type CatalogQuery,
+  publicationPeriodBounds,
+} from "@/features/books/catalogQuery";
+import {
   decodeCursor,
   encodeCursor,
   type PageResult,
@@ -29,6 +34,8 @@ type WorkRow = {
   sortTitle: string;
   description: string | null;
   preferredEditionId: string | null;
+  publicationSortDate: string | null;
+  catalogedAt: number | string | Date | null;
 };
 
 type EditionRow = {
@@ -96,12 +103,13 @@ type CoverRow = {
 };
 
 export type CatalogRepository = {
-  listWorkSummaries(query?: string): Promise<WorkSummary[]>;
+  listWorkSummaries(query?: CatalogQuery): Promise<WorkSummary[]>;
   pageWorkSummaries(params: {
-    query?: string;
+    query: CatalogQuery;
     after?: string | null;
     limit: number;
   }): Promise<PageResult<WorkSummary>>;
+  listCategories(): Promise<CatalogCategory[]>;
   listNewArrivals(limit?: number): Promise<WorkSummary[]>;
   getWorkDetail(id: string): Promise<WorkDetail | undefined>;
 };
@@ -112,8 +120,11 @@ const WORK_COLUMNS = `
     w.preferred_title as "title",
     w.sort_title as "sortTitle",
     w.description as "description",
-    w.preferred_edition_id as "preferredEditionId"
+    w.preferred_edition_id as "preferredEditionId",
+    preferred.publication_sort_date as "publicationSortDate",
+    preferred.cataloged_at as "catalogedAt"
   from works w
+  left join editions preferred on preferred.id = w.preferred_edition_id
 `;
 
 function optional<T>(value: T | null): T | undefined {
@@ -161,52 +172,156 @@ export function createCatalogRepository(
   }
 
   async function selectWorkRows(params: {
-    query?: string;
-    cursor?: { sortTitle: string; id: string } | null;
+    query: CatalogQuery;
+    cursor?: ReturnType<typeof decodeCursor>;
     limit?: number;
   }): Promise<WorkRow[]> {
     const conditions: string[] = [];
     const values: unknown[] = [];
-    const search = params.query?.trim();
+    const search = params.query.q;
     if (search) {
+      const escapedSearch = search
+        .toLowerCase()
+        .replaceAll("\\", "\\\\")
+        .replaceAll("%", "\\%")
+        .replaceAll("_", "\\_");
       const titlePlaceholder = placeholder(values.length + 1);
-      values.push(`%${search.toLowerCase()}%`);
+      values.push(`%${escapedSearch}%`);
+      const titleEscapePlaceholder = placeholder(values.length + 1);
+      values.push("\\");
       const authorPlaceholder = placeholder(values.length + 1);
-      values.push(`%${search.toLowerCase()}%`);
+      values.push(`%${escapedSearch}%`);
+      const authorEscapePlaceholder = placeholder(values.length + 1);
+      values.push("\\");
       conditions.push(`(
-        lower(w.preferred_title) like ${titlePlaceholder}
+        lower(w.preferred_title) like ${titlePlaceholder} escape ${titleEscapePlaceholder}
         or exists (
           select 1
           from work_authors wa_search
           join authors a_search on a_search.id = wa_search.author_id
           where wa_search.work_id = w.id
-            and lower(a_search.display_name) like ${authorPlaceholder}
+            and lower(a_search.display_name) like ${authorPlaceholder} escape ${authorEscapePlaceholder}
         )
       )`);
     }
-    if (params.cursor) {
-      const greaterSortPlaceholder = placeholder(values.length + 1);
-      values.push(params.cursor.sortTitle);
-      const equalSortPlaceholder = placeholder(values.length + 1);
-      values.push(params.cursor.sortTitle);
-      const idPlaceholder = placeholder(values.length + 1);
-      values.push(params.cursor.id);
-      conditions.push(`(
-        w.sort_title > ${greaterSortPlaceholder}
-        or (w.sort_title = ${equalSortPlaceholder} and w.id > ${idPlaceholder})
+    if (params.query.category) {
+      const categoryPlaceholder = placeholder(values.length + 1);
+      values.push(params.query.category);
+      conditions.push(`exists (
+        select 1
+        from work_categories wc_filter
+        join categories c_filter on c_filter.id = wc_filter.category_id
+        where wc_filter.work_id = w.id
+          and c_filter.slug = ${categoryPlaceholder}
+          and c_filter.status = 'active'
       )`);
+    }
+    if (params.query.period) {
+      const bounds = publicationPeriodBounds(params.query.period);
+      if (bounds.from) {
+        const fromPlaceholder = placeholder(values.length + 1);
+        values.push(bounds.from);
+        conditions.push(
+          `preferred.publication_sort_date >= ${fromPlaceholder}`,
+        );
+      }
+      if (bounds.before) {
+        const beforePlaceholder = placeholder(values.length + 1);
+        values.push(bounds.before);
+        conditions.push(
+          `preferred.publication_sort_date < ${beforePlaceholder}`,
+        );
+      }
+    }
+    if (params.cursor) {
+      if (params.cursor.sort === "title") {
+        const greaterSortPlaceholder = placeholder(values.length + 1);
+        values.push(params.cursor.sortTitle);
+        const equalSortPlaceholder = placeholder(values.length + 1);
+        values.push(params.cursor.sortTitle);
+        const idPlaceholder = placeholder(values.length + 1);
+        values.push(params.cursor.id);
+        conditions.push(`(
+          w.sort_title > ${greaterSortPlaceholder}
+          or (
+            w.sort_title = ${equalSortPlaceholder}
+            and w.id > ${idPlaceholder}
+          )
+        )`);
+      } else if (params.cursor.sort === "added") {
+        if (params.cursor.catalogedAt === null) {
+          const idPlaceholder = placeholder(values.length + 1);
+          values.push(params.cursor.id);
+          conditions.push(`(
+            preferred.cataloged_at is null and w.id > ${idPlaceholder}
+          )`);
+        } else {
+          const cursorValue =
+            executor.dialect === "postgres"
+              ? new Date(params.cursor.catalogedAt)
+              : params.cursor.catalogedAt;
+          const lesserAddedPlaceholder = placeholder(values.length + 1);
+          values.push(cursorValue);
+          const equalAddedPlaceholder = placeholder(values.length + 1);
+          values.push(cursorValue);
+          const idPlaceholder = placeholder(values.length + 1);
+          values.push(params.cursor.id);
+          conditions.push(`(
+            preferred.cataloged_at < ${lesserAddedPlaceholder}
+            or preferred.cataloged_at is null
+            or (
+              preferred.cataloged_at = ${equalAddedPlaceholder}
+              and w.id > ${idPlaceholder}
+            )
+          )`);
+        }
+      } else if (params.cursor.publicationSortDate === null) {
+        const idPlaceholder = placeholder(values.length + 1);
+        values.push(params.cursor.id);
+        conditions.push(`(
+          preferred.publication_sort_date is null and w.id > ${idPlaceholder}
+        )`);
+      } else {
+        const lesserPublicationPlaceholder = placeholder(values.length + 1);
+        values.push(params.cursor.publicationSortDate);
+        const equalPublicationPlaceholder = placeholder(values.length + 1);
+        values.push(params.cursor.publicationSortDate);
+        const idPlaceholder = placeholder(values.length + 1);
+        values.push(params.cursor.id);
+        conditions.push(`(
+          preferred.publication_sort_date < ${lesserPublicationPlaceholder}
+          or preferred.publication_sort_date is null
+          or (
+            preferred.publication_sort_date = ${equalPublicationPlaceholder}
+            and w.id > ${idPlaceholder}
+          )
+        )`);
+      }
     }
 
     let statement = WORK_COLUMNS;
     if (conditions.length > 0) {
       statement += ` where ${conditions.join(" and ")}`;
     }
-    statement += " order by w.sort_title asc, w.id asc";
+    if (params.query.sort === "added") {
+      statement +=
+        " order by (preferred.cataloged_at is null) asc, preferred.cataloged_at desc, w.id asc";
+    } else if (params.query.sort === "publication") {
+      statement +=
+        " order by (preferred.publication_sort_date is null) asc, preferred.publication_sort_date desc, w.id asc";
+    } else {
+      statement += " order by w.sort_title asc, w.id asc";
+    }
     if (params.limit !== undefined) {
       statement += ` limit ${placeholder(values.length + 1)}`;
       values.push(params.limit);
     }
     return executor.query<WorkRow>(statement, values);
+  }
+
+  async function countWorkRows(query: CatalogQuery): Promise<number> {
+    const rows = await selectWorkRows({ query });
+    return rows.length;
   }
 
   async function loadEditionRowsByIds(ids: string[]): Promise<EditionRow[]> {
@@ -488,38 +603,72 @@ export function createCatalogRepository(
   }
 
   return {
-    async listWorkSummaries(query) {
+    async listWorkSummaries(query = { sort: "title" }) {
       const rows = await selectWorkRows({ query });
       return (await projectWorks(rows)) as WorkSummary[];
     },
 
     async pageWorkSummaries({ query, after, limit }) {
-      const cursor = decodeCursor(after);
+      const cursor = decodeCursor(after, query.sort);
       const pageSize = boundedLimit(limit);
-      const rows = await selectWorkRows({
-        query,
-        cursor,
-        limit: pageSize + 1,
-      });
+      const [rows, total] = await Promise.all([
+        selectWorkRows({
+          query,
+          cursor,
+          limit: pageSize + 1,
+        }),
+        countWorkRows(query),
+      ]);
       const hasNext = rows.length > pageSize;
       const pageRows = rows.slice(0, pageSize);
       const items = (await projectWorks(pageRows)) as WorkSummary[];
       const last = pageRows.at(-1);
+      const nextCursor =
+        hasNext && last
+          ? query.sort === "added"
+            ? encodeCursor({
+                version: 1,
+                sort: "added",
+                catalogedAt:
+                  last.catalogedAt === null ? null : Number(last.catalogedAt),
+                id: last.id,
+              })
+            : query.sort === "publication"
+              ? encodeCursor({
+                  version: 1,
+                  sort: "publication",
+                  publicationSortDate: last.publicationSortDate,
+                  id: last.id,
+                })
+              : encodeCursor({
+                  version: 1,
+                  sort: "title",
+                  sortTitle: last.sortTitle,
+                  id: last.id,
+                })
+          : undefined;
       return {
         items,
         hasNext,
-        nextCursor:
-          hasNext && last
-            ? encodeCursor({ sortTitle: last.sortTitle, id: last.id })
-            : undefined,
+        nextCursor,
+        total,
       };
+    },
+
+    async listCategories() {
+      return executor.query<CatalogCategory>(`
+        select slug as "slug", label as "label"
+        from categories
+        where status = 'active'
+        order by label asc, slug asc
+      `);
     },
 
     async listNewArrivals(limit = 24) {
       const pageSize = boundedLimit(limit);
       const rows = await executor.query<WorkRow>(
         `${WORK_COLUMNS}
-          join editions preferred on preferred.id = w.preferred_edition_id
+          where w.preferred_edition_id is not null
           order by preferred.cataloged_at desc, w.id asc
           limit ${placeholder(1)}
         `,

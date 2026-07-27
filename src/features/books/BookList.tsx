@@ -14,6 +14,9 @@ export type BookListProps = {
   footer?: React.ReactNode;
   /** Optional current search string to improve empty-state copy */
   q?: string;
+  /** Optional copy/action for recovering from an empty filtered result */
+  emptyMessage?: string;
+  emptyAction?: React.ReactNode;
   /** Spacing preset above the grid */
   spacing?: "normal" | "dense";
 };
@@ -25,6 +28,8 @@ export function BookList({
   presentation = "grid",
   footer,
   q,
+  emptyMessage,
+  emptyAction,
   spacing = "normal",
 }: BookListProps) {
   const isCompact = presentation === "compact";
@@ -87,7 +92,9 @@ export function BookList({
         >
           <p className="m-0 font-semibold">No books found</p>
           <p className="m-0 opacity-80">
-            {q ? (
+            {emptyMessage ? (
+              emptyMessage
+            ) : q ? (
               <>
                 We couldn't find any results matching <em>"{q}"</em>.
               </>
@@ -97,8 +104,11 @@ export function BookList({
           </p>
           <ul className="mx-auto mt-3 max-w-[560px] list-disc px-4 text-left text-[0.95em] opacity-85">
             <li>Try a different title or author</li>
-            <li>Check your spelling</li>
+            <li>Adjust or reset the active filters</li>
           </ul>
+          {emptyAction ? (
+            <div className="mt-[var(--spacing-2)]">{emptyAction}</div>
+          ) : null}
         </div>
       </Container>
     );

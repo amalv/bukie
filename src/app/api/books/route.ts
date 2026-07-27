@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { parseCatalogQuery } from "@/features/books/catalogQuery";
 import { getWorks } from "@/features/books/repo";
 
 export async function GET(request: Request) {
   try {
-    const query = new URL(request.url).searchParams.get("q") ?? undefined;
+    const query = parseCatalogQuery(new URL(request.url).searchParams);
     return NextResponse.json(await getWorks(query));
   } catch (error) {
     console.error("[/api/books] GET failed", error);

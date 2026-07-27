@@ -1,0 +1,1 @@
+CREATE INDEX `editions_cataloged_work_idx` ON `editions` (`cataloged_at`,`work_id`);

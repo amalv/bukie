@@ -138,4 +138,22 @@ describe("SQLite/Postgres normalized catalog schema parity", () => {
       expect(migration).toMatch(/drop table (?:if exists )?["`]?book_metrics/i);
     }
   });
+
+  it("adds the catalog-addition sort index in both providers", () => {
+    const sqliteMigration = readFileSync(
+      path.resolve("drizzle/0004_loose_tyrannus.sql"),
+      "utf8",
+    );
+    const postgresMigration = readFileSync(
+      path.resolve("drizzle/pg/0006_luxuriant_albert_cleary.sql"),
+      "utf8",
+    );
+    for (const migration of [sqliteMigration, postgresMigration]) {
+      expect(migration).toContain("editions_cataloged_work_idx");
+      expect(migration).toMatch(/cataloged_at["`]?,["`]?work_id/);
+      expect(migration).not.toMatch(
+        /(?:create|alter|drop)\s+table|delete\s+from/i,
+      );
+    }
+  });
 });

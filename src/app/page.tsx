@@ -3,12 +3,23 @@ export const dynamic = "force-dynamic";
 import Clock from "lucide-react/dist/esm/icons/clock.js";
 import { Container } from "@/design/layout/grid";
 import { BookList } from "@/features/books/BookList";
+import {
+  DEFAULT_CATALOG_SORT,
+  hasCatalogFilters,
+  parseCatalogQuery,
+  serializeCatalogQuery,
+} from "@/features/books/catalogQuery";
 import { PaginatedBooks } from "@/features/books/PaginatedBooks.client";
 import { DEFAULT_BOOKS_PAGE_SIZE } from "@/features/books/pageSize";
-import { getNewArrivals, getWorksPage } from "@/features/books/repo";
+import {
+  getCatalogCategories,
+  getNewArrivals,
+  getWorksPage,
+} from "@/features/books/repo";
+import { CatalogFilters } from "./CatalogFilters";
 import { BooksCount } from "./components/BooksCount";
 import { SectionHeader } from "./components/SectionHeader";
-import { normalizeAfter, normalizeQ } from "./helpers/pageParams";
+import { normalizeAfter } from "./helpers/pageParams";
 import { pageStyles as s } from "./pageStyles";
 import { SearchForm } from "./SearchForm";
 
@@ -21,19 +32,26 @@ export default async function Page({
 }) {
   try {
     const resolved = await searchParams;
-    const q = normalizeQ(resolved?.q);
+    const query = parseCatalogQuery(resolved);
     const rawSection = resolved?.section;
     const requestedSection =
       (Array.isArray(rawSection) ? rawSection[0] : rawSection) ?? "all";
-    const section = requestedSection === "new" ? "new" : "all";
+    const queryIsActive =
+      hasCatalogFilters(query) || query.sort !== DEFAULT_CATALOG_SORT;
+    const section =
+      requestedSection === "new" && !queryIsActive ? "new" : "all";
     const after = normalizeAfter(resolved?.after);
-    const { items, nextCursor } = await getWorksPage({
-      q,
-      after,
-      limit: DEFAULT_BOOKS_PAGE_SIZE,
-    });
-    const sectionItems =
-      !q && section === "new" ? await getNewArrivals(20) : undefined;
+    const [{ items, nextCursor, total }, categories, sectionItems] =
+      await Promise.all([
+        getWorksPage({
+          query,
+          after,
+          limit: DEFAULT_BOOKS_PAGE_SIZE,
+        }),
+        getCatalogCategories(),
+        section === "new" ? getNewArrivals(20) : undefined,
+      ]);
+    const queryKey = serializeCatalogQuery(query).toString();
 
     return (
       <main>
@@ -44,16 +62,14 @@ export default async function Page({
               <p className={s.subtitle}>
                 Browse a curated catalog and search by title or author
               </p>
-              <SearchForm defaultValue={q} />
-              {q ? (
-                <p className={s.searchMeta}>Showing results for "{q}"</p>
-              ) : null}
+              <SearchForm defaultValue={query.q} query={query} />
+              <CatalogFilters categories={categories} query={query} />
             </header>
           </Container>
         </section>
 
-        {!q ? (
-          <section className={s.contentSurface}>
+        <section className={s.contentSurface}>
+          {!queryIsActive ? (
             <Container>
               <nav aria-label="Sections" className={s.sectionsNav}>
                 <ul className={s.tabsList}>
@@ -78,44 +94,45 @@ export default async function Page({
                 </ul>
               </nav>
             </Container>
+          ) : null}
 
-            <div className={s.sectionDivider} />
+          {!queryIsActive ? <div className={s.sectionDivider} /> : null}
 
-            {sectionItems ? (
-              <>
-                <Container>
-                  <SectionHeader
-                    icon={
-                      <Clock
-                        className={s.sectionHeaderIcon}
-                        width={20}
-                        height={20}
-                        aria-hidden
-                      />
-                    }
-                    title="New Arrivals"
-                  />
-                  <BooksCount count={sectionItems.length} />
-                </Container>
-                <BookList works={sectionItems} spacing="dense" />
-              </>
-            ) : null}
-
-            {section === "all" && (items.length > 0 || nextCursor) ? (
-              <PaginatedBooks
-                initial={items}
-                initialNextCursor={nextCursor}
-                title="All Books"
-              />
-            ) : null}
-          </section>
-        ) : (
-          <PaginatedBooks
-            initial={items}
-            initialNextCursor={nextCursor}
-            q={q}
-          />
-        )}
+          {sectionItems ? (
+            <>
+              <Container>
+                <SectionHeader
+                  icon={
+                    <Clock
+                      className={s.sectionHeaderIcon}
+                      width={20}
+                      height={20}
+                      aria-hidden
+                    />
+                  }
+                  title="New Arrivals"
+                />
+                <BooksCount count={sectionItems.length} />
+              </Container>
+              <BookList works={sectionItems} spacing="dense" />
+            </>
+          ) : (
+            <PaginatedBooks
+              key={queryKey}
+              initial={items}
+              initialNextCursor={nextCursor}
+              query={query}
+              total={total}
+              title={
+                query.q
+                  ? "Search Results"
+                  : hasCatalogFilters(query)
+                    ? "Filtered Books"
+                    : "All Books"
+              }
+            />
+          )}
+        </section>
       </main>
     );
   } catch (error) {
