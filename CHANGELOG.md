@@ -1,3 +1,10 @@
+# [0.36.0](https://github.com/amalv/bukie/compare/v0.35.0...v0.36.0) (2026-07-27)
+
+
+### Features
+
+* **discovery:** explain homepage sections ([6055952](https://github.com/amalv/bukie/commit/60559522b018001516a13ce3dd4f3453c31265b4))
+
 # [0.35.0](https://github.com/amalv/bukie/compare/v0.34.1...v0.35.0) (2026-07-27)
 
 
