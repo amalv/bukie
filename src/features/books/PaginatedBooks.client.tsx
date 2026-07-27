@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BooksCount } from "@/app/components/BooksCount";
-import { pageStyles as page } from "@/app/pageStyles";
+import { SectionHeader } from "@/app/components/SectionHeader";
 import { Container } from "@/design/layout/grid";
 import { BookList } from "./BookList";
 import {
@@ -21,6 +21,11 @@ type Props = {
   query: CatalogQuery;
   total: number;
   title?: string;
+  headingId?: string;
+  description?: string;
+  context?: string;
+  emptyTitle?: string;
+  emptyMessage?: string;
   limit?: number;
 };
 
@@ -30,6 +35,11 @@ export function PaginatedBooks({
   query,
   total,
   title,
+  headingId,
+  description,
+  context,
+  emptyTitle,
+  emptyMessage,
   limit = DEFAULT_BOOKS_PAGE_SIZE,
 }: Props) {
   const [items, setItems] = useState<WorkSummary[]>(initial);
@@ -75,20 +85,35 @@ export function PaginatedBooks({
     <>
       {sectionTitle ? (
         <Container>
-          <header className={page.allBooksHeader}>
-            <h2 className={page.sectionTitle}>{sectionTitle}</h2>
-            <BooksCount count={items.length} mode="shown" total={total} />
-          </header>
+          <SectionHeader
+            id={headingId}
+            title={sectionTitle}
+            description={description}
+            context={context}
+            action={
+              <BooksCount count={items.length} mode="shown" total={total} />
+            }
+          />
         </Container>
       ) : null}
       <BookList
         works={items}
         presentation={query.q ? "compact" : "grid"}
         q={query.q}
+        emptyTitle={emptyTitle}
         emptyMessage={
-          hasCatalogFilters(query)
+          emptyMessage ??
+          (hasCatalogFilters(query)
             ? "No books match the active search and filters."
-            : undefined
+            : undefined)
+        }
+        emptySuggestions={
+          hasCatalogFilters(query)
+            ? [
+                "Try a different title or author",
+                "Adjust or reset the active filters",
+              ]
+            : []
         }
         emptyAction={
           hasCatalogFilters(query) ? (

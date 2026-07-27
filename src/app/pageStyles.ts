@@ -34,7 +34,10 @@ export const pageStyles = {
   contentSurface:
     "border-t border-[color:var(--color-outline)] bg-[var(--color-surface)] px-0 pt-[var(--spacing-2)] pb-[var(--spacing-4)] text-[var(--color-on-surface)]",
   sectionHeader:
-    "book-section-header mb-[var(--spacing-1)] mt-[var(--spacing-2)] flex min-h-[40px] items-center justify-between gap-[var(--spacing-1)]",
+    "book-section-header mb-[var(--spacing-2)] mt-[var(--spacing-3)] grid gap-[var(--spacing-0-5)]",
+  sectionHeaderTop:
+    "flex min-h-[40px] flex-wrap items-center justify-between gap-[var(--spacing-1)]",
+  sectionHeaderAction: "shrink-0",
   allBooksHeader:
     "mb-[var(--spacing-1)] mt-[var(--spacing-2)] flex min-h-[40px] items-center justify-between gap-[var(--spacing-1)]",
   booksCount:
@@ -43,4 +46,10 @@ export const pageStyles = {
   sectionTitle:
     "m-0 text-[clamp(1.35rem,2.3vw,1.8rem)] leading-[var(--line-tight)] font-bold text-[var(--color-on-background)]",
   sectionHeaderIcon: "book-section-header-icon text-[var(--color-primary)]",
+  sectionDescription:
+    "m-0 max-w-[72ch] text-[var(--type-md)] text-[var(--color-on-surface)]",
+  sectionContext:
+    "m-0 max-w-[80ch] text-[var(--type-sm)] text-[var(--color-on-surface)] opacity-75",
+  sectionAction:
+    "inline-flex min-h-11 items-center rounded-[var(--radius-sm)] px-[var(--spacing-1)] font-semibold text-[var(--color-primary)] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-primary)]",
 } as const;

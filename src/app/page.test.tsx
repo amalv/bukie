@@ -23,27 +23,38 @@ describe("homepage", () => {
     ]);
   });
 
-  it("renders the honest supported catalog sections", async () => {
+  it("renders explainable server-side discovery sections", async () => {
     render(await Page({ searchParams: Promise.resolve({}) }));
-    expect(screen.getByRole("link", { name: "All" })).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /New Arrivals/ }),
+      screen.getByRole("heading", { level: 2, name: "Browse by Category" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "New Arrivals" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "All Books" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/not publication recency or popularity/),
+    ).toBeVisible();
+    expect(screen.getByRole("link", { name: "Fiction books" })).toHaveAttribute(
+      "href",
+      "/?category=fiction",
+    );
     expect(
       screen.queryByText(/Top Rated|Trending Now/),
     ).not.toBeInTheDocument();
   });
 
-  it("renders normalized new arrivals", async () => {
-    render(
-      await Page({
-        searchParams: Promise.resolve({ section: "new" }),
-      }),
-    );
+  it("renders normalized new arrivals with canonical continuation", async () => {
+    render(await Page({ searchParams: Promise.resolve({}) }));
     expect(
       screen.getByRole("heading", { level: 2, name: "New Arrivals" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(workSummaryFixture.title)).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "View all new arrivals" }),
+    ).toHaveAttribute("href", "/?sort=added");
+    expect(screen.getAllByText(workSummaryFixture.title)).toHaveLength(2);
   });
 
   it("renders search results and forwards the query", async () => {
@@ -90,6 +101,38 @@ describe("homepage", () => {
   it("renders an error state when catalog reads fail", async () => {
     vi.spyOn(repo, "getWorksPage").mockRejectedValue(new Error("failed"));
     render(await Page({ searchParams: Promise.resolve({}) }));
-    expect(screen.getByRole("alert")).toHaveTextContent("Failed to load books");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "complete catalog is temporarily unavailable",
+    );
+    expect(
+      screen.getByRole("heading", { name: "New Arrivals" }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps useful sections when category data is partial", async () => {
+    vi.spyOn(repo, "getCatalogCategories").mockRejectedValue(
+      new Error("failed"),
+    );
+    render(await Page({ searchParams: Promise.resolve({}) }));
+    expect(screen.getAllByRole("alert")[0]).toHaveTextContent(
+      "Categories are temporarily unavailable",
+    );
+    expect(screen.getAllByText(workSummaryFixture.title)).toHaveLength(2);
+    expect(
+      screen.getByRole("heading", { name: "All Books" }),
+    ).toBeInTheDocument();
+  });
+
+  it("uses the canonical added sort as the full New Arrivals surface", async () => {
+    render(
+      await Page({
+        searchParams: Promise.resolve({ sort: "added" }),
+      }),
+    );
+    expect(
+      screen.getByRole("heading", { level: 2, name: "New Arrivals" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Browse by Category")).not.toBeInTheDocument();
+    expect(screen.getByText(/Preferred-edition catalog dates/)).toBeVisible();
   });
 });

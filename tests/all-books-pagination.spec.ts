@@ -12,13 +12,14 @@ test.describe("All Books pagination", () => {
     ).toBeVisible();
     await expect(page.getByText("24 of 500 books shown")).toBeVisible();
 
-    const beforeRowCounts = await page
-      .getByRole("link", { name: /view details for/i })
-      .evaluateAll((links) => {
+    const allBooks = page.getByTestId("book-list");
+    const beforeRowCounts = await allBooks
+      .getByRole("listitem")
+      .evaluateAll((items) => {
         const rows = new Map<number, number>();
 
-        for (const link of links) {
-          const top = Math.round(link.getBoundingClientRect().top);
+        for (const item of items) {
+          const top = Math.round(item.getBoundingClientRect().top);
           rows.set(top, (rows.get(top) ?? 0) + 1);
         }
 
@@ -32,13 +33,13 @@ test.describe("All Books pagination", () => {
 
     await expect(page.getByText("48 of 500 books shown")).toBeVisible();
 
-    const afterRowCounts = await page
-      .getByRole("link", { name: /view details for/i })
-      .evaluateAll((links) => {
+    const afterRowCounts = await allBooks
+      .getByRole("listitem")
+      .evaluateAll((items) => {
         const rows = new Map<number, number>();
 
-        for (const link of links) {
-          const top = Math.round(link.getBoundingClientRect().top);
+        for (const item of items) {
+          const top = Math.round(item.getBoundingClientRect().top);
           rows.set(top, (rows.get(top) ?? 0) + 1);
         }
 

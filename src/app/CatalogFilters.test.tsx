@@ -53,4 +53,19 @@ describe("CatalogFilters", () => {
       "/?q=the&category=science-fiction&period=1950-1999&sort=publication",
     );
   });
+
+  it("reports partial category data without disabling other filters", () => {
+    render(
+      <CatalogFilters
+        categories={[]}
+        categoriesUnavailable
+        query={{ sort: "title" }}
+      />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Category options are temporarily unavailable",
+    );
+    expect(screen.getByLabelText("Publication period")).toBeEnabled();
+    expect(screen.getByLabelText("Sort by")).toBeEnabled();
+  });
 });

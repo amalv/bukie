@@ -36,3 +36,12 @@ export const Compact = () => (
 export const Loading = () => <BookList loading />;
 export const ErrorState = () => <BookList error="Failed to load books." />;
 export const Empty = () => <BookList works={[]} />;
+export const SectionEmpty = () => (
+  <BookList
+    works={[]}
+    emptyTitle="No arrivals yet"
+    emptyMessage="No catalog additions are available yet."
+    emptySuggestions={[]}
+    emptyAction={<a href="#all-books">Browse all books</a>}
+  />
+);

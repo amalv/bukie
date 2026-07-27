@@ -15,10 +15,14 @@ export type BookListProps = {
   /** Optional current search string to improve empty-state copy */
   q?: string;
   /** Optional copy/action for recovering from an empty filtered result */
+  emptyTitle?: string;
   emptyMessage?: string;
   emptyAction?: React.ReactNode;
+  emptySuggestions?: string[];
   /** Spacing preset above the grid */
   spacing?: "normal" | "dense";
+  /** Stable locator for the containing surface's list. */
+  testId?: string;
 };
 
 export function BookList({
@@ -28,9 +32,15 @@ export function BookList({
   presentation = "grid",
   footer,
   q,
+  emptyTitle = "No books found",
   emptyMessage,
   emptyAction,
+  emptySuggestions = [
+    "Try a different title or author",
+    "Adjust or reset the active filters",
+  ],
   spacing = "normal",
+  testId = "book-list",
 }: BookListProps) {
   const isCompact = presentation === "compact";
   const listClassName = [
@@ -59,7 +69,7 @@ export function BookList({
           as="ul"
           className={listClassName}
           data-presentation={presentation}
-          data-testid="book-list"
+          data-testid={testId}
           gap="responsive"
         >
           {skeletonKeys.map((key) => (
@@ -90,7 +100,7 @@ export function BookList({
           className="rounded-[var(--radius-md)] border border-dashed border-[color:var(--color-outline)] bg-[var(--color-surface)] p-[var(--spacing-3)] text-center text-[var(--color-on-surface)] shadow-[var(--elevation-0)]"
           aria-live="polite"
         >
-          <p className="m-0 font-semibold">No books found</p>
+          <p className="m-0 font-semibold">{emptyTitle}</p>
           <p className="m-0 opacity-80">
             {emptyMessage ? (
               emptyMessage
@@ -102,10 +112,13 @@ export function BookList({
               "Try searching by title or author."
             )}
           </p>
-          <ul className="mx-auto mt-3 max-w-[560px] list-disc px-4 text-left text-[0.95em] opacity-85">
-            <li>Try a different title or author</li>
-            <li>Adjust or reset the active filters</li>
-          </ul>
+          {emptySuggestions.length > 0 ? (
+            <ul className="mx-auto mt-3 max-w-[560px] list-disc px-4 text-left text-[0.95em] opacity-85">
+              {emptySuggestions.map((suggestion) => (
+                <li key={suggestion}>{suggestion}</li>
+              ))}
+            </ul>
+          ) : null}
           {emptyAction ? (
             <div className="mt-[var(--spacing-2)]">{emptyAction}</div>
           ) : null}
@@ -125,7 +138,7 @@ export function BookList({
         as="ul"
         className={listClassName}
         data-presentation={presentation}
-        data-testid="book-list"
+        data-testid={testId}
         gap="responsive"
       >
         {works?.map((work) => (

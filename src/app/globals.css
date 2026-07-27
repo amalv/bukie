@@ -151,3 +151,9 @@ body {
     color-scheme: light;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-discovery-link] {
+    transition: none;
+  }
+}
