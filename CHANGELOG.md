@@ -1,3 +1,15 @@
+# [0.35.0](https://github.com/amalv/bukie/compare/v0.34.1...v0.35.0) (2026-07-27)
+
+
+### Bug Fixes
+
+* **search:** bind cursors and reset controls ([d498811](https://github.com/amalv/bukie/commit/d498811be497f95c4f0eedc33f9a0df86ea02329))
+
+
+### Features
+
+* **search:** add URL-driven catalog filters ([a648f71](https://github.com/amalv/bukie/commit/a648f7130155fee83371eb90cc72cf36605dd882))
+
 ## [0.34.1](https://github.com/amalv/bukie/compare/v0.34.0...v0.34.1) (2026-07-27)
 
 
