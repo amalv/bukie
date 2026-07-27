@@ -59,6 +59,39 @@ export type EditionSummary = {
   cover?: EditionCover;
 };
 
+export type DetailProvenanceField =
+  | "work.preferred_title"
+  | "work.description"
+  | "work.preferred_edition"
+  | "work.authors"
+  | "work.categories"
+  | "edition.title"
+  | "edition.subtitle"
+  | "edition.format"
+  | "edition.publication_date"
+  | "edition.pages"
+  | "edition.publishers"
+  | "edition.languages"
+  | "edition.identifiers"
+  | "edition.covers";
+
+export type DetailProvenance = {
+  entityType: "work" | "edition";
+  entityId: string;
+  field: DetailProvenanceField;
+  state: "present" | "missing" | "conflicting" | "stale" | "withdrawn";
+  resolvedAt: number;
+  reason: string;
+  evidence?: {
+    sourceKey: string;
+    sourceName: string;
+    sourceApproval: "pending" | "approved" | "suspended" | "retired";
+    kind: "curated" | "imported" | "derived" | "synthetic";
+    retrievedAt: number;
+    eligible: boolean;
+  };
+};
+
 export type WorkSummary = {
   id: string;
   title: string;
@@ -71,4 +104,5 @@ export type WorkDetail = WorkSummary & {
   description?: string;
   categories: WorkCategory[];
   editions: EditionSummary[];
+  provenance: DetailProvenance[];
 };

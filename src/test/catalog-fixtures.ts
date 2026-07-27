@@ -1,8 +1,37 @@
 import type {
+  DetailProvenance,
+  DetailProvenanceField,
   EditionSummary,
   WorkDetail,
   WorkSummary,
 } from "@/features/books/types";
+
+const fixtureTimestamp = Date.UTC(2026, 6, 26);
+
+export function provenanceFixture(
+  entityType: DetailProvenance["entityType"],
+  entityId: string,
+  field: DetailProvenanceField,
+  overrides: Partial<DetailProvenance> = {},
+): DetailProvenance {
+  return {
+    entityType,
+    entityId,
+    field,
+    state: "present",
+    resolvedAt: fixtureTimestamp,
+    reason: "Selected approved active source observation",
+    evidence: {
+      sourceKey: "legacy_catalog",
+      sourceName: "Bukie legacy catalog artifact",
+      sourceApproval: "approved",
+      kind: field === "work.preferred_edition" ? "derived" : "imported",
+      retrievedAt: fixtureTimestamp,
+      eligible: true,
+    },
+    ...overrides,
+  };
+}
 
 export const editionFixture: EditionSummary = {
   id: "20000000-0000-4000-8000-000000000001",
@@ -81,4 +110,74 @@ export const workDetailFixture: WorkDetail = {
     },
   ],
   editions: [editionFixture],
+  provenance: [
+    provenanceFixture("work", workSummaryFixture.id, "work.preferred_title"),
+    provenanceFixture("work", workSummaryFixture.id, "work.description"),
+    provenanceFixture("work", workSummaryFixture.id, "work.authors"),
+    provenanceFixture("work", workSummaryFixture.id, "work.categories"),
+    provenanceFixture("work", workSummaryFixture.id, "work.preferred_edition", {
+      evidence: {
+        sourceKey: "bukie_derivation",
+        sourceName: "Bukie catalog derivations",
+        sourceApproval: "approved",
+        kind: "derived",
+        retrievedAt: fixtureTimestamp,
+        eligible: true,
+      },
+    }),
+    ...(
+      [
+        "edition.publication_date",
+        "edition.pages",
+        "edition.publishers",
+        "edition.languages",
+        "edition.identifiers",
+        "edition.covers",
+      ] as const
+    ).map((field) => provenanceFixture("edition", editionFixture.id, field)),
+    provenanceFixture("edition", editionFixture.id, "edition.title", {
+      state: "missing",
+      evidence: undefined,
+    }),
+    provenanceFixture("edition", editionFixture.id, "edition.subtitle", {
+      state: "missing",
+      evidence: undefined,
+    }),
+    provenanceFixture("edition", editionFixture.id, "edition.format", {
+      state: "missing",
+      evidence: undefined,
+    }),
+  ],
+};
+
+export const partialWorkDetailFixture: WorkDetail = {
+  id: "10000000-0000-4000-8000-000000000099",
+  title: "Partial Work",
+  authors: [],
+  primaryCategory: undefined,
+  preferredEdition: undefined,
+  description: undefined,
+  categories: [],
+  editions: [],
+  provenance: [
+    provenanceFixture(
+      "work",
+      "10000000-0000-4000-8000-000000000099",
+      "work.preferred_title",
+    ),
+    ...(
+      [
+        "work.description",
+        "work.authors",
+        "work.categories",
+        "work.preferred_edition",
+      ] as const
+    ).map((field) =>
+      provenanceFixture("work", "10000000-0000-4000-8000-000000000099", field, {
+        state: "missing",
+        evidence: undefined,
+        reason: "No eligible approved observation",
+      }),
+    ),
+  ],
 };
