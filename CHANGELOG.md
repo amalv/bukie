@@ -1,3 +1,10 @@
+# [0.34.0](https://github.com/amalv/bukie/compare/v0.33.0...v0.34.0) (2026-07-27)
+
+
+### Features
+
+* **catalog:** add normalized rebuild foundation ([75c0612](https://github.com/amalv/bukie/commit/75c06123d585723abf08308c02c43e2ac2c32fc4))
+
 # [0.33.0](https://github.com/amalv/bukie/compare/v0.32.0...v0.33.0) (2026-07-26)
 
 
