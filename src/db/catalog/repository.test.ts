@@ -217,7 +217,8 @@ describe("normalized catalog repository", () => {
       limit: 3,
     });
     const mismatched = encodeCursor({
-      version: 1,
+      version: 2,
+      queryKey: "",
       sort: "title",
       sortTitle: "zzzz",
       id: "work-id",
@@ -232,6 +233,25 @@ describe("normalized catalog repository", () => {
         expected.items.map((work) => work.id),
       );
     }
+  });
+
+  it("restarts safely when a cursor is reused with different filters and the same sort", async () => {
+    const source = await repository.pageWorkSummaries({
+      query: query({ category: "science-fiction" }),
+      limit: 1,
+    });
+    const expected = await repository.pageWorkSummaries({
+      query: query({ category: "fantasy" }),
+      limit: 2,
+    });
+    const result = await repository.pageWorkSummaries({
+      query: query({ category: "fantasy" }),
+      after: source.nextCursor,
+      limit: 2,
+    });
+    expect(result.items.map((work) => work.id)).toEqual(
+      expected.items.map((work) => work.id),
+    );
   });
 
   it("treats special search input literally and invalid categories as empty results", async () => {

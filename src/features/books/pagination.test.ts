@@ -1,28 +1,41 @@
 import { describe, expect, it } from "vitest";
+import type { CatalogQuery } from "./catalogQuery";
 import { decodeCursor, encodeCursor } from "./pagination";
 
 describe("catalog cursors", () => {
   it.each([
     {
-      version: 1 as const,
-      sort: "title" as const,
-      sortTitle: "example work",
-      id: "work-id",
+      query: { sort: "title" } satisfies CatalogQuery,
+      payload: {
+        version: 2 as const,
+        queryKey: "",
+        sort: "title" as const,
+        sortTitle: "example work",
+        id: "work-id",
+      },
     },
     {
-      version: 1 as const,
-      sort: "added" as const,
-      catalogedAt: 123,
-      id: "work-id",
+      query: { sort: "added" } satisfies CatalogQuery,
+      payload: {
+        version: 2 as const,
+        queryKey: "sort=added",
+        sort: "added" as const,
+        catalogedAt: 123,
+        id: "work-id",
+      },
     },
     {
-      version: 1 as const,
-      sort: "publication" as const,
-      publicationSortDate: null,
-      id: "work-id",
+      query: { sort: "publication" } satisfies CatalogQuery,
+      payload: {
+        version: 2 as const,
+        queryKey: "sort=publication",
+        sort: "publication" as const,
+        publicationSortDate: null,
+        id: "work-id",
+      },
     },
-  ])("round-trips a $sort cursor", (value) => {
-    expect(decodeCursor(encodeCursor(value), value.sort)).toEqual(value);
+  ])("round-trips a $payload.sort cursor", ({ payload, query }) => {
+    expect(decodeCursor(encodeCursor(payload), query)).toEqual(payload);
   });
 
   it("rejects legacy and malformed cursors", () => {
@@ -33,7 +46,7 @@ describe("catalog cursors", () => {
     expect(
       decodeCursor(
         Buffer.from(
-          '{"version":1,"sort":"title","sortTitle":"valid","id":""}',
+          '{"version":2,"queryKey":"","sort":"title","sortTitle":"valid","id":""}',
         ).toString("base64url"),
       ),
     ).toBeNull();
@@ -41,11 +54,25 @@ describe("catalog cursors", () => {
 
   it("rejects a cursor created for a different sort", () => {
     const cursor = encodeCursor({
-      version: 1,
+      version: 2,
+      queryKey: "",
       sort: "title",
       sortTitle: "example",
       id: "work-id",
     });
-    expect(decodeCursor(cursor, "publication")).toBeNull();
+    expect(decodeCursor(cursor, { sort: "publication" })).toBeNull();
+  });
+
+  it("rejects a cursor created for different filters with the same sort", () => {
+    const cursor = encodeCursor({
+      version: 2,
+      queryKey: "category=science-fiction",
+      sort: "title",
+      sortTitle: "example",
+      id: "work-id",
+    });
+    expect(
+      decodeCursor(cursor, { category: "fantasy", sort: "title" }),
+    ).toBeNull();
   });
 });

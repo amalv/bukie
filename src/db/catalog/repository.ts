@@ -1,6 +1,7 @@
 import {
   type CatalogCategory,
   type CatalogQuery,
+  catalogQueryKey,
   publicationPeriodBounds,
 } from "@/features/books/catalogQuery";
 import {
@@ -609,7 +610,8 @@ export function createCatalogRepository(
     },
 
     async pageWorkSummaries({ query, after, limit }) {
-      const cursor = decodeCursor(after, query.sort);
+      const cursor = decodeCursor(after, query);
+      const queryKey = catalogQueryKey(query);
       const pageSize = boundedLimit(limit);
       const [rows, total] = await Promise.all([
         selectWorkRows({
@@ -627,7 +629,8 @@ export function createCatalogRepository(
         hasNext && last
           ? query.sort === "added"
             ? encodeCursor({
-                version: 1,
+                version: 2,
+                queryKey,
                 sort: "added",
                 catalogedAt:
                   last.catalogedAt === null ? null : Number(last.catalogedAt),
@@ -635,13 +638,15 @@ export function createCatalogRepository(
               })
             : query.sort === "publication"
               ? encodeCursor({
-                  version: 1,
+                  version: 2,
+                  queryKey,
                   sort: "publication",
                   publicationSortDate: last.publicationSortDate,
                   id: last.id,
                 })
               : encodeCursor({
-                  version: 1,
+                  version: 2,
+                  queryKey,
                   sort: "title",
                   sortTitle: last.sortTitle,
                   id: last.id,

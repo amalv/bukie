@@ -4,10 +4,10 @@ import Clock from "lucide-react/dist/esm/icons/clock.js";
 import { Container } from "@/design/layout/grid";
 import { BookList } from "@/features/books/BookList";
 import {
+  catalogQueryKey,
   DEFAULT_CATALOG_SORT,
   hasCatalogFilters,
   parseCatalogQuery,
-  serializeCatalogQuery,
 } from "@/features/books/catalogQuery";
 import { PaginatedBooks } from "@/features/books/PaginatedBooks.client";
 import { DEFAULT_BOOKS_PAGE_SIZE } from "@/features/books/pageSize";
@@ -51,7 +51,7 @@ export default async function Page({
         getCatalogCategories(),
         section === "new" ? getNewArrivals(20) : undefined,
       ]);
-    const queryKey = serializeCatalogQuery(query).toString();
+    const queryKey = catalogQueryKey(query);
 
     return (
       <main>
@@ -62,8 +62,16 @@ export default async function Page({
               <p className={s.subtitle}>
                 Browse a curated catalog and search by title or author
               </p>
-              <SearchForm defaultValue={query.q} query={query} />
-              <CatalogFilters categories={categories} query={query} />
+              <SearchForm
+                key={`search-${queryKey}`}
+                defaultValue={query.q}
+                query={query}
+              />
+              <CatalogFilters
+                key={`filters-${queryKey}`}
+                categories={categories}
+                query={query}
+              />
             </header>
           </Container>
         </section>

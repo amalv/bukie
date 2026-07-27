@@ -1,8 +1,9 @@
 import { Buffer } from "node:buffer";
-import type { CatalogSort } from "./catalogQuery";
+import { type CatalogQuery, catalogQueryKey } from "./catalogQuery";
 
 type CursorBase = {
-  version: 1;
+  version: 2;
+  queryKey: string;
   id: string;
 };
 
@@ -28,7 +29,7 @@ export function encodeCursor(payload: CursorPayload): string {
 
 export function decodeCursor(
   cursor?: string | null,
-  expectedSort?: CatalogSort,
+  expectedQuery?: CatalogQuery,
 ): CursorPayload | null {
   if (!cursor) return null;
   try {
@@ -36,20 +37,28 @@ export function decodeCursor(
     const obj = JSON.parse(json) as Record<string, unknown>;
     if (
       !obj ||
-      obj.version !== 1 ||
+      obj.version !== 2 ||
+      typeof obj.queryKey !== "string" ||
       typeof obj.id !== "string" ||
       obj.id.length === 0
     ) {
       return null;
     }
-    if (expectedSort && obj.sort !== expectedSort) return null;
+    if (
+      expectedQuery &&
+      (obj.sort !== expectedQuery.sort ||
+        obj.queryKey !== catalogQueryKey(expectedQuery))
+    ) {
+      return null;
+    }
     if (
       obj.sort === "title" &&
       typeof obj.sortTitle === "string" &&
       obj.sortTitle.length > 0
     ) {
       return {
-        version: 1,
+        version: 2,
+        queryKey: obj.queryKey,
         sort: "title",
         sortTitle: obj.sortTitle,
         id: obj.id,
@@ -63,7 +72,8 @@ export function decodeCursor(
         obj.catalogedAt === null)
     ) {
       return {
-        version: 1,
+        version: 2,
+        queryKey: obj.queryKey,
         sort: "added",
         catalogedAt: obj.catalogedAt,
         id: obj.id,
@@ -76,7 +86,8 @@ export function decodeCursor(
         obj.publicationSortDate === null)
     ) {
       return {
-        version: 1,
+        version: 2,
+        queryKey: obj.queryKey,
         sort: "publication",
         publicationSortDate: obj.publicationSortDate,
         id: obj.id,

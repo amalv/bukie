@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  catalogQueryKey,
   parseCatalogQuery,
   publicationPeriodBounds,
   serializeCatalogPageQuery,
@@ -53,6 +54,9 @@ describe("canonical catalog query", () => {
         parseCatalogQuery(new URLSearchParams()),
       ).toString(),
     ).toBe("");
+    expect(catalogQueryKey(parsed)).toBe(
+      "q=harbor&category=fantasy&period=2000-2009&sort=publication",
+    );
   });
 
   it("uses the same model for paginated API parameters", () => {

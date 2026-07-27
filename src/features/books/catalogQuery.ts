@@ -117,6 +117,10 @@ export function serializeCatalogQuery(query: CatalogQuery): URLSearchParams {
   return params;
 }
 
+export function catalogQueryKey(query: CatalogQuery): string {
+  return serializeCatalogQuery(query).toString();
+}
+
 export function serializeCatalogPageQuery(
   query: CatalogQuery,
   pagination: { after?: string; limit: number },

@@ -45,10 +45,11 @@ The supported deterministic sorts are:
 - `publication`: publication metadata first, then
   `(preferred-edition publication_sort_date desc, works.id asc)`.
 
-Every cursor identifies its sort and carries the corresponding sort value plus
-work ID. Malformed cursors and cursors for a different sort restart from the
-first page. New arrivals use the same catalog-addition semantics. Detail and
-canonical `/books/<id>` routes use `works.id`.
+Every cursor identifies the complete canonical query context, its sort, and
+carries the corresponding sort value plus work ID. Malformed cursors and
+cursors for a different search, filter, or sort restart from the first page.
+New arrivals use the same catalog-addition semantics. Detail and canonical
+`/books/<id>` routes use `works.id`.
 
 Publication periods are `before-1950`, `1950-1999`, `2000-2009`, `2010-2019`,
 and `2020-present`. Their boundaries use ISO sort dates, so year-, month-, and

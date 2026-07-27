@@ -130,6 +130,23 @@ describe.skipIf(!isolatedUrl)("Postgres normalized catalog rebuild", () => {
       expect(invalidCursorPage.items.map((work) => work.id)).toEqual(
         byPublication.slice(0, 7).map((work) => work.id),
       );
+
+      const sourceFilterPage = await repository.pageWorkSummaries({
+        query: { category: "science-fiction", sort: "title" },
+        limit: 50,
+      });
+      const expectedFantasyPage = await repository.pageWorkSummaries({
+        query: { category: "fantasy", sort: "title" },
+        limit: 7,
+      });
+      const mismatchedFilterPage = await repository.pageWorkSummaries({
+        query: { category: "fantasy", sort: "title" },
+        after: sourceFilterPage.nextCursor,
+        limit: 7,
+      });
+      expect(mismatchedFilterPage.items.map((work) => work.id)).toEqual(
+        expectedFantasyPage.items.map((work) => work.id),
+      );
     } finally {
       await client.end({ timeout: 5_000 });
     }
