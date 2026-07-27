@@ -5,6 +5,7 @@ import {
 import { ensureDb, getSqliteRaw } from "@/db/client";
 import { getDbEnv } from "@/db/env";
 import { getPgSql } from "@/db/pg";
+import type { CatalogCategory, CatalogQuery } from "./catalogQuery";
 import type { PageResult } from "./pagination";
 import type { WorkDetail, WorkSummary } from "./types";
 
@@ -40,20 +41,26 @@ async function repository() {
   return createCatalogRepository(activeExecutor());
 }
 
-export async function getWorks(query?: string): Promise<WorkSummary[]> {
+export async function getWorks(
+  query: CatalogQuery = { sort: "title" },
+): Promise<WorkSummary[]> {
   return (await repository()).listWorkSummaries(query);
 }
 
 export async function getWorksPage(params: {
-  q?: string;
+  query: CatalogQuery;
   after?: string | null;
   limit: number;
 }): Promise<PageResult<WorkSummary>> {
   return (await repository()).pageWorkSummaries({
-    query: params.q,
+    query: params.query,
     after: params.after,
     limit: params.limit,
   });
+}
+
+export async function getCatalogCategories(): Promise<CatalogCategory[]> {
+  return (await repository()).listCategories();
 }
 
 export async function findWorkById(

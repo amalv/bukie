@@ -1,8 +1,3 @@
-export function normalizeQ(rawQ: string | string[] | undefined): string {
-  if (Array.isArray(rawQ)) return rawQ[0] ?? "";
-  return rawQ ?? "";
-}
-
 export function normalizeAfter(
   rawAfter: string | string[] | undefined,
 ): string | undefined {

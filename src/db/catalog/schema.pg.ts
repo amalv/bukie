@@ -170,6 +170,7 @@ export const editionsPg = pgTable(
       table.publicationSortDate,
       table.workId,
     ),
+    index("editions_cataloged_work_idx").on(table.catalogedAt, table.workId),
   ],
 );
 

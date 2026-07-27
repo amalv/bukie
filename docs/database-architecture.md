@@ -31,10 +31,29 @@ sequenceDiagram
   Repo-->>UI: normalized contract
 ```
 
-Browse and search are ordered by `(works.sort_title, works.id)`. Cursors carry
-both values. New arrivals use preferred-edition `cataloged_at` descending and
-work ID as the deterministic tie-break. Detail and canonical `/books/<id>`
-routes use `works.id`.
+Catalog browse and search share the canonical `q`, `category`, `period`, and
+`sort` query model in `src/features/books/catalogQuery.ts`. `q` matches selected
+work titles and ordered author names. `category` is an active Bukie category
+slug. `period` applies one of the documented inclusive/exclusive ranges to the
+preferred edition's `publication_sort_date`; works without publication metadata
+remain visible unless a period is selected.
+
+The supported deterministic sorts are:
+
+- `title` (default): `(works.sort_title asc, works.id asc)`;
+- `added`: `(preferred-edition cataloged_at desc, works.id asc)`;
+- `publication`: publication metadata first, then
+  `(preferred-edition publication_sort_date desc, works.id asc)`.
+
+Every cursor identifies the complete canonical query context, its sort, and
+carries the corresponding sort value plus work ID. Malformed cursors and
+cursors for a different search, filter, or sort restart from the first page.
+New arrivals use the same catalog-addition semantics. Detail and canonical
+`/books/<id>` routes use `works.id`.
+
+Publication periods are `before-1950`, `1950-1999`, `2000-2009`, `2010-2019`,
+and `2020-present`. Their boundaries use ISO sort dates, so year-, month-, and
+day-precision metadata behave consistently in SQLite and Postgres.
 
 The repository first selects the page of works and then loads preferred
 editions, authors, categories, publishers, languages, identifiers, and covers
@@ -77,10 +96,13 @@ database, and deployment must remain available for rollback.
 
 ## API
 
-- `GET /api/books?q=<query>` returns `WorkSummary[]`.
-- `GET /api/books/page?q=<query>&after=<cursor>&limit=<n>` returns a normalized
-  work page.
+- `GET /api/books?<catalog-query>` returns `WorkSummary[]`.
+- `GET /api/books/page?<catalog-query>&after=<cursor>&limit=<n>` returns a
+  normalized work page including the filtered total.
 - `GET /api/books/<work-id>` returns `WorkDetail`.
+
+Both list routes parse the same canonical catalog query used by the
+server-rendered homepage and client-side load-more requests.
 
 Catalog mutation and HTTP seed endpoints were removed. Curated changes must
 eventually use the observation/resolution lifecycle rather than direct

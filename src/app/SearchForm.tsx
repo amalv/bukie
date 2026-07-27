@@ -1,11 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useId } from "react";
+import { useRouter } from "next/navigation";
+import { type FormEvent, useId } from "react";
+import {
+  type CatalogQuery,
+  parseCatalogQuery,
+  serializeCatalogQuery,
+} from "@/features/books/catalogQuery";
 import { pageStyles as s } from "./pageStyles";
 
 type Props = {
   defaultValue?: string;
+  query?: CatalogQuery;
 };
 
 /**
@@ -13,13 +20,40 @@ type Props = {
  * - Clicking anywhere inside the search box focuses the input.
  * - Icon is decorative and doesn't steal focus.
  */
-export function SearchForm({ defaultValue = "" }: Props) {
+export function SearchForm({ defaultValue = "", query }: Props) {
   const id = useId();
+  const router = useRouter();
+  const activeQuery = query ?? { q: defaultValue || undefined, sort: "title" };
+  const retainedParams = serializeCatalogQuery({
+    ...activeQuery,
+    q: undefined,
+  });
+  const clearParams = serializeCatalogQuery({
+    ...activeQuery,
+    q: undefined,
+  });
+
+  function search(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const params = new URLSearchParams(retainedParams);
+    const data = new FormData(event.currentTarget);
+    params.set("q", String(data.get("q") ?? ""));
+    const canonical = serializeCatalogQuery(parseCatalogQuery(params));
+    router.push(canonical.size > 0 ? `/?${canonical}` : "/");
+  }
 
   return (
     <div className={s.searchRow}>
       <div className={s.searchBox}>
-        <form method="get" aria-label="Search books" className={s.form}>
+        <form
+          method="get"
+          aria-label="Search books"
+          className={s.form}
+          onSubmit={search}
+        >
+          {Array.from(retainedParams.entries()).map(([name, value]) => (
+            <input type="hidden" name={name} value={value} key={name} />
+          ))}
           <label htmlFor={id} className={s.labelWrap}>
             <span className={s.srOnly}>Search books</span>
             <svg
@@ -47,7 +81,11 @@ export function SearchForm({ defaultValue = "" }: Props) {
         </form>
       </div>
       {defaultValue ? (
-        <Link href="/" className={s.clearLink} prefetch={false}>
+        <Link
+          href={clearParams.size > 0 ? `/?${clearParams}` : "/"}
+          className={s.clearLink}
+          prefetch={false}
+        >
           Clear
         </Link>
       ) : null}

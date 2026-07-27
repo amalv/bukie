@@ -10,7 +10,7 @@ test.describe("All Books pagination", () => {
     await expect(
       page.getByRole("heading", { level: 2, name: "All Books" }),
     ).toBeVisible();
-    await expect(page.getByText("24 books shown")).toBeVisible();
+    await expect(page.getByText("24 of 500 books shown")).toBeVisible();
 
     const beforeRowCounts = await page
       .getByRole("link", { name: /view details for/i })
@@ -30,7 +30,7 @@ test.describe("All Books pagination", () => {
 
     await page.getByRole("button", { name: "Load More Books" }).click();
 
-    await expect(page.getByText("48 books shown")).toBeVisible();
+    await expect(page.getByText("48 of 500 books shown")).toBeVisible();
 
     const afterRowCounts = await page
       .getByRole("link", { name: /view details for/i })

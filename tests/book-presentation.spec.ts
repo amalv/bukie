@@ -155,6 +155,7 @@ test.describe("Book presentation", () => {
       .getByRole("link", { name: /view details for/i })
       .first();
     const card = firstLink.locator("xpath=ancestor::article");
+    await card.scrollIntoViewIfNeeded();
     const coverBox = await card.locator(":scope > div").first().boundingBox();
     expect(coverBox).not.toBeNull();
 

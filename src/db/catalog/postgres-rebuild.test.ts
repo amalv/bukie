@@ -60,13 +60,20 @@ describe.skipIf(!isolatedUrl)("Postgres normalized catalog rebuild", () => {
         },
       };
       const repository = createCatalogRepository(executor);
-      const dune = await repository.listWorkSummaries("Dune");
+      const dune = await repository.listWorkSummaries({
+        q: "Dune",
+        sort: "title",
+      });
       expect(dune.length).toBeGreaterThan(0);
       const detail = await repository.getWorkDetail(dune[0].id);
       expect(detail?.id).toBe(dune[0].id);
       expect(JSON.stringify(detail)).not.toMatch(/rating|trending/i);
-      const firstPage = await repository.pageWorkSummaries({ limit: 7 });
+      const firstPage = await repository.pageWorkSummaries({
+        query: { sort: "title" },
+        limit: 7,
+      });
       const secondPage = await repository.pageWorkSummaries({
+        query: { sort: "title" },
         limit: 7,
         after: firstPage.nextCursor,
       });
@@ -75,6 +82,71 @@ describe.skipIf(!isolatedUrl)("Postgres normalized catalog rebuild", () => {
           [...firstPage.items, ...secondPage.items].map((work) => work.id),
         ).size,
       ).toBe(14);
+
+      const combined = await repository.pageWorkSummaries({
+        query: {
+          q: "Dune",
+          category: "science-fiction",
+          period: "1950-1999",
+          sort: "publication",
+        },
+        limit: 10,
+      });
+      expect(combined.items.map((work) => work.title)).toContain("Dune");
+
+      for (const sort of ["title", "added", "publication"] as const) {
+        const expected = await repository.listWorkSummaries({ sort });
+        const actual: string[] = [];
+        let after: string | undefined;
+        do {
+          const page = await repository.pageWorkSummaries({
+            query: { sort },
+            after,
+            limit: 37,
+          });
+          actual.push(...page.items.map((work) => work.id));
+          after = page.nextCursor;
+        } while (after);
+        expect(actual).toEqual(expected.map((work) => work.id));
+      }
+
+      const byPublication = await repository.listWorkSummaries({
+        sort: "publication",
+      });
+      const firstMissing = byPublication.findIndex(
+        (work) => !work.preferredEdition?.publication,
+      );
+      expect(firstMissing).toBeGreaterThan(0);
+      expect(
+        byPublication
+          .slice(firstMissing)
+          .every((work) => !work.preferredEdition?.publication),
+      ).toBe(true);
+      const invalidCursorPage = await repository.pageWorkSummaries({
+        query: { sort: "publication" },
+        after: "invalid",
+        limit: 7,
+      });
+      expect(invalidCursorPage.items.map((work) => work.id)).toEqual(
+        byPublication.slice(0, 7).map((work) => work.id),
+      );
+
+      const sourceFilterPage = await repository.pageWorkSummaries({
+        query: { category: "science-fiction", sort: "title" },
+        limit: 50,
+      });
+      const expectedFantasyPage = await repository.pageWorkSummaries({
+        query: { category: "fantasy", sort: "title" },
+        limit: 7,
+      });
+      const mismatchedFilterPage = await repository.pageWorkSummaries({
+        query: { category: "fantasy", sort: "title" },
+        after: sourceFilterPage.nextCursor,
+        limit: 7,
+      });
+      expect(mismatchedFilterPage.items.map((work) => work.id)).toEqual(
+        expectedFantasyPage.items.map((work) => work.id),
+      );
     } finally {
       await client.end({ timeout: 5_000 });
     }

@@ -12,6 +12,7 @@ describe("GET /api/books/page", () => {
       items: [workSummaryFixture],
       hasNext: true,
       nextCursor: "next",
+      total: 30,
     });
     const response = await GET(
       new Request("https://test/api/books/page?q=work&after=cursor&limit=10"),
@@ -20,9 +21,15 @@ describe("GET /api/books/page", () => {
       items: [workSummaryFixture],
       hasNext: true,
       nextCursor: "next",
+      total: 30,
     });
     expect(page).toHaveBeenCalledWith({
-      q: "work",
+      query: {
+        q: "work",
+        category: undefined,
+        period: undefined,
+        sort: "title",
+      },
       after: "cursor",
       limit: 10,
     });
@@ -32,10 +39,16 @@ describe("GET /api/books/page", () => {
     const page = vi.spyOn(repo, "getWorksPage").mockResolvedValue({
       items: [],
       hasNext: false,
+      total: 0,
     });
     await GET(new Request("https://test/api/books/page?limit=5000"));
     expect(page).toHaveBeenCalledWith({
-      q: undefined,
+      query: {
+        q: undefined,
+        category: undefined,
+        period: undefined,
+        sort: "title",
+      },
       after: undefined,
       limit: 50,
     });
@@ -45,10 +58,39 @@ describe("GET /api/books/page", () => {
     const page = vi.spyOn(repo, "getWorksPage").mockResolvedValue({
       items: [],
       hasNext: false,
+      total: 0,
     });
     await GET(new Request("https://test/api/books/page?limit=invalid"));
     expect(page).toHaveBeenCalledWith({
-      q: undefined,
+      query: {
+        q: undefined,
+        category: undefined,
+        period: undefined,
+        sort: "title",
+      },
+      after: undefined,
+      limit: DEFAULT_BOOKS_PAGE_SIZE,
+    });
+  });
+
+  it("forwards the canonical combined filter and sort model", async () => {
+    const page = vi.spyOn(repo, "getWorksPage").mockResolvedValue({
+      items: [],
+      hasNext: false,
+      total: 0,
+    });
+    await GET(
+      new Request(
+        "https://test/api/books/page?q=glass&category=fantasy&period=2000-2009&sort=publication",
+      ),
+    );
+    expect(page).toHaveBeenCalledWith({
+      query: {
+        q: "glass",
+        category: "fantasy",
+        period: "2000-2009",
+        sort: "publication",
+      },
       after: undefined,
       limit: DEFAULT_BOOKS_PAGE_SIZE,
     });
