@@ -83,12 +83,13 @@ Environment variables used by the app:
 
 Migrations:
 - We keep SQL migrations under `drizzle/`. For Postgres in Vercel, run during deployment:
-  - `bun run db:migrate:pg` (drizzle-orm/postgres-js/migrator).
-  - As a fallback for first setup, `bun run db:init:pg` ensures required tables exist.
+  - `bun run db:init:pg` applies pending migrations, imports the deterministic
+    normalized catalog when needed, and validates the resulting catalog.
 
 Vercel Build Command (project settings → Build & Development Settings):
-- `bun run db:migrate:pg && next build`
-	- Runs Postgres migrations on the target Neon branch before building the app.
+- `bun run db:init:pg && next build`
+  - Initializes and validates Postgres on the target Neon branch before building
+    the app.
 
 Local development:
 - Default is SQLite at `.data/dev.sqlite`.
