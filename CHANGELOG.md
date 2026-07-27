@@ -1,3 +1,11 @@
+## [0.34.1](https://github.com/amalv/bukie/compare/v0.34.0...v0.34.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **catalog:** validate migration link targets ([794ea7d](https://github.com/amalv/bukie/commit/794ea7d403e32430ba0afeca00d4bcad17c2f4c7))
+* **ci:** run Playwright with isolated server ([d5d25f2](https://github.com/amalv/bukie/commit/d5d25f29244efa2475cded80d250e0efa2ccd1a7))
+
 # [0.34.0](https://github.com/amalv/bukie/compare/v0.33.0...v0.34.0) (2026-07-27)
 
 
