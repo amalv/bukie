@@ -1,4 +1,4 @@
-import type { Book } from "@/features/books/types";
+import type { LegacyCatalogArtifactRecord } from "./types";
 
 export type CuratedCatalogEntry = {
   title: string;
@@ -150,7 +150,7 @@ function resolveCoverPath(id: string): string {
 export function buildCatalog(
   genre: string,
   entries: CuratedCatalogEntry[],
-): Book[] {
+): LegacyCatalogArtifactRecord[] {
   return entries.map((entry) => {
     const author = joinAuthors(entry.authors);
     const seed = `${genre}|${entry.title}|${author}`;
@@ -177,6 +177,8 @@ export function buildCatalog(
   });
 }
 
-export function combineCatalogs(...catalogs: Book[][]): Book[] {
+export function combineCatalogs(
+  ...catalogs: LegacyCatalogArtifactRecord[][]
+): LegacyCatalogArtifactRecord[] {
   return catalogs.flat();
 }

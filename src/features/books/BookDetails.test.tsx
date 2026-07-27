@@ -1,225 +1,57 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import type React from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { lightThemeClass } from "@/design/tokens";
+import { describe, expect, it, vi } from "vitest";
+import { workDetailFixture, workSummaryFixture } from "@/test/catalog-fixtures";
 import { BookDetails } from "./BookDetails";
 
-// Mock next/image to make the unoptimized prop observable in DOM
 vi.mock("next/image", () => ({
-  default: (props: {
-    alt: string;
-    src: string | { src: string };
-    unoptimized?: boolean;
-  }) => {
-    const { alt, src, unoptimized } = props;
-    const resolvedSrc = typeof src === "string" ? src : (src?.src ?? "");
-    return (
-      <span
-        role="img"
-        aria-label={alt}
-        data-src={resolvedSrc}
-        data-test-unoptimized={String(Boolean(unoptimized))}
-      />
-    );
-  },
+  default: (props: { alt: string; src: string }) => (
+    <span role="img" aria-label={props.alt} data-src={props.src} />
+  ),
 }));
 
-const wrap = (ui: React.ReactElement) => (
-  <div className={lightThemeClass}>{ui}</div>
-);
-
-const base = {
-  id: "x",
-  title: "Test Title",
-  author: "Test Author",
-  cover: "/cover.jpg",
-};
-
-describe("BookDetails UI", () => {
-  afterEach(() => {
-    vi.unstubAllEnvs();
-    vi.restoreAllMocks();
-  });
-
-  it("renders title and author", () => {
-    render(wrap(<BookDetails book={{ ...base }} />));
-
+describe("BookDetails", () => {
+  it("renders stored work and preferred-edition facts", () => {
+    render(<BookDetails work={workDetailFixture} />);
     expect(
-      screen.getByRole("heading", { name: /test title/i }),
+      screen.getByRole("heading", { level: 1, name: "Example Work" }),
     ).toBeInTheDocument();
-    expect(screen.getAllByText(/test author/i).length).toBeGreaterThan(0);
     expect(
-      screen.getByRole("link", { name: /back to library/i }),
-    ).toBeInTheDocument();
+      screen.getAllByText(/First Author, Second Author/).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText("Stored catalog description.")).toBeInTheDocument();
+    expect(screen.getByText("Example Press")).toBeInTheDocument();
+    expect(screen.getByText("978-0-441-17271-9")).toBeInTheDocument();
   });
 
-  it("shows genre badge when provided and hides when absent", () => {
-    const { rerender } = render(
-      wrap(<BookDetails book={{ ...base, genre: "Sci-Fi" }} />),
-    );
-    expect(screen.getAllByText("Sci-Fi").length).toBeGreaterThanOrEqual(1);
-
-    rerender(wrap(<BookDetails book={{ ...base, genre: undefined }} />));
-    expect(screen.queryByText("Sci-Fi")).not.toBeInTheDocument();
-  });
-
-  it("renders info row only when rating/year/pages exist", () => {
-    // None present -> no ' pages' text in the meta info area
-    render(wrap(<BookDetails book={{ ...base }} />));
-    expect(screen.queryByText(/\d+ pages/i)).not.toBeInTheDocument();
-  });
-
-  it("renders rating with a single star and formatted value/count", () => {
-    render(
-      wrap(
-        <BookDetails book={{ ...base, rating: 3.5, ratingsCount: 12847 }} />,
-      ),
-    );
-    // Screen-reader text present
-    expect(screen.getByText(/rating 3\.5 out of 5/i)).toBeInTheDocument();
-    // Visible: one decimal and formatted count
-    expect(screen.getByText("3.5")).toBeInTheDocument();
-    expect(screen.getByText("(12,847)")).toBeInTheDocument();
-    // Exactly one star icon
-    const starSvgs = document.querySelectorAll(".book-details-star-icon");
-    expect(starSvgs.length).toBe(1);
-  });
-
-  it("clamps rating to [0,5] and shows one decimal only", () => {
-    const { rerender } = render(
-      wrap(<BookDetails book={{ ...base, rating: -5 }} />),
-    );
-    expect(screen.getByText("0.0")).toBeInTheDocument();
-    rerender(wrap(<BookDetails book={{ ...base, rating: 5.6 }} />));
-    expect(screen.getByText("5.0")).toBeInTheDocument();
-  });
-
-  it("shows year and pages (from mock when id=1)", () => {
-    render(
-      wrap(
-        <BookDetails
-          book={{
-            id: "1",
-            title: "Midnight Library",
-            author: "Matt Haig",
-            cover: "/a.jpg",
-            year: 2020,
-          }}
-        />,
-      ),
-    );
-    expect(screen.getAllByText("2020").length).toBeGreaterThanOrEqual(1);
-    // pages info row text: "288 pages" (from mock)
-    expect(screen.getByText(/288 pages/i)).toBeInTheDocument();
-    // details grid shows Pages row
-    expect(screen.getByText("Pages:")).toBeInTheDocument();
-    expect(screen.getByText("288")).toBeInTheDocument();
-  });
-
-  it("renders About section with default fallback when no description or mock", () => {
-    render(wrap(<BookDetails book={{ ...base, id: "no-mock" }} />));
-    expect(
-      screen.getByText(/full details for this book will be available soon/i),
-    ).toBeInTheDocument();
-    expect(screen.queryByText("Publisher:")).not.toBeInTheDocument();
-    expect(screen.queryByText("ISBN:")).not.toBeInTheDocument();
-  });
-
-  it("renders About section from mock (id=1) and hides when description is empty string", () => {
-    const { rerender } = render(
-      wrap(
-        <BookDetails
-          book={{
-            id: "1",
-            title: "Midnight Library",
-            author: "Matt Haig",
-            cover: "/a.jpg",
-          }}
-        />,
-      ),
-    );
-    expect(
-      screen.getByText(/between life and death there is a library/i),
-    ).toBeInTheDocument();
-
-    // When description is empty string, About section is omitted
-    rerender(
-      wrap(
-        <BookDetails
-          book={{ ...base, id: "x2", description: "", cover: "/b.jpg" }}
-        />,
-      ),
-    );
+  it("omits unavailable and invented facts", () => {
+    const partial = {
+      ...workSummaryFixture,
+      authors: [],
+      primaryCategory: undefined,
+      preferredEdition: {
+        id: "edition-missing",
+        catalogedAt: 1,
+        publishers: [],
+        languages: [],
+        identifiers: [],
+      },
+      categories: [],
+      editions: [],
+    };
+    const { container } = render(<BookDetails work={partial} />);
     expect(
       screen.queryByRole("heading", { name: /about this book/i }),
     ).not.toBeInTheDocument();
+    expect(container.textContent).not.toMatch(
+      /full details|rating|publisher:|isbn:/i,
+    );
   });
 
-  it("shows publisher and ISBN from mock, and respects explicit overrides", () => {
-    const { rerender } = render(
-      wrap(
-        <BookDetails
-          book={{
-            id: "1",
-            title: "Midnight Library",
-            author: "Matt Haig",
-            cover: "/a.jpg",
-          }}
-        />,
-      ),
-    );
-    expect(screen.getByText("Publisher:")).toBeInTheDocument();
-    expect(screen.getByText("Canongate Books")).toBeInTheDocument();
-    expect(screen.getByText("ISBN:")).toBeInTheDocument();
-    expect(screen.getByText("978-1786892737")).toBeInTheDocument();
-
-    // Overrides take precedence over mock
-    rerender(
-      wrap(
-        <BookDetails
-          book={{
-            id: "1",
-            title: "Midnight Library",
-            author: "Matt Haig",
-            cover: "/a.jpg",
-            publisher: "Acme Press",
-            isbn: "123-456",
-          }}
-        />,
-      ),
-    );
-    expect(screen.getByText("Acme Press")).toBeInTheDocument();
-    expect(screen.getByText("123-456")).toBeInTheDocument();
-  });
-
-  it("sets unoptimized=true in non-production and toggles correctly in production for svg/non-svg", () => {
-    // default (test env) -> unoptimized true
-    const { unmount } = render(
-      wrap(<BookDetails book={{ ...base, cover: "/img.jpg" }} />),
-    );
-    const img1 = screen.getByRole("img", {
-      name: /cover of test title by test author/i,
-    });
-    expect(img1).toHaveAttribute("data-test-unoptimized", "true");
-
-    // production + non-svg -> false
-    vi.stubEnv("NODE_ENV", "production");
-    unmount();
-    const { unmount: unmount2 } = render(
-      wrap(<BookDetails book={{ ...base, cover: "/img.jpg" }} />),
-    );
-    const img2 = screen.getByRole("img", {
-      name: /cover of test title by test author/i,
-    });
-    expect(img2).toHaveAttribute("data-test-unoptimized", "false");
-
-    // production + svg -> true
-    unmount2();
-    render(wrap(<BookDetails book={{ ...base, cover: "/img.svg" }} />));
-    const img3 = screen.getByRole("img", {
-      name: /cover of test title by test author/i,
-    });
-    expect(img3).toHaveAttribute("data-test-unoptimized", "true");
+  it("uses the selected provider-neutral cover key", () => {
+    render(<BookDetails work={workDetailFixture} />);
+    expect(
+      screen.getByRole("img", { name: /cover of example work/i }),
+    ).toHaveAttribute("data-src", "/api/media/covers/example.webp");
   });
 });

@@ -1,4 +1,4 @@
-import type { Book } from "@/features/books/types";
+import type { LegacyCatalogArtifactRecord } from "@/../artifacts/catalog/types";
 import {
   canonicalJson,
   deterministicCatalogId,
@@ -181,7 +181,7 @@ function sourcePolicies(): Array<Record<string, unknown>> {
 }
 
 export function legacyBooksToImportRecords(
-  books: Book[],
+  books: LegacyCatalogArtifactRecord[],
 ): CatalogImportRecord[] {
   return books.map((book) => ({
     sourceKey: "legacy_catalog",

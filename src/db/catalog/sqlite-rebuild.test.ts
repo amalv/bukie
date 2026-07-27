@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -73,10 +73,36 @@ describe("SQLite normalized catalog rebuild", () => {
     }
   }, 30_000);
 
-  it("never resets or mutates legacy tables", () => {
+  it("creates a normalized database with no legacy runtime tables", () => {
     rebuildCatalogSqlite({ sqlitePath, graph });
     const { raw } = openCatalogSqlite(sqlitePath);
     try {
+      expect(
+        raw
+          .prepare(
+            `select name from sqlite_master
+             where type = 'table' and name in ('books', 'book_metrics')`,
+          )
+          .all(),
+      ).toEqual([]);
+    } finally {
+      raw.close();
+    }
+  }, 30_000);
+
+  it("refuses the forward drop when normalized evidence is incomplete", () => {
+    const { raw } = openCatalogSqlite(sqlitePath);
+    try {
+      for (const file of [
+        "drizzle/0000_small_daredevil.sql",
+        "drizzle/0001_charming_mariko_yashida.sql",
+        "drizzle/0002_fine_bullseye.sql",
+      ]) {
+        const migration = readFileSync(path.resolve(file), "utf8");
+        for (const statement of migration.split("--> statement-breakpoint")) {
+          if (statement.trim()) raw.exec(statement);
+        }
+      }
       raw
         .prepare(
           "insert into books (id, title, author, cover) values (?, ?, ?, ?)",
@@ -87,20 +113,96 @@ describe("SQLite normalized catalog rebuild", () => {
           "Test Author",
           "/covers/sentinel.webp",
         );
+      const forward = readFileSync(
+        path.resolve("drizzle/0003_concerned_vance_astro.sql"),
+        "utf8",
+      );
+      expect(() => {
+        for (const statement of forward.split("--> statement-breakpoint")) {
+          if (statement.trim()) raw.exec(statement);
+        }
+      }).toThrow(/normalized catalog evidence is incomplete/);
+      expect(
+        raw
+          .prepare("select title from books where id = 'legacy-sentinel'")
+          .get(),
+      ).toEqual({ title: "Legacy Sentinel" });
     } finally {
       raw.close();
     }
+  }, 30_000);
 
-    rebuildCatalogSqlite({ sqlitePath, graph });
-    const reopened = openCatalogSqlite(sqlitePath);
+  it("refuses the forward drop when source links target missing entities", () => {
+    const { raw } = openCatalogSqlite(sqlitePath);
     try {
+      for (const file of [
+        "drizzle/0000_small_daredevil.sql",
+        "drizzle/0001_charming_mariko_yashida.sql",
+        "drizzle/0002_fine_bullseye.sql",
+      ]) {
+        const migration = readFileSync(path.resolve(file), "utf8");
+        for (const statement of migration.split("--> statement-breakpoint")) {
+          if (statement.trim()) raw.exec(statement);
+        }
+      }
+      raw.exec(`
+        insert into books (id, title, author, cover)
+        values ('legacy-sentinel', 'Legacy Sentinel', 'Test Author', '/covers/sentinel.webp');
+
+        insert into works (
+          id, preferred_title, sort_title, created_at, updated_at
+        ) values (
+          'unrelated-work', 'Unrelated Work', 'unrelated work', 1, 1
+        );
+
+        insert into editions (
+          id, work_id, cataloged_at, created_at, updated_at
+        ) values (
+          'unrelated-edition', 'unrelated-work', 1, 1, 1
+        );
+
+        insert into metadata_sources (
+          id, key, name, approval_state, metadata_policy, asset_policy, payload_policy
+        ) values (
+          'legacy-source', 'legacy_catalog', 'Legacy Catalog', 'pending', '{}', '{}', 'none'
+        );
+
+        insert into source_records (
+          id, source_id, record_key, retrieved_at, state
+        ) values (
+          'legacy-record', 'legacy-source', 'legacy-sentinel', 1, 'active'
+        );
+
+        insert into source_record_links (
+          source_record_id, entity_type, entity_id, match_kind,
+          mapping_confidence, state, created_at
+        ) values
+          (
+            'legacy-record', 'work', 'missing-work', 'source_relationship',
+            1, 'active', 1
+          ),
+          (
+            'legacy-record', 'edition', 'missing-edition', 'source_relationship',
+            1, 'active', 1
+          );
+      `);
+
+      const forward = readFileSync(
+        path.resolve("drizzle/0003_concerned_vance_astro.sql"),
+        "utf8",
+      );
+      expect(() => {
+        for (const statement of forward.split("--> statement-breakpoint")) {
+          if (statement.trim()) raw.exec(statement);
+        }
+      }).toThrow(/normalized catalog evidence is incomplete/);
       expect(
-        reopened.raw
-          .prepare("select title from books where id = ?")
-          .get("legacy-sentinel"),
+        raw
+          .prepare("select title from books where id = 'legacy-sentinel'")
+          .get(),
       ).toEqual({ title: "Legacy Sentinel" });
     } finally {
-      reopened.raw.close();
+      raw.close();
     }
   }, 30_000);
 

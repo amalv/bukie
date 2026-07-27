@@ -1,14 +1,43 @@
-import {
-  isValidIsbn10,
-  isValidIsbn13,
-  normalizeIsbn,
-} from "@/features/books/importer/validate";
-
 export type PartialDate = {
   value: string;
   precision: "year" | "month" | "day";
   sortDate: string;
 };
+
+/** Remove separators while preserving the ISBN-10 X check digit. */
+export function normalizeIsbn(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = String(raw)
+    .toUpperCase()
+    .replace(/[^0-9X]/g, "");
+  return cleaned || null;
+}
+
+export function isValidIsbn10(raw: string | null | undefined): boolean {
+  const value = normalizeIsbn(raw);
+  if (!value || value.length !== 10) return false;
+  let sum = 0;
+  for (let index = 0; index < 9; index += 1) {
+    const character = value[index];
+    if (character < "0" || character > "9") return false;
+    sum += (10 - index) * (character.charCodeAt(0) - 48);
+  }
+  const check = value[9] === "X" ? 10 : value[9].charCodeAt(0) - 48;
+  return check >= 0 && check <= 10 && (sum + check) % 11 === 0;
+}
+
+export function isValidIsbn13(raw: string | null | undefined): boolean {
+  const value = normalizeIsbn(raw);
+  if (!value || value.length !== 13) return false;
+  let sum = 0;
+  for (let index = 0; index < 12; index += 1) {
+    const digit = value[index].charCodeAt(0) - 48;
+    if (digit < 0 || digit > 9) return false;
+    sum += digit * (index % 2 === 0 ? 1 : 3);
+  }
+  const expected = (10 - (sum % 10)) % 10;
+  return value[12].charCodeAt(0) - 48 === expected;
+}
 
 export function normalizeSortText(value: string): string {
   return value

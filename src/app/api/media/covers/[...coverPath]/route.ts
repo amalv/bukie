@@ -96,13 +96,24 @@ export async function GET(
   }
 
   const config = getMediaConfig();
+  const publicRoot = path.join(process.cwd(), "public", "covers");
+  const publicPath = path.resolve(publicRoot, relativePath);
   const cacheRoot = path.join(process.cwd(), ".cache", "covers");
   const cachePath = path.resolve(cacheRoot, relativePath);
   if (
+    publicPath === publicRoot ||
+    !publicPath.startsWith(`${publicRoot}${path.sep}`) ||
     cachePath === cacheRoot ||
     !cachePath.startsWith(`${cacheRoot}${path.sep}`)
   ) {
     return NextResponse.json({ error: "Invalid cover path" }, { status: 400 });
+  }
+
+  try {
+    const body = await readFile(publicPath);
+    return createCoverResponse(body, publicPath);
+  } catch {
+    // Generated covers may live in the optional cache or the private origin.
   }
 
   if (config.cacheEnabled) {

@@ -1,11 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("next/font/google", () => ({
-  Geist: () => ({ variable: "font-geist-sans" }),
-  Geist_Mono: () => ({ variable: "font-geist-mono" }),
-}));
-
 function mockNextHeadersCookie(value?: string) {
   vi.doMock("next/headers", () => ({
     cookies: () =>
@@ -29,8 +24,8 @@ describe("RootLayout", () => {
     const tree = await RootLayout(props as Props);
     const html = renderToStaticMarkup(tree as React.ReactElement);
     expect(html).toContain('data-testid="child"');
-    expect(html).toMatch(/font-geist-sans/);
-    expect(html).toMatch(/font-geist-mono/);
+    expect(html).toMatch(/theme-light/);
+    expect(html).toMatch(/font-sans/);
   });
 
   it("uses dark theme when cookie is set", async () => {

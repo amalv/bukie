@@ -1,6 +1,9 @@
-import type { Book } from "@/features/books/types";
+import type { LegacyCatalogArtifactRecord } from "@/../artifacts/catalog/types";
 
-type CoverLookupBook = Pick<Book, "title" | "author" | "isbn">;
+type CoverLookupBook = Pick<
+  LegacyCatalogArtifactRecord,
+  "title" | "author" | "isbn"
+>;
 
 type OpenLibrarySearchDoc = {
   title?: string;

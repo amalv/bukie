@@ -11,7 +11,7 @@
 */
 import { readdir, stat, rm } from "node:fs/promises";
 import { join } from "node:path";
-import type { Book } from "@/features/books/types";
+import type { LegacyCatalogArtifactRecord } from "@/../artifacts/catalog/types";
 import baseCatalog from "@/../artifacts/catalog";
 
 const argHas = (flag: string) => process.argv.includes(flag);
@@ -32,7 +32,9 @@ async function listFiles(dir: string): Promise<string[]> {
   return files;
 }
 
-function referencedFromCatalog(books: Book[]): Set<string> {
+function referencedFromCatalog(
+  books: LegacyCatalogArtifactRecord[],
+): Set<string> {
   const set = new Set<string>();
   for (const b of books) {
     if (!b.cover) continue;

@@ -69,15 +69,29 @@ export async function rebuildCatalogPostgres(input: {
   url: string;
   graph: CatalogImportGraph;
   failAfterTable?: keyof CatalogImportGraph;
+  seedExistingSchema?: boolean;
 }) {
   const client = postgres(input.url, { max: 1 });
   const db = drizzle(client);
   const graph = input.graph;
   try {
-    await migrate(db, { migrationsFolder: "drizzle/pg" });
+    if (!input.seedExistingSchema) {
+      await migrate(db, { migrationsFolder: "drizzle/pg" });
+    }
     await db.transaction(async (tx) => {
-      for (const table of CLEAR_TABLES) {
-        await tx.execute(drizzleSql.raw(`delete from "${table}"`));
+      if (input.seedExistingSchema) {
+        await tx.execute(
+          drizzleSql`lock table works in share row exclusive mode`,
+        );
+        const existing = await tx
+          .select({ id: worksPg.id })
+          .from(worksPg)
+          .limit(1);
+        if (existing.length > 0) return;
+      } else {
+        for (const table of CLEAR_TABLES) {
+          await tx.execute(drizzleSql.raw(`delete from "${table}"`));
+        }
       }
       const maybeFail = (table: keyof CatalogImportGraph) => {
         if (input.failAfterTable === table) {
@@ -264,6 +278,20 @@ export async function rebuildCatalogPostgres(input: {
   } finally {
     await client.end({ timeout: 5_000 });
   }
+}
+
+/**
+ * Populate an already-migrated, empty normalized schema before the guarded
+ * legacy-table drop migration runs. This never clears normalized rows.
+ */
+export async function seedCatalogPostgresExistingSchema(input: {
+  url: string;
+  graph: CatalogImportGraph;
+}) {
+  return rebuildCatalogPostgres({
+    ...input,
+    seedExistingSchema: true,
+  });
 }
 
 export async function catalogPostgresSnapshot(url: string) {

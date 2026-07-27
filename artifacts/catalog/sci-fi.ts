@@ -1,7 +1,7 @@
-import type { Book } from "@/features/books/types";
+import type { LegacyCatalogArtifactRecord } from "./types";
 
 // Accepted Science Fiction batch for issue #89 (100 books).
-export const sciFiCatalog: Book[] = [
+export const sciFiCatalog: LegacyCatalogArtifactRecord[] = [
   { id: "c44b0f05-536d-4ce2-a6d5-75a2614ec119", title: "Dune", authors: ["Frank Herbert"], author: "Frank Herbert", cover: "/covers/c44b0f05-536d-4ce2-a6d5-75a2614ec119.webp", genre: "Science Fiction", year: 1965, description: "A desert planet, a prophecy, and a struggle for spice power.", isbn: "9780441172719" },
   { id: "edd0753f-c548-4014-9db6-57be7256dc14", title: "Neuromancer", authors: ["William Gibson"], author: "William Gibson", cover: "/covers/edd0753f-c548-4014-9db6-57be7256dc14.webp", genre: "Science Fiction", year: 1984, description: "Cyberpunk classic about cyberspace, AI, and corporate intrigue.", isbn: "9780441569595" },
   { id: "d4ee8505-198e-489c-a772-d108611e0205", title: "Foundation", authors: ["Isaac Asimov"], author: "Isaac Asimov", cover: "/covers/d4ee8505-198e-489c-a772-d108611e0205.webp", genre: "Science Fiction", year: 1951, description: "Psychohistory predicts a fall-knowledge preserves civilization.", isbn: "9780553293357" },

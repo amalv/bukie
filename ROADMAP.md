@@ -58,13 +58,13 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ feat: basic search functionality (query DB)
 * ✅ feat: search UX polish (styled input, result count, better empty state)
 * ✅ fix: search input focus when clicking container/icon
-* ✅ feat: homepage sections — New Arrivals, Top Rated, Trending Now (schema + queries + docs)
+* ✅ refactor(catalog): retain only evidence-backed All, Search, and New Arrivals sections
 * ✅ feat(data-curation): expand base catalog — 5 main categories × 100 books each (~500 total) (see issue #89)
-* ⏳ feat: add book (CRUD: create, DB-backed)
+* ⏳ feat: provenance-aware catalog curation workflow
 * ⏳ docs: usage instructions
 
 ### Extended Features (DB-backed)
-* ⏳ feat: edit and delete book (CRUD: update, delete, DB-backed)
+* ⏳ feat: observation/resolution-based catalog corrections
 * ✅ feat: improved search and filters (DB queries)
 * ✅ feat: pagination for book list (DB queries)
 * ⏳ docs: API documentation

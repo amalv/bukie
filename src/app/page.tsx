@@ -1,22 +1,14 @@
 export const dynamic = "force-dynamic";
 
 import Clock from "lucide-react/dist/esm/icons/clock.js";
-import Medal from "lucide-react/dist/esm/icons/medal.js";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up.js";
 import { Container } from "@/design/layout/grid";
 import { BookList } from "@/features/books/BookList";
-import { getBooksPage } from "@/features/books/data";
 import { PaginatedBooks } from "@/features/books/PaginatedBooks.client";
 import { DEFAULT_BOOKS_PAGE_SIZE } from "@/features/books/pageSize";
-import {
-  getNewArrivals,
-  getTopRated,
-  getTrendingNow,
-} from "@/features/books/repo";
+import { getNewArrivals, getWorksPage } from "@/features/books/repo";
 import { BooksCount } from "./components/BooksCount";
 import { SectionHeader } from "./components/SectionHeader";
 import { normalizeAfter, normalizeQ } from "./helpers/pageParams";
-import { getSectionHeader } from "./helpers/sectionHeader";
 import { pageStyles as s } from "./pageStyles";
 import { SearchForm } from "./SearchForm";
 
@@ -29,32 +21,19 @@ export default async function Page({
 }) {
   try {
     const resolved = await searchParams;
-    const rawQ = resolved?.q;
-    const q = normalizeQ(rawQ);
+    const q = normalizeQ(resolved?.q);
     const rawSection = resolved?.section;
-    const section =
+    const requestedSection =
       (Array.isArray(rawSection) ? rawSection[0] : rawSection) ?? "all";
-    const afterRaw = resolved?.after;
-    const after = normalizeAfter(afterRaw);
-
-    const { items, nextCursor } = await getBooksPage({
+    const section = requestedSection === "new" ? "new" : "all";
+    const after = normalizeAfter(resolved?.after);
+    const { items, nextCursor } = await getWorksPage({
       q,
       after,
       limit: DEFAULT_BOOKS_PAGE_SIZE,
     });
-
-    const showSections = !q;
-    const sectionItems = showSections
-      ? section === "all"
-        ? undefined
-        : section === "top"
-          ? await getTopRated(20, 10)
-          : section === "trending"
-            ? await getTrendingNow(20)
-            : await getNewArrivals(20)
-      : undefined;
-
-    const sectionHeader = getSectionHeader(section);
+    const sectionItems =
+      !q && section === "new" ? await getNewArrivals(20) : undefined;
 
     return (
       <main>
@@ -63,8 +42,7 @@ export default async function Page({
             <header className={s.header}>
               <h1 className={s.title}>Discover Your Next Great Read</h1>
               <p className={s.subtitle}>
-                Explore curated collections, read reviews, and find books that
-                match your taste
+                Browse a curated catalog and search by title or author
               </p>
               <SearchForm defaultValue={q} />
               {q ? (
@@ -74,7 +52,7 @@ export default async function Page({
           </Container>
         </section>
 
-        {showSections ? (
+        {!q ? (
           <section className={s.contentSurface}>
             <Container>
               <nav aria-label="Sections" className={s.sectionsNav}>
@@ -97,25 +75,6 @@ export default async function Page({
                       <Clock width={16} height={16} aria-hidden /> New Arrivals
                     </a>
                   </li>
-                  <li>
-                    <a
-                      href="/?section=top"
-                      className={s.tabLink(section === "top")}
-                      aria-current={section === "top" ? "page" : undefined}
-                    >
-                      <Medal width={16} height={16} aria-hidden /> Top Rated
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="/?section=trending"
-                      className={s.tabLink(section === "trending")}
-                      aria-current={section === "trending" ? "page" : undefined}
-                    >
-                      <TrendingUp width={16} height={16} aria-hidden /> Trending
-                      Now
-                    </a>
-                  </li>
                 </ul>
               </nav>
             </Container>
@@ -123,31 +82,31 @@ export default async function Page({
             <div className={s.sectionDivider} />
 
             {sectionItems ? (
-              <Container>
-                <SectionHeader
-                  icon={sectionHeader.icon}
-                  title={sectionHeader.title}
-                />
-                <BooksCount count={sectionItems.length} />
-              </Container>
+              <>
+                <Container>
+                  <SectionHeader
+                    icon={
+                      <Clock
+                        className={s.sectionHeaderIcon}
+                        width={20}
+                        height={20}
+                        aria-hidden
+                      />
+                    }
+                    title="New Arrivals"
+                  />
+                  <BooksCount count={sectionItems.length} />
+                </Container>
+                <BookList works={sectionItems} spacing="dense" />
+              </>
             ) : null}
 
-            {sectionItems ? (
-              <BookList books={sectionItems} spacing="dense" />
-            ) : null}
-
-            {/* All Books listing (shows the full available list and a count) - only when "All" is selected */}
-            {section === "all" ? (
-              // Only show the All header when we actually have items or a next
-              // cursor (prevents an empty header when the initial page is empty)
-              items.length > 0 || nextCursor ? (
-                <PaginatedBooks
-                  initial={items}
-                  initialNextCursor={nextCursor}
-                  q={q}
-                  title="All Books"
-                />
-              ) : null
+            {section === "all" && (items.length > 0 || nextCursor) ? (
+              <PaginatedBooks
+                initial={items}
+                initialNextCursor={nextCursor}
+                title="All Books"
+              />
             ) : null}
           </section>
         ) : (
@@ -159,11 +118,8 @@ export default async function Page({
         )}
       </main>
     );
-  } catch (err) {
-    // Surface server-side render errors in the dev terminal to aid debugging
-    // (kept lightweight to avoid leaking secrets in production)
-    // eslint-disable-next-line no-console
-    console.error("Page render error:", err);
+  } catch (error) {
+    console.error("Page render error:", error);
     return (
       <main>
         <BookList error="Failed to load books. Please try again." />

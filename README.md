@@ -69,23 +69,27 @@ See the full testing guide in [docs/testing.md](./docs/testing.md), covering uni
 
 ## Database
 
-### Build-time seeding (Preview/Production)
+### Build-time initialization (Preview/Production)
 
-- Build runs `bun run db:migrate:pg && bun run db:seed:pg && next build`.
+- Build runs `bun run db:init:pg && next build`.
 - `DATABASE_URL` must be available during the Vercel build.
-- Preview seeding runs on every build and is idempotent.
-- Production seeding runs only when the table is empty unless `SEED_ON_BUILD=1` is set.
+- Initialization applies forward migrations, imports the deterministic
+  normalized catalog when empty, and validates legacy source evidence.
+- Local SQLite uses `bun run db:init`.
+- `bun run db:verify` validates an initialized SQLite target and provenance
+  links.
 
 ### Preview/Production on Vercel (Neon Postgres)
 
-- Preferred: `bun run db:migrate:pg`
-- Fallback for first setup: `bun run db:init:pg`
+- Use `bun run db:init:pg`.
 
 For details, see `.env.example` and the deployment notes in this repository.
 
 ### Homepage Sections
 
-The database includes optional metadata and a `book_metrics` table to power homepage sections like New Arrivals, Top Rated, and Trending Now. See [docs/database-sections.md](./docs/database-sections.md).
+The homepage supports All books, search, and evidence-backed New Arrivals from
+the normalized work/edition model. See
+[docs/database-sections.md](./docs/database-sections.md).
 
 ### Book curation batches
 

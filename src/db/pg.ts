@@ -26,6 +26,12 @@ export function getPgDb() {
   return db;
 }
 
+export function getPgSql() {
+  if (!instance) getPgDb();
+  if (!instance) throw new Error("Postgres client failed to initialize");
+  return instance.sql;
+}
+
 export async function closePg(): Promise<void> {
   if (!instance) return;
   await instance.sql.end({ timeout: 5_000 });

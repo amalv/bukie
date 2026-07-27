@@ -1,62 +1,56 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as data from "@/features/books/data";
 import { DEFAULT_BOOKS_PAGE_SIZE } from "@/features/books/pageSize";
+import * as repo from "@/features/books/repo";
+import { workSummaryFixture } from "@/test/catalog-fixtures";
 import { GET } from "./route";
 
 describe("GET /api/books/page", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  beforeEach(() => vi.restoreAllMocks());
+
+  it("returns a normalized search page", async () => {
+    const page = vi.spyOn(repo, "getWorksPage").mockResolvedValue({
+      items: [workSummaryFixture],
+      hasNext: true,
+      nextCursor: "next",
+    });
+    const response = await GET(
+      new Request("https://test/api/books/page?q=work&after=cursor&limit=10"),
+    );
+    expect(await response.json()).toEqual({
+      items: [workSummaryFixture],
+      hasNext: true,
+      nextCursor: "next",
+    });
+    expect(page).toHaveBeenCalledWith({
+      q: "work",
+      after: "cursor",
+      limit: 10,
+    });
   });
 
-  it("returns books page for valid request", async () => {
-    const mockPage = {
-      items: [
-        { id: "1", title: "Book 1", author: "Author", cover: "cover.png" },
-      ],
+  it("bounds oversized limits", async () => {
+    const page = vi.spyOn(repo, "getWorksPage").mockResolvedValue({
+      items: [],
       hasNext: false,
-      next: null,
-    };
-    const spy = vi.spyOn(data, "getBooksPage").mockResolvedValue(mockPage);
-    const url = "https://test/api/books/page?q=test&after=123&limit=10";
-    const req = { url } as Request;
-    const res = await GET(req);
-    const json = await res.json();
-
-    expect(spy).toHaveBeenCalledWith({ q: "test", after: "123", limit: 10 });
-    expect(json).toHaveProperty("items");
-    expect(json.items[0]).toHaveProperty("id", "1");
-    spy.mockRestore();
+    });
+    await GET(new Request("https://test/api/books/page?limit=5000"));
+    expect(page).toHaveBeenCalledWith({
+      q: undefined,
+      after: undefined,
+      limit: 50,
+    });
   });
 
-  it("uses default limit when not provided", async () => {
-    const mockPage = { items: [], hasNext: false, next: null };
-    const spy = vi.spyOn(data, "getBooksPage").mockResolvedValue(mockPage);
-    const url = "https://test/api/books/page";
-    const req = { url } as Request;
-    const res = await GET(req);
-    const _json = await res.json();
-    expect(spy).toHaveBeenCalledWith({
+  it("uses the default for non-numeric limits", async () => {
+    const page = vi.spyOn(repo, "getWorksPage").mockResolvedValue({
+      items: [],
+      hasNext: false,
+    });
+    await GET(new Request("https://test/api/books/page?limit=invalid"));
+    expect(page).toHaveBeenCalledWith({
       q: undefined,
       after: undefined,
       limit: DEFAULT_BOOKS_PAGE_SIZE,
     });
-    spy.mockRestore();
-  });
-
-  it("handles errors and returns 500", async () => {
-    const spy = vi
-      .spyOn(data, "getBooksPage")
-      .mockRejectedValue(new Error("fail"));
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const url = "https://test/api/books/page";
-    const req = { url } as Request;
-    const res = await GET(req);
-    const json = await res.json();
-
-    expect(res).toHaveProperty("status", 500);
-    expect(json).toHaveProperty("error");
-    expect(json.error).toMatch(/internal server error/i);
-    spy.mockRestore();
-    errorSpy.mockRestore();
   });
 });

@@ -1,58 +1,67 @@
-import { ensureDb } from "@/db/client";
 import {
-  type IngestItem,
-  type IngestMode,
-  type IngestReport,
-  ingestBooks,
-} from "@/db/ingest";
-import { provider } from "@/db/provider";
-import type { Book } from "./types";
+  type CatalogQueryExecutor,
+  createCatalogRepository,
+} from "@/db/catalog/repository";
+import { ensureDb, getSqliteRaw } from "@/db/client";
+import { getDbEnv } from "@/db/env";
+import { getPgSql } from "@/db/pg";
+import type { PageResult } from "./pagination";
+import type { WorkDetail, WorkSummary } from "./types";
 
-export async function findBookById(id: string): Promise<Book | undefined> {
-  await ensureDb();
-  return provider.getBook(id);
+function activeExecutor(): CatalogQueryExecutor {
+  const env = getDbEnv();
+  if (env.driver === "postgres") {
+    const client = getPgSql();
+    return {
+      dialect: "postgres",
+      async query<T extends Record<string, unknown>>(
+        statement: string,
+        parameters: unknown[] = [],
+      ) {
+        const rows = await client.unsafe(statement, parameters as never[]);
+        return [...rows] as unknown as T[];
+      },
+    };
+  }
+  const raw = getSqliteRaw();
+  return {
+    dialect: "sqlite",
+    async query<T extends Record<string, unknown>>(
+      statement: string,
+      parameters: unknown[] = [],
+    ) {
+      return raw.prepare(statement).all(...parameters) as T[];
+    },
+  };
 }
 
-export async function createBook(
-  input: Omit<Book, "id"> & { id?: string },
-): Promise<Book> {
+async function repository() {
   await ensureDb();
-  return provider.createBookRow(input);
+  return createCatalogRepository(activeExecutor());
 }
 
-export async function updateBook(
+export async function getWorks(query?: string): Promise<WorkSummary[]> {
+  return (await repository()).listWorkSummaries(query);
+}
+
+export async function getWorksPage(params: {
+  q?: string;
+  after?: string | null;
+  limit: number;
+}): Promise<PageResult<WorkSummary>> {
+  return (await repository()).pageWorkSummaries({
+    query: params.q,
+    after: params.after,
+    limit: params.limit,
+  });
+}
+
+export async function findWorkById(
   id: string,
-  patch: Partial<Omit<Book, "id">>,
-): Promise<Book | undefined> {
-  await ensureDb();
-  return provider.updateBookRow(id, patch);
+): Promise<WorkDetail | undefined> {
+  return (await repository()).getWorkDetail(id);
 }
 
-export async function deleteBook(id: string): Promise<boolean> {
-  await ensureDb();
-  return provider.deleteBookRow(id);
-}
-
-export async function getNewArrivals(limit = 24): Promise<Book[]> {
-  await ensureDb();
-  return provider.listNewArrivals(limit);
-}
-
-export async function getTopRated(limit = 24, minCount = 10): Promise<Book[]> {
-  await ensureDb();
-  return provider.listTopRated(limit, minCount);
-}
-
-export async function getTrendingNow(limit = 24): Promise<Book[]> {
-  await ensureDb();
-  return provider.listTrendingNow(limit);
-}
-
-// Shared ingest from repo (server-side entry)
-export async function ingest(
-  items: IngestItem[],
-  opts: { mode: IngestMode; dryRun?: boolean },
-): Promise<IngestReport> {
-  await ensureDb();
-  return ingestBooks(items, opts);
+export async function getNewArrivals(limit = 24): Promise<WorkSummary[]> {
+  return (await repository()).listNewArrivals(limit);
 }

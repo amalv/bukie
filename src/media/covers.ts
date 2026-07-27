@@ -1,4 +1,4 @@
-import { getMediaConfig, type MediaEnvironment } from "./config";
+import type { MediaEnvironment } from "./config";
 
 export const PLACEHOLDER_COVER = "/covers/placeholder.svg";
 export const COVER_ROUTE_PREFIX = "/covers/";
@@ -36,17 +36,14 @@ export function toCachedCoverRoute(coverPath: string): string {
 
 export function resolveBookCoverSrc(
   cover: string | undefined,
-  env: MediaEnvironment = process.env,
+  _env: MediaEnvironment = process.env,
 ): string {
   if (cover && isRemoteAssetUrl(cover)) return cover;
 
   const normalized = normalizeLocalCoverPath(cover) ?? PLACEHOLDER_COVER;
   if (normalized === PLACEHOLDER_COVER) return PLACEHOLDER_COVER;
+  if (!normalized.startsWith(COVER_ROUTE_PREFIX)) return normalized;
 
-  const config = getMediaConfig(env);
-  if (config.backend !== "r2" || !normalized.startsWith(COVER_ROUTE_PREFIX)) {
-    return normalized;
-  }
   return toCachedCoverRoute(normalized);
 }
 

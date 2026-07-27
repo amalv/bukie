@@ -21,8 +21,8 @@ responsible for mutating production data.
 
 ## Prerequisites
 
-1. The book exists in the typed catalog and/or database.
-2. You know its stable `<book-id>`.
+1. The record exists in the typed catalog artifact.
+2. You know its stable `<work-id>`.
 3. Local `.env` contains `R2_BUCKET`.
 4. Wrangler is logged in with a bucket-scoped **Object Read & Write**
    credential. Vercel itself should keep using a separate **Object Read only**
@@ -33,7 +33,7 @@ responsible for mutating production data.
 Run this from the repository root:
 
 ```powershell
-bun run covers:fetch:r2 -- --id=<book-id> --concurrency=1 --force
+bun run covers:fetch:r2 -- --id=<work-id> --concurrency=1 --force
 ```
 
 This command:
@@ -41,12 +41,12 @@ This command:
 1. finds a candidate through Open Library;
 2. optimizes it to WebP;
 3. writes the ignored staging file to
-   `public/covers/<book-id>.webp`;
-4. uploads it to `R2_BUCKET/covers/<book-id>.webp`;
-5. updates the database cover path when a database connection is available.
+   `public/covers/<work-id>.webp`;
+4. uploads it to `R2_BUCKET/covers/<work-id>.webp`.
 
-The database is updated only after the upload succeeds. If any publishing job
-fails, the command finishes the remaining queue and exits nonzero.
+The command never mutates a runtime database. Catalog rebuild/import derives
+the normalized cover relation from the reviewed artifact. If any publishing
+job fails, the command finishes the remaining queue and exits nonzero.
 
 Upload the object before deploying catalog or database changes that reference
 it. Until the object exists, the app deliberately displays the placeholder.
@@ -56,14 +56,14 @@ it. Until the object exists, the app deliberately displays the placeholder.
 To inspect a new image locally before uploading:
 
 ```powershell
-bun run covers:fetch -- --id=<book-id> --concurrency=1 --force
+bun run covers:fetch -- --id=<work-id> --concurrency=1 --force
 ```
 
-Open `public/covers/<book-id>.webp`, then publish exactly that file:
+Open `public/covers/<work-id>.webp`, then publish exactly that file:
 
 ```powershell
-bunx wrangler r2 object put "<bucket>/covers/<book-id>.webp" `
-  --file="public/covers/<book-id>.webp" `
+bunx wrangler r2 object put "<bucket>/covers/<work-id>.webp" `
+  --file="public/covers/<work-id>.webp" `
   --content-type="image/webp" `
   --cache-control="public, max-age=31536000, immutable" `
   --remote `
@@ -104,7 +104,7 @@ bun run dev
 The expected runtime behavior is:
 
 - object exists: the optimized cover is returned through
-  `/api/media/covers/<book-id>.webp`;
+  `/api/media/covers/<work-id>.webp`;
 - object is missing, R2 is unavailable, or configuration is missing: the route
   redirects to `/covers/placeholder.svg`;
 - `MEDIA_BACKEND=local`: an existing ignored local staging file is shown;

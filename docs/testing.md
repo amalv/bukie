@@ -12,7 +12,7 @@ This project uses a layered testing strategy to keep confidence high while stayi
 - Config: `vitest.config.unit.ts`
 - Runner: Bun (`bun run test`)
 - Environment: `jsdom`
-- Setup: `vitest.setup.ts` starts MSW for HTTP mocking
+- Setup: `vitest.setup.ts` installs DOM matchers and isolates runtime SQLite
 
 Conventions
 - Test files live next to source files and are named `*.test.ts(x)` or `*.spec.ts(x)`.
@@ -79,7 +79,7 @@ flowchart TD
 ## Quick tips
 
 - Keep tests small, deterministic, and independent.
-- Use MSW for network requests in unit tests.
+- Stub network requests at the narrowest boundary needed by the unit.
 - Prefer testing outputs/DOM over implementation details.
 
 ## References
@@ -87,22 +87,17 @@ flowchart TD
 - See ADRs in `docs/decisions` for the testing and tooling rationale.
 - See `README.md` for CI and database notes.
 
-## Test-time DB mock and local DB helper
+## Test databases
 
-- To avoid unit tests writing to the local dev SQLite file (`.data/dev.sqlite`), the test setup (`vitest.setup.ts`) applies a test-time mock for the DB provider that replaces create/update/delete with an in-memory implementation.
-  - `createBookRow` returns a synthetic id and tracks it in-process.
-  - `updateBookRow` and `deleteBookRow` simulate not-found for ids not created during the same test process.
+`vitest.setup.ts` directs runtime SQLite access to a disposable path below
+`.data/catalog-targets`; unit tests never migrate or seed `.data/dev.sqlite`.
+Repository and rebuild tests create independent temporary SQLite databases and
+close them before cleanup.
 
-- A lightweight helper `scripts/db/list-books.ts` is available for local inspection of `.data/dev.sqlite`. Run it via:
+Playwright uses `BUKIE_DB_DRIVER=sqlite`, an isolated runtime database, port
+3011, and a separate Next build directory so it cannot reuse a developer
+server, application database, or build cache.
 
-```powershell
-bun run db:list
-```
-
-- If you need tests to run against a real DB for integration verification, set the env var `TEST_USE_REAL_DB=1` before running tests and the provider mock will be skipped (see `vitest.setup.ts`). Example:
-
-```powershell
-$env:TEST_USE_REAL_DB=1; bun run test
-```
-
-This approach keeps unit tests fast and side-effect free while allowing teams to opt into a real-DB integration run when needed.
+Live Postgres integration is skipped unless `CATALOG_TEST_POSTGRES_URL` names an
+explicitly isolated test/preview/disposable target. Application Postgres
+credentials are not accepted by the rebuild safety validator.

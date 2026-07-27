@@ -120,4 +120,22 @@ describe("SQLite/Postgres normalized catalog schema parity", () => {
       );
     }
   });
+
+  it("uses forward-only guarded migrations for legacy runtime removal", () => {
+    const sqliteMigration = readFileSync(
+      path.resolve("drizzle/0003_concerned_vance_astro.sql"),
+      "utf8",
+    );
+    const postgresMigration = readFileSync(
+      path.resolve("drizzle/pg/0005_sour_pretty_boy.sql"),
+      "utf8",
+    );
+    for (const migration of [sqliteMigration, postgresMigration]) {
+      expect(migration).toContain("legacy_catalog");
+      expect(migration).toContain("source_record_links");
+      expect(migration).toMatch(/normalized catalog evidence is incomplete/i);
+      expect(migration).toMatch(/drop table (?:if exists )?["`]?books/i);
+      expect(migration).toMatch(/drop table (?:if exists )?["`]?book_metrics/i);
+    }
+  });
 });

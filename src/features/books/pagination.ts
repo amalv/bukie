@@ -1,11 +1,7 @@
 import { Buffer } from "node:buffer";
 
-/**
- * Opaque cursor utilities for keyset pagination.
- * We currently paginate by id DESC. When a createdAt field is added,
- * extend the payload to include { createdAt, id } and update comparisons.
- */
-export type CursorPayload = { id: string };
+/** Opaque keyset cursor for the canonical (sort_title, work.id) ordering. */
+export type CursorPayload = { sortTitle: string; id: string };
 
 export function encodeCursor(payload: CursorPayload): string {
   const json = JSON.stringify(payload);
@@ -17,7 +13,13 @@ export function decodeCursor(cursor?: string | null): CursorPayload | null {
   try {
     const json = Buffer.from(cursor, "base64url").toString("utf8");
     const obj = JSON.parse(json);
-    if (obj && typeof obj.id === "string") return { id: obj.id };
+    if (
+      obj &&
+      typeof obj.sortTitle === "string" &&
+      typeof obj.id === "string"
+    ) {
+      return { sortTitle: obj.sortTitle, id: obj.id };
+    }
     return null;
   } catch {
     return null;

@@ -2,17 +2,14 @@ import { Container, Grid } from "@/design/layout/grid";
 import { BookCard } from "./BookCard";
 import { BookCardSkeleton } from "./BookCard.skeleton";
 import styles from "./BookList.module.css";
-import type { RatingPresentation } from "./presentation";
-import type { Book } from "./types";
+import type { WorkSummary } from "./types";
 
 export type BookListProps = {
-  books?: Book[];
+  works?: WorkSummary[];
   loading?: boolean;
   error?: string;
   /** Presentation selected by the containing surface. */
   presentation?: "grid" | "compact";
-  /** Explicit, policy-approved rating state; raw catalog values are ignored. */
-  getRatingPresentation?: (book: Book) => RatingPresentation | undefined;
   /** Optional footer slot for pagination controls or extra actions */
   footer?: React.ReactNode;
   /** Optional current search string to improve empty-state copy */
@@ -22,11 +19,10 @@ export type BookListProps = {
 };
 
 export function BookList({
-  books,
+  works,
   loading,
   error,
   presentation = "grid",
-  getRatingPresentation,
   footer,
   q,
   spacing = "normal",
@@ -82,7 +78,7 @@ export function BookList({
       </Container>
     );
   }
-  if (!loading && (!books || books.length === 0)) {
+  if (!loading && (!works || works.length === 0)) {
     return (
       <Container>
         <div
@@ -96,11 +92,11 @@ export function BookList({
                 We couldn't find any results matching <em>"{q}"</em>.
               </>
             ) : (
-              "Try searching by title, author, or genre."
+              "Try searching by title or author."
             )}
           </p>
           <ul className="mx-auto mt-3 max-w-[560px] list-disc px-4 text-left text-[0.95em] opacity-85">
-            <li>Try a different title, author, or genre</li>
+            <li>Try a different title or author</li>
             <li>Check your spelling</li>
           </ul>
         </div>
@@ -122,13 +118,9 @@ export function BookList({
         data-testid="book-list"
         gap="responsive"
       >
-        {books?.map((b) => (
-          <li className="min-w-0 list-none" key={b.id}>
-            <BookCard
-              book={b}
-              presentation={presentation}
-              ratingPresentation={getRatingPresentation?.(b)}
-            />
+        {works?.map((work) => (
+          <li className="min-w-0 list-none" key={work.id}>
+            <BookCard work={work} presentation={presentation} />
           </li>
         ))}
       </Grid>

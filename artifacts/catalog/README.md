@@ -2,7 +2,8 @@
 
 This folder hosts curated per-category lists used by the importer.
 `artifacts/catalog/index.ts` combines all category lists into the 500-book base catalog
-used by `mocks/books.ts` during local development and seeded builds.
+used by the deterministic normalized catalog importer during local,
+preview, and deployment initialization.
 
 Format: JSON array of objects (100 per category ideally). Minimal fields accepted by importer:
 - id (optional; UUID will be generated if missing)

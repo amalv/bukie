@@ -1,30 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
-import { shouldUnoptimizeImage } from "@/media/covers";
-import {
-  presentAuthors,
-  presentBibliographicMeta,
-  presentRating,
-  type RatingPresentation,
-} from "./presentation";
-import type { Book } from "./types";
+import { resolveBookCoverSrc, shouldUnoptimizeImage } from "@/media/covers";
+import { presentAuthors, presentBibliographicMeta } from "./presentation";
+import type { WorkSummary } from "./types";
 
 export type BookCardProps = {
-  book: Book;
+  work: WorkSummary;
   presentation?: "grid" | "compact";
-  ratingPresentation?: RatingPresentation;
 };
 
-export function BookCard({
-  book,
-  presentation = "grid",
-  ratingPresentation,
-}: BookCardProps) {
+export function BookCard({ work, presentation = "grid" }: BookCardProps) {
   const isCompact = presentation === "compact";
-  const authors = presentAuthors(book);
-  const bibliographicMeta = presentBibliographicMeta(book);
-  const rating = presentRating(ratingPresentation);
-  const coverSrc = book.cover?.trim() || "/covers/placeholder.svg";
+  const authors = presentAuthors(work);
+  const bibliographicMeta = presentBibliographicMeta(work);
+  const coverSrc = resolveBookCoverSrc(work.preferredEdition?.cover?.objectKey);
 
   return (
     <article
@@ -63,11 +52,11 @@ export function BookCard({
       >
         <h3 className="m-0 overflow-hidden text-left text-[var(--type-md)] leading-[var(--line-tight)] font-bold text-[var(--color-on-surface)] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
           <Link
-            href={`/books/${book.id}`}
-            aria-label={`View details for ${book.title}`}
+            href={`/books/${work.id}`}
+            aria-label={`View details for ${work.title}`}
             className="text-inherit no-underline outline-none after:absolute after:inset-0 after:rounded-[var(--radius-md)] focus-visible:text-[var(--color-primary)] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-[var(--color-primary)]"
           >
-            {book.title}
+            {work.title}
           </Link>
         </h3>
         {authors ? (
@@ -87,39 +76,7 @@ export function BookCard({
             {bibliographicMeta}
           </p>
         ) : null}
-        {rating ? (
-          <p className="m-0 inline-flex min-h-5 items-center gap-[var(--spacing-0-5)] truncate text-left text-[var(--type-xs)] leading-[var(--line-normal)] text-[color:var(--color-on-surface)]">
-            <span className="sr-only">{rating.accessible}</span>
-            <span
-              aria-hidden="true"
-              className="inline-flex items-center gap-[var(--spacing-0-5)]"
-            >
-              {ratingPresentation?.state === "eligible" &&
-              ratingPresentation.count > 0 ? (
-                <SingleStarIcon />
-              ) : null}
-              {rating.visible}
-            </span>
-          </p>
-        ) : null}
       </div>
     </article>
-  );
-}
-
-function SingleStarIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="book-card-star-icon inline-block h-[14px] w-[14px] text-[var(--color-star)]"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-        fill="currentColor"
-        stroke="currentColor"
-        strokeWidth="1"
-      />
-    </svg>
   );
 }

@@ -16,9 +16,7 @@ describe("media build contract", () => {
     ) as PackageJson;
     const scripts = packageJson.scripts ?? {};
     expect(scripts.prebuild).toBeUndefined();
-    expect(scripts.build).toBe(
-      "bun run db:migrate:pg && bun run db:seed:pg && next build",
-    );
+    expect(scripts.build).toBe("bun run db:init:pg && next build");
     expect(scripts["build:ci"]).toBe("next build");
     expect(scripts.postbuild).toBeUndefined();
 
