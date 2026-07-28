@@ -203,6 +203,25 @@ such as an original work date may be added as separately named work fields when
 a product use case requires them; they are not overloaded into the edition
 issue date.
 
+#### 2026-07-28 amendment: work first publication
+
+The [book-detail enrichment benchmark](../research/book-detail-enrichment.md)
+establishes that product use case. A future implementation may add
+`first_publication_date`, `first_publication_precision`, and the derived
+`first_publication_sort_date` to `works`, with the field key
+`work.first_publication_date`.
+
+The value is nullable, selected from work-level observations, and uses the same
+partial-date rules as an edition publication date. An importer must not seed it
+by copying `editions.publication_date`; matching values still need independent
+work evidence. A conflict is omitted from reader, API, metadata, and structured
+data projections until it is resolved. Reader-facing copy distinguishes
+**First published** for the work from **Published** for the selected edition.
+
+This amendment approves the semantic boundary only. It does not authorize a
+schema, data, UI, metadata, or JSON-LD change without a focused implementation
+issue and SQLite/Postgres parity tests.
+
 ### Cover asset
 
 A cover asset has a provider-neutral object key, media metadata, lifecycle
@@ -333,6 +352,9 @@ explicitly an ISO partial date. IDs are opaque text UUIDs.
 | | `preferred_title` | R,P | Selected work title; non-empty |
 | | `sort_title` | D | Normalized title for ordering, never displayed |
 | | `description` | O,P | Selected work-level description |
+| | `first_publication_date` | O,P | Recommended ISO partial date of the work's first publication; not yet implemented |
+| | `first_publication_precision` | O,D | Recommended `year`, `month` or `day`, consistent with the work date |
+| | `first_publication_sort_date` | O,D | Recommended full ISO date for sorting only |
 | | `preferred_edition_id` | O,D | Selected display edition; must belong to this work |
 | | `created_at`, `updated_at` | R | Catalog audit timestamps |
 | `editions` | `id` | R | Internal immutable edition ID; existing `books.id` is copied exactly |

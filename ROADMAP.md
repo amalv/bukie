@@ -61,7 +61,11 @@ This roadmap defines incremental milestones for Bukie, each mapped to a set of a
 * ✅ refactor(catalog): retain only evidence-backed All, Search, and New Arrivals sections
 * ✅ feat(discovery): make homepage sections meaningful and explainable (see issue #109)
 * ✅ feat(data-curation): expand base catalog — 5 main categories × 100 books each (~500 total) (see issue #89)
+* ✅ research(catalog): benchmark scalable book-detail enrichment across five works (see issue #130)
 * ⏳ feat: provenance-aware catalog curation workflow
+* ⏳ feat(catalog): implement approved enrichment adapters, work first-publication facts,
+    description and cover gates, a catalog-wide dry run, then detail presentation
+    (see issues #131–#136)
 * ⏳ docs: usage instructions
 
 ### Extended Features (DB-backed)

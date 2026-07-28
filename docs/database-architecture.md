@@ -75,6 +75,27 @@ the audit ledger but are not projected into detail UI, page metadata, or
 structured data. A stale bibliographic fact may remain visible with its stored
 status and retrieval date as permitted by ADR 0016.
 
+## Enrichment boundary
+
+The [book-detail enrichment benchmark](./research/book-detail-enrichment.md)
+recommends a future nullable, provenance-resolved work first-publication fact.
+It is separate from the preferred edition's publication date and must not
+change the current period filters or publication sort unless a later product
+decision explicitly does so.
+
+The approved semantic shape is
+`first_publication_date` plus precision and a derived sort date on `works`,
+resolved under `work.first_publication_date`. It is not present in the current
+21-table runtime schema. A focused implementation must update SQLite and
+Postgres together, add resolution and projection tests, and backfill only from
+approved work evidence. Edition dates are never copied as an inferred
+work-level fact.
+
+All other enrichment continues through source records, immutable observations,
+resolution heads, and the existing display-eligibility checks. Dry runs write
+to an isolated disposable target and cannot update current heads, projections,
+or cover pointers.
+
 ## Initialization
 
 `bun run db:init` migrates and idempotently imports the deterministic artifact
