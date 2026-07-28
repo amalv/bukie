@@ -349,6 +349,61 @@ describe("provenance-resolved work first publication", () => {
     }
   });
 
+  it("immediately hides a prior projection when field policy is revoked", async () => {
+    const database = setup();
+    try {
+      addEvidence(database, {
+        key: "policy-revocation",
+        value: { date: "1965", precision: "year" },
+      });
+      resolveWorkFirstPublicationSqlite(database.raw, {
+        workId: database.workId,
+        resolvedAt: 200,
+      });
+      const repository = await repositoryFor(database);
+      await expect(
+        repository.getWorkDetail(database.workId),
+      ).resolves.toMatchObject({
+        firstPublication: { date: "1965", precision: "year" },
+      });
+
+      for (const metadataPolicy of [
+        {
+          display: true,
+          fieldPermission: {
+            allowedFields: ["work.first_publication_date"],
+          },
+          proposedEvidenceOnly: true,
+        },
+        {
+          display: true,
+          fieldPermission: { allowedFields: ["work.description"] },
+          proposedEvidenceOnly: false,
+        },
+      ]) {
+        database.raw
+          .prepare(
+            "update metadata_sources set metadata_policy = ? where key = 'policy-revocation'",
+          )
+          .run(canonicalJson(metadataPolicy));
+        await expect(
+          repository.getWorkDetail(database.workId),
+        ).resolves.toMatchObject({ firstPublication: undefined });
+      }
+
+      expect(
+        database.raw
+          .prepare(
+            `select count(*) as count from field_resolutions
+             where entity_id = ? and field_key = 'work.first_publication_date'`,
+          )
+          .get(database.workId),
+      ).toEqual({ count: 1 });
+    } finally {
+      cleanup(database);
+    }
+  });
+
   it("rolls back the resolution head and projection on a forced failure", () => {
     const database = setup();
     try {

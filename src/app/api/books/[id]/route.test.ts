@@ -36,6 +36,22 @@ describe("GET /api/books/[id]", () => {
     expect(response.status).toBe(404);
   });
 
+  it("omits an ineligible work date without suppressing the edition date", async () => {
+    vi.spyOn(repo, "findWorkById").mockResolvedValue({
+      ...workDetailFixture,
+      firstPublication: undefined,
+    });
+    const response = await GET(new Request("https://test"), {
+      params: Promise.resolve({ id: workDetailFixture.id }),
+    });
+    const body = await response.json();
+    expect(body).not.toHaveProperty("firstPublication");
+    expect(body.preferredEdition.publication).toEqual({
+      date: "2020",
+      precision: "year",
+    });
+  });
+
   it("advertises read-only methods", async () => {
     const response = await OPTIONS();
     expect(response.headers.get("Access-Control-Allow-Methods")).toBe(

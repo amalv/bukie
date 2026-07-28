@@ -21,6 +21,7 @@ import type {
   WorkDetail,
   WorkSummary,
 } from "@/features/books/types";
+import { sourcePolicyAllowsFieldDisplay } from "./policy-eligibility";
 
 export type CatalogQueryExecutor = {
   dialect: "sqlite" | "postgres";
@@ -179,18 +180,6 @@ function epochMilliseconds(value: number | string | Date): number {
   const numeric = Number(value);
   if (Number.isFinite(numeric)) return numeric;
   return new Date(value).getTime();
-}
-
-function sourcePolicyAllowsDisplay(
-  policy: string | Record<string, unknown> | null,
-): boolean {
-  if (!policy) return false;
-  try {
-    const parsed = typeof policy === "string" ? JSON.parse(policy) : policy;
-    return parsed.display === true;
-  } catch {
-    return false;
-  }
 }
 
 export function isDetailFieldDisplayEligible(
@@ -496,10 +485,11 @@ export function createCatalogRepository(
                 row.sourceRecordState === "active" &&
                 row.sourceLinkState === "active" &&
                 row.provenanceKind !== "synthetic" &&
-                sourcePolicyAllowsDisplay(
+                sourcePolicyAllowsFieldDisplay(
                   row.field === "edition.covers"
                     ? row.assetPolicy
                     : row.metadataPolicy,
+                  row.field,
                 ),
             }
           : undefined,

@@ -2,6 +2,7 @@ import type Database from "better-sqlite3";
 import postgres from "postgres";
 import { deterministicCatalogId, hashCanonicalJson } from "./identity";
 import type { PartialDate } from "./normalize";
+import { sourcePolicyAllowsFieldDisplay } from "./policy-eligibility";
 import {
   parsePublicationObservationValue,
   type ResolutionCandidate,
@@ -66,33 +67,11 @@ function parseJson(value: string | unknown): unknown {
   return typeof value === "string" ? JSON.parse(value) : value;
 }
 
-function policyAllowsWorkFirstPublication(
-  value: string | Record<string, unknown>,
-): boolean {
-  try {
-    const policy = parseJson(value) as {
-      display?: unknown;
-      proposedEvidenceOnly?: unknown;
-      fieldPermission?: { allowedFields?: unknown };
-    };
-    if (policy.display !== true || policy.proposedEvidenceOnly === true) {
-      return false;
-    }
-    const allowedFields = policy.fieldPermission?.allowedFields;
-    return (
-      allowedFields === undefined ||
-      (Array.isArray(allowedFields) && allowedFields.includes(FIELD_KEY))
-    );
-  } catch {
-    return false;
-  }
-}
-
 function candidateFromRow(row: CandidateRow): ResolutionCandidate {
   const sourceUsable =
     row.sourceApproval === "approved" &&
     row.sourceLinkState === "active" &&
-    policyAllowsWorkFirstPublication(row.metadataPolicy);
+    sourcePolicyAllowsFieldDisplay(row.metadataPolicy, FIELD_KEY);
   return {
     id: row.id,
     sourceKey: row.sourceKey,

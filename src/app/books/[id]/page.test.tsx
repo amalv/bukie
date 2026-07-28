@@ -57,6 +57,28 @@ describe("work detail page", () => {
     );
   });
 
+  it("omits an ineligible work date while retaining edition structured data", async () => {
+    vi.spyOn(repo, "findWorkById").mockResolvedValue({
+      ...workDetailFixture,
+      firstPublication: undefined,
+    });
+    const { container } = render(
+      await BookPage({
+        params: Promise.resolve({ id: workDetailFixture.id }),
+      }),
+    );
+    const script = container.querySelector(
+      'script[type="application/ld+json"]',
+    );
+    const structuredData = JSON.parse(script?.textContent ?? "");
+    expect(structuredData).not.toHaveProperty("datePublished");
+    expect(structuredData).toMatchObject({
+      workExample: [{ datePublished: "2020" }],
+    });
+    expect(screen.queryByText(/first published/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Published")).toBeInTheDocument();
+  });
+
   it("keeps partial metadata factual without inventing a description", () => {
     const metadata = buildWorkMetadata(partialWorkDetailFixture);
     expect(metadata.title).toBe("Partial Work");
