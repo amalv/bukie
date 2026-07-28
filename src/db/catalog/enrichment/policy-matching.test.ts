@@ -7,11 +7,9 @@ import {
   PENDING_ADAPTERS,
   WIKIDATA_WORK_FACTS_ADAPTER,
 } from "./policies";
-import {
-  assertSampleScope,
-  ENRICHMENT_SAMPLE_MANIFEST,
-} from "./sample-manifest";
+import { ENRICHMENT_SAMPLE_MANIFEST } from "./sample-manifest";
 import type { ProviderRecord } from "./types";
+import { resolveEnrichmentScope } from "./workflow";
 
 const dune = ENRICHMENT_SAMPLE_MANIFEST.works[0];
 
@@ -76,11 +74,16 @@ describe("enrichment policies and five-work scope", () => {
     expect(ENRICHMENT_SAMPLE_MANIFEST.version).toBe("2026-07-28.v1");
     expect(ENRICHMENT_SAMPLE_MANIFEST.works).toHaveLength(5);
     expect(() =>
-      assertSampleScope(["ffffffff-ffff-5fff-8fff-ffffffffffff"]),
+      resolveEnrichmentScope(ENRICHMENT_SAMPLE_MANIFEST, [
+        "ffffffff-ffff-5fff-8fff-ffffffffffff",
+      ]),
     ).toThrow("outside bukie-enrichment-diagnostic-five");
-    expect(() => assertSampleScope([dune.workId, dune.workId])).toThrow(
-      "duplicate work IDs",
-    );
+    expect(() =>
+      resolveEnrichmentScope(ENRICHMENT_SAMPLE_MANIFEST, [
+        dune.workId,
+        dune.workId,
+      ]),
+    ).toThrow("duplicate work IDs");
   });
 
   it("does not expose an unregistered provider adapter", () => {

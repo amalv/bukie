@@ -77,7 +77,7 @@ export type AdapterManifest = {
   proposedEvidenceOnly: true;
 };
 
-export type SampleWork = {
+export type EnrichmentTargetWork = {
   workId: string;
   legacyRecordKey: string;
   title: string;
@@ -86,11 +86,11 @@ export type SampleWork = {
   exactIdentifiers: readonly string[];
 };
 
-export type EnrichmentSampleManifest = {
+export type EnrichmentScopeManifest = {
   id: string;
   version: string;
   reviewedAt: string;
-  works: readonly SampleWork[];
+  works: readonly EnrichmentTargetWork[];
 };
 
 export type EnrichmentEvidence = {

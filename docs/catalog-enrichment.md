@@ -25,6 +25,13 @@ Requests outside the manifest fail before acquisition or persistence. The
 diagnostic workflow builds its five baseline work rows directly from this
 manifest and never loads or scans the 500-work artifact.
 
+The enrichment engine receives its versioned scope manifest as an input rather
+than importing the diagnostic fixture. The issue #131 command is the only
+executable entry point and always supplies the five-work manifest. A future
+catalog runner can supply reviewed, checkpointed batch manifests without
+changing adapter, matching, normalization, or persistence behavior; that
+catalog-wide execution remains part of #135.
+
 Catalog-wide dry run and promotion remain deferred to #135.
 
 ## Adapter and policy contract

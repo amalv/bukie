@@ -11,20 +11,55 @@ import {
   getAdapterManifest,
   metadataSourceRow,
 } from "./policies";
-import {
-  assertSampleScope,
-  ENRICHMENT_SAMPLE_MANIFEST,
-  getSampleWork,
-} from "./sample-manifest";
 import type {
   AdapterManifest,
   EnrichmentRunArtifact,
   EnrichmentRunReport,
+  EnrichmentScopeManifest,
+  EnrichmentTargetWork,
   LinkOutcome,
   ProviderRecord,
 } from "./types";
 
 export const ENRICHMENT_RUNNER_VERSION = "catalog-enrichment-runner-v1";
+
+export function resolveEnrichmentScope(
+  manifest: EnrichmentScopeManifest,
+  workIds: readonly string[],
+): {
+  requestedWorks: EnrichmentTargetWork[];
+  workById: Map<string, EnrichmentTargetWork>;
+} {
+  if (workIds.length === 0) {
+    throw new Error(
+      "Enrichment scope refused: at least one work ID is required",
+    );
+  }
+  if (new Set(workIds).size !== workIds.length) {
+    throw new Error(
+      "Enrichment scope refused: duplicate work IDs are not allowed",
+    );
+  }
+  const workById = new Map<string, EnrichmentTargetWork>();
+  for (const work of manifest.works) {
+    if (workById.has(work.workId)) {
+      throw new Error(
+        `Enrichment scope refused: manifest ${manifest.id}@${manifest.version} contains duplicate work ${work.workId}`,
+      );
+    }
+    workById.set(work.workId, work);
+  }
+  const requestedWorks = [...workIds].sort().map((workId) => {
+    const work = workById.get(workId);
+    if (!work) {
+      throw new Error(
+        `Enrichment scope refused: work ${workId} is outside ${manifest.id}@${manifest.version}`,
+      );
+    }
+    return work;
+  });
+  return { requestedWorks, workById };
+}
 
 function emptyReport(): EnrichmentRunReport {
   return {
@@ -158,10 +193,14 @@ function assertRecordRevision(
 }
 
 export function buildEnrichmentRun(input: {
+  manifest: EnrichmentScopeManifest;
   requestedWorkIds: readonly string[];
   records: readonly ProviderRecord[];
 }): EnrichmentRunArtifact {
-  const requestedWorks = assertSampleScope(input.requestedWorkIds);
+  const { requestedWorks, workById } = resolveEnrichmentScope(
+    input.manifest,
+    input.requestedWorkIds,
+  );
   const requestedIds = new Set(requestedWorks.map((work) => work.workId));
   const records = [...input.records].sort((left, right) =>
     canonicalJson(left).localeCompare(canonicalJson(right)),
@@ -204,15 +243,15 @@ export function buildEnrichmentRun(input: {
         sourcePolicyVersion: adapter.sourcePolicyVersion,
       }))
       .sort((left, right) => left.adapterId.localeCompare(right.adapterId)),
-    manifestId: ENRICHMENT_SAMPLE_MANIFEST.id,
-    manifestVersion: ENRICHMENT_SAMPLE_MANIFEST.version,
+    manifestId: input.manifest.id,
+    manifestVersion: input.manifest.version,
     records,
     requestedWorkIds: [...requestedIds].sort(),
     runnerVersion: ENRICHMENT_RUNNER_VERSION,
   });
   const runId = deterministicCatalogId(
     "enrichment_run",
-    ENRICHMENT_SAMPLE_MANIFEST.id,
+    input.manifest.id,
     runInputHash,
   );
   const sourceRecords: EnrichmentRunArtifact["sourceRecords"][number][] = [];
@@ -227,7 +266,12 @@ export function buildEnrichmentRun(input: {
 
   for (const record of records) {
     const adapter = getAdapterManifest(record.adapterId);
-    const target = getSampleWork(record.targetWorkId);
+    const target = workById.get(record.targetWorkId);
+    if (!target) {
+      throw new Error(
+        `Enrichment scope refused: provider record ${record.recordKey} targets work ${record.targetWorkId} outside ${input.manifest.id}@${input.manifest.version}`,
+      );
+    }
     const match = matchProviderRecord({ adapter, record, target });
     report.links[match.outcome] += 1;
     if (match.outcome === "candidate" || match.outcome === "ambiguous") {
@@ -354,7 +398,7 @@ export function buildEnrichmentRun(input: {
           adapter.sourceKey,
           hashCanonicalJson({
             adapterVersion: adapter.adapterVersion,
-            manifestVersion: ENRICHMENT_SAMPLE_MANIFEST.version,
+            manifestVersion: input.manifest.version,
             sourcePolicyVersion: adapter.sourcePolicyVersion,
             sourceRevision,
           }),
@@ -373,8 +417,8 @@ export function buildEnrichmentRun(input: {
   fieldObservations.sort((left, right) => left.id.localeCompare(right.id));
   const artifactWithoutHash = {
     runId,
-    manifestId: ENRICHMENT_SAMPLE_MANIFEST.id,
-    manifestVersion: ENRICHMENT_SAMPLE_MANIFEST.version,
+    manifestId: input.manifest.id,
+    manifestVersion: input.manifest.version,
     requestedWorkIds: [...requestedIds].sort(),
     adapterSnapshots,
     metadataSources,

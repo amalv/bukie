@@ -2,13 +2,45 @@ import { describe, expect, it } from "vitest";
 import { canonicalJson, hashCanonicalJson } from "../identity";
 import { SAMPLE_PROVIDER_RECORDS } from "./fixtures";
 import { ENRICHMENT_SAMPLE_MANIFEST } from "./sample-manifest";
-import { buildEnrichmentRun } from "./workflow";
+import type { ProviderRecord } from "./types";
+import { buildEnrichmentRun as buildEnrichmentRunForManifest } from "./workflow";
+
+function buildEnrichmentRun(input: {
+  requestedWorkIds: readonly string[];
+  records: readonly ProviderRecord[];
+}) {
+  return buildEnrichmentRunForManifest({
+    manifest: ENRICHMENT_SAMPLE_MANIFEST,
+    ...input,
+  });
+}
 
 const workIds: string[] = ENRICHMENT_SAMPLE_MANIFEST.works.map(
   (work) => work.workId,
 );
 
 describe("isolated five-work enrichment workflow", () => {
+  it("takes scope identity and targets from an injected manifest", () => {
+    const manifest = {
+      ...ENRICHMENT_SAMPLE_MANIFEST,
+      id: "future-approved-batch",
+      version: "v2",
+      works: [ENRICHMENT_SAMPLE_MANIFEST.works[1]],
+    };
+    const records = SAMPLE_PROVIDER_RECORDS.filter(
+      (record) => record.targetWorkId === manifest.works[0].workId,
+    );
+    const run = buildEnrichmentRunForManifest({
+      manifest,
+      requestedWorkIds: [manifest.works[0].workId],
+      records,
+    });
+
+    expect(run.manifestId).toBe("future-approved-batch");
+    expect(run.manifestVersion).toBe("v2");
+    expect(run.requestedWorkIds).toEqual([manifest.works[0].workId]);
+  });
+
   it("builds deterministic source records, links, and immutable observations", () => {
     const first = buildEnrichmentRun({
       requestedWorkIds: workIds,

@@ -26,6 +26,7 @@ describe.skipIf(!isolatedUrl)(
       }
       const graph = buildCatalogImportGraph(SAMPLE_BASELINE_IMPORT_RECORDS);
       const run = buildEnrichmentRun({
+        manifest: ENRICHMENT_SAMPLE_MANIFEST,
         requestedWorkIds: ENRICHMENT_SAMPLE_MANIFEST.works.map(
           (work) => work.workId,
         ),

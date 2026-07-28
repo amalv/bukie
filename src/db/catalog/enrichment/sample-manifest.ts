@@ -1,5 +1,5 @@
 import { deterministicCatalogId } from "../identity";
-import type { EnrichmentSampleManifest, SampleWork } from "./types";
+import type { EnrichmentScopeManifest } from "./types";
 
 export const ENRICHMENT_SAMPLE_MANIFEST = {
   id: "bukie-enrichment-diagnostic-five",
@@ -47,35 +47,7 @@ export const ENRICHMENT_SAMPLE_MANIFEST = {
       exactIdentifiers: [],
     },
   ],
-} as const satisfies EnrichmentSampleManifest;
-
-const sampleById = new Map<string, SampleWork>(
-  ENRICHMENT_SAMPLE_MANIFEST.works.map((work) => [work.workId, work]),
-);
-
-export function getSampleWork(workId: string): SampleWork {
-  const work = sampleById.get(workId);
-  if (!work) {
-    throw new Error(
-      `Enrichment scope refused: work ${workId} is outside ${ENRICHMENT_SAMPLE_MANIFEST.id}@${ENRICHMENT_SAMPLE_MANIFEST.version}`,
-    );
-  }
-  return work;
-}
-
-export function assertSampleScope(workIds: readonly string[]): SampleWork[] {
-  if (workIds.length === 0) {
-    throw new Error(
-      "Enrichment scope refused: at least one work ID is required",
-    );
-  }
-  if (new Set(workIds).size !== workIds.length) {
-    throw new Error(
-      "Enrichment scope refused: duplicate work IDs are not allowed",
-    );
-  }
-  return [...workIds].sort().map(getSampleWork);
-}
+} as const satisfies EnrichmentScopeManifest;
 
 for (const work of ENRICHMENT_SAMPLE_MANIFEST.works) {
   const derived = deterministicCatalogId(

@@ -1,9 +1,9 @@
 import { normalizeSortText } from "../normalize";
 import type {
   AdapterManifest,
+  EnrichmentTargetWork,
   MatchDecision,
   ProviderRecord,
-  SampleWork,
 } from "./types";
 
 function sameOrderedCreators(
@@ -20,7 +20,7 @@ function sameOrderedCreators(
 export function matchProviderRecord(input: {
   adapter: AdapterManifest;
   record: ProviderRecord;
-  target: SampleWork;
+  target: EnrichmentTargetWork;
 }): MatchDecision {
   const { adapter, record, target } = input;
   if (record.state === "withdrawn") {

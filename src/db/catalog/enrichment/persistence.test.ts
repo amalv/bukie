@@ -22,6 +22,7 @@ describe("enrichment persistence parity and idempotency", () => {
   const workIds = ENRICHMENT_SAMPLE_MANIFEST.works.map((work) => work.workId);
   const graph = buildCatalogImportGraph(SAMPLE_BASELINE_IMPORT_RECORDS);
   const run = buildEnrichmentRun({
+    manifest: ENRICHMENT_SAMPLE_MANIFEST,
     requestedWorkIds: workIds,
     records: SAMPLE_PROVIDER_RECORDS,
   });
