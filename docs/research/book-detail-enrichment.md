@@ -52,12 +52,13 @@ The benchmark combines:
 - direct product-page inspection of six book-detail products; and
 - public product or catalog pages for the fixed sample.
 
-The shared interactive browser was unavailable during the study. Product pages
-were inspected through current web responses, and the five Bukie cover files
-were downloaded from Bukie's own media route for local dimension and visual
-inspection. Responsive observations below are therefore design inferences from
-the retrieved structures, not browser-verified screenshots. No provider API was
-called at catalog scale and no external data was written to Bukie.
+The initial shared-browser connection was unavailable, so product research
+started from current web responses and locally inspected Bukie cover files.
+On 2026-07-28, the shared Chrome extension became available and the six
+benchmark pages were visually verified at 1440×1000 and 390×844. Bukie's live
+*Dune* page was verified at both sizes and *Moby-Dick* at desktop size. No
+screenshots were committed. No provider API was called at catalog scale and no
+external data was written to Bukie.
 
 Provider coverage in this document means a matching public record was found or
 an explicit access test was made. It does not mean Bukie has permission to
@@ -128,10 +129,13 @@ fallback metadata.
 
 - *Dune*: the stored ISBN is `9780441172719`, while the image is a square,
   white-sided movie-tie-in treatment. It is not reliable evidence for that
-  selected edition and can be cropped by the current 2:3 `object-cover` frame.
+  selected edition. The live 2:3 `object-cover` frame crops away the square
+  asset's sidebars and produces a plausible portrait, but visual plausibility
+  does not repair the edition mismatch.
 - *Moby-Dick*: the image is a French Delcourt/Bill Sienkiewicz adaptation-style
   cover, not a safe representation of the plain Melville work currently
-  described by Bukie.
+  described by Bukie. The live desktop page confirmed the adaptation credit and
+  Delcourt mark are prominent.
 - *The City and the Stars*: the cover plausibly represents the work, but no
   selected-edition identifier proves the link and the source image is small.
 - *Born a Crime* and *Faithful Place*: each image plausibly represents its
@@ -180,9 +184,9 @@ are not enrichment sources.
 | Product | Strong detail pattern | Caution for Bukie |
 |---|---|---|
 | [Goodreads](https://www.goodreads.com/book/show/53747.Dune) | Immediate cover/title/author recognition, synopsis, genre, first-publication context, selected format/pages, editions, and social continuation | Work and edition facts are visually close; ratings/reviews are explicitly outside #130 |
-| [StoryGraph](https://app.thestorygraph.com/books/39a52cb0-cc71-4355-919c-6bd12d6d8fc6) | Clearly distinguishes original publication year from edition publication date and exposes format, language, publisher, ISBN, editions, and reading-state actions | Its tracking actions depend on reader accounts and are not available in Bukie yet |
-| [Open Library](https://openlibrary.org/works/OL893414W/Dune) | Work description, subjects, many editions, edition bibliography, lists, preview/borrow, and nearby-library continuation | Aggregated records can duplicate or mix editions; public display does not imply reusable rights |
-| [Google Books](https://books.google.com/books/about/Dune.html?id=v_P2DwAAQBAJ) | Strong bibliographic block, preview, description, and related book context | Edition varies by volume ID; API branding, caching, and content terms constrain reuse |
+| [StoryGraph](https://app.thestorygraph.com/books/39a52cb0-cc71-4355-919c-6bd12d6d8fc6) | Separately labels first publication and edition publication, and exposes format, language, publisher, ISBN, editions, and reading-state actions | The live user-added record displayed `first pub 1979` but `Edition Pub Date: 19 Jan 1965`; separate labels do not guarantee coherent evidence |
+| [Open Library](https://openlibrary.org/works/OL893414W/Dune) | Work description, subjects, many editions, edition bibliography, lists, preview/borrow, and nearby-library continuation | The live work URL defaulted to the French *Le cycle de Dune* edition with 1980 edition facts; aggregated records can mix locale/edition context and public display does not imply reusable rights |
+| [Google Books](https://books.google.com/books/about/Dune.html?id=v_P2DwAAQBAJ) | Strong bibliographic block, description, alternate editions, library/seller continuation, and a screen-reader accessibility-mode link | Edition varies by volume ID; the live legacy page retained a desktop-width layout and horizontal scrolling at 390px; API branding, caching, and content terms constrain reuse |
 | [Apple Books](https://books.apple.com/us/book/dune/id597944491) | Compact synopsis, editorial framing, edition facts, series, and related continuation | Store-specific price, rating, and editorial content should not become catalog truth |
 | [Kobo](https://www.kobo.com/us/en/ebook/dune-2) | Exact digital-edition facts, accessibility metadata, preview, series, and acquisition path | Retail availability and DRM/file facts are product-specific and volatile |
 
@@ -202,12 +206,12 @@ The reusable pattern is not maximum density. It is:
 | Information hierarchy | All six lead with cover, title, and creator; Apple/Kobo keep a compact edition block while Goodreads/Open Library expose more secondary sections | Preserve the current primary hierarchy and progressively disclose eligible facts |
 | Cover treatment | Large portrait imagery anchors identity; retail pages assume a specific product, while community/library pages may aggregate editions | Show an edition cover only after matching it to the selected edition; otherwise use an explicit work-representative asset or placeholder |
 | Description | Every evidence-rich example makes a synopsis prominent, sometimes mixing publisher, editorial, or community copy | Keep one provenance-classed description and do not combine text classes |
-| Work versus edition | StoryGraph is clearest about original year versus edition date; Open Library exposes a work plus many editions; retailer pages mostly describe one sellable edition | Use separate `First published` and `Published` labels and keep all edition facts internally coherent |
+| Work versus edition | StoryGraph uses separate first/edition date labels but the live values contradicted one another; Open Library exposes a work plus many editions and defaulted to a French edition; retailer pages mostly describe one sellable edition | Use separate `First published` and `Published` labels, then independently enforce identity, provenance, and internal coherence |
 | Continuation | Editions, preview, borrow, buy, save, library, series, and related-book paths are common | Render only a stable path Bukie actually supports; do not imitate unavailable account or commerce actions |
 | Missing data | Sparse records generally collapse unavailable facts, although aggregated pages may leave uneven or ambiguous sections | Omit empty sections and punctuation; never use a famous work fact as an edition fallback |
-| Mobile | Retrieved structures imply a cover-first single-column stack and progressive disclosure, but this was not screenshot-verified | Preserve semantic reading order and validate 320px behavior in the future UI slice |
-| Accessibility | Products expose named links/actions and Kobo publishes edition accessibility metadata; this study did not audit any competitor for WCAG conformance | Treat competitor accessibility as inspiration only and retain Bukie's own heading, focus, target, contrast, alt-text, and motion requirements |
-| Clutter | Goodreads and Open Library are information-dense; Apple and Kobo use stronger grouping but add commerce; Google Books sits between them | Prefer a concise work summary, one edition block, and at most two useful continuation actions |
+| Mobile | Goodreads, StoryGraph, Open Library, Apple Books, and Kobo reorganized into usable narrow layouts at 390px; Google Books retained its desktop columns and horizontal overflow. Bukie's live *Dune* page stacked cleanly with no horizontal overflow | Preserve semantic reading order, and still validate the required 320px fixture rather than assuming 390px success is sufficient |
+| Accessibility | Products expose named links/actions, Kobo publishes detailed edition accessibility metadata, and Google Books offers a screen-reader mode; this study did not audit any competitor for WCAG conformance | Treat competitor accessibility as inspiration only and retain Bukie's own heading, focus, target, contrast, alt-text, and motion requirements |
+| Clutter | Goodreads and Open Library are information-dense; Apple and Kobo group content clearly but add commerce; StoryGraph adds tracking/community controls; Google Books is sparse yet visually dated and poorly responsive | Prefer a concise work summary, one edition block, and at most two useful continuation actions |
 
 ## Source and licensing decision matrix
 
