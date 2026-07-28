@@ -136,6 +136,22 @@ verified multi-edition grouping, missing identifiers and metadata, compatible
 and conflicting partial dates, stale and withdrawn evidence, uncertain
 same-title matches, reusable covers and synthetic fallback fields.
 
+## Five-work enrichment rehearsal
+
+Issue #131's enrichment workflow is separate from the 500-record rebuild. It
+constructs only the explicit diagnostic-five baseline and writes proposed
+source records, links, and observations without changing resolution heads:
+
+```powershell
+bun run db:catalog:enrichment-sample --target=sqlite:.data/catalog-targets/issue-131-enrichment-test.sqlite --confirm-disposable
+```
+
+The command uses the same target safety checks as this rebuild, processes the
+recorded fixture twice, and fails when the second logical snapshot or the
+current-head hash differs. See
+[catalog-enrichment.md](./catalog-enrichment.md) for adapter policies and the
+five-work execution boundary.
+
 ## Validation
 
 Run:
