@@ -52,12 +52,10 @@ The benchmark combines:
 - direct product-page inspection of six book-detail products; and
 - public product or catalog pages for the fixed sample.
 
-The initial shared-browser connection was unavailable, so product research
-started from current web responses and locally inspected Bukie cover files.
-On 2026-07-28, the shared Chrome extension became available and the six
-benchmark pages were visually verified at 1440×1000 and 390×844. Bukie's live
-*Dune* page was verified at both sizes and *Moby-Dick* at desktop size. No
-screenshots were committed. No provider API was called at catalog scale and no
+Research on 2026-07-28 used current web responses, local inspection of the five
+Bukie cover files, and live rendering of the six benchmark pages at 1440×1000
+and 390×844. Bukie's live *Dune* page was verified at both sizes and
+*Moby-Dick* at desktop size. No provider API was called at catalog scale and no
 external data was written to Bukie.
 
 Provider coverage in this document means a matching public record was found or
