@@ -1,0 +1,194 @@
+import { describe, expect, it } from "vitest";
+import { canonicalJson, hashCanonicalJson } from "../identity";
+import { SAMPLE_PROVIDER_RECORDS } from "./fixtures";
+import { ENRICHMENT_SAMPLE_MANIFEST } from "./sample-manifest";
+import { buildEnrichmentRun } from "./workflow";
+
+const workIds: string[] = ENRICHMENT_SAMPLE_MANIFEST.works.map(
+  (work) => work.workId,
+);
+
+describe("isolated five-work enrichment workflow", () => {
+  it("builds deterministic source records, links, and immutable observations", () => {
+    const first = buildEnrichmentRun({
+      requestedWorkIds: workIds,
+      records: SAMPLE_PROVIDER_RECORDS,
+    });
+    const second = buildEnrichmentRun({
+      requestedWorkIds: [...workIds].reverse(),
+      records: [...SAMPLE_PROVIDER_RECORDS].reverse(),
+    });
+
+    expect(first).toEqual(second);
+    expect(hashCanonicalJson(first)).toBe(hashCanonicalJson(second));
+    expect(first.sourceRecords).toHaveLength(10);
+    expect(first.sourceRecordLinks).toHaveLength(10);
+    expect(first.fieldObservations).toHaveLength(9);
+    expect(first.proposedResolutionHeads).toEqual([]);
+    expect(first.report.links).toMatchObject({
+      active: 9,
+      ambiguous: 1,
+      candidate: 0,
+      unmatched: 0,
+    });
+    expect(first.report.observations).toEqual({
+      created: 9,
+      reused: 0,
+      rejected: 0,
+      omitted: 1,
+    });
+    expect(first.report.reviewQueueCandidates).toBe(1);
+  });
+
+  it("contains only the requested sample and approved adapters", () => {
+    const run = buildEnrichmentRun({
+      requestedWorkIds: workIds,
+      records: SAMPLE_PROVIDER_RECORDS,
+    });
+    expect(new Set(run.requestedWorkIds)).toEqual(new Set(workIds));
+    expect(
+      run.sourceRecordLinks.every((link) => workIds.includes(link.entityId)),
+    ).toBe(true);
+    expect(run.metadataSources.map((source) => source.key).sort()).toEqual([
+      "bukie_editorial",
+      "wikidata",
+    ]);
+    expect(canonicalJson(run)).not.toMatch(
+      /open_library|google_books|worldcat|wikipedia_prose/,
+    );
+  });
+
+  it("creates no display resolution or current-head mutation", () => {
+    const run = buildEnrichmentRun({
+      requestedWorkIds: workIds,
+      records: SAMPLE_PROVIDER_RECORDS,
+    });
+    expect(run.proposedResolutionHeads).toHaveLength(0);
+    expect(
+      run.metadataSources.every((source) =>
+        String(source.metadataPolicy).includes('"proposedEvidenceOnly":true'),
+      ),
+    ).toBe(true);
+    const policyBySource = new Map(
+      run.metadataSources.map((source) => [
+        source.key,
+        JSON.parse(String(source.metadataPolicy)),
+      ]),
+    );
+    expect(policyBySource.get("bukie_editorial")?.display).toBe(true);
+    expect(policyBySource.get("wikidata")?.display).toBe(false);
+    expect(
+      run.metadataSources.every(
+        (source) => JSON.parse(String(source.assetPolicy)).display === false,
+      ),
+    ).toBe(true);
+  });
+
+  it("fails closed for unrequested or out-of-manifest target IDs", () => {
+    const outside = {
+      ...SAMPLE_PROVIDER_RECORDS[0],
+      targetWorkId: "ffffffff-ffff-5fff-8fff-ffffffffffff",
+    };
+    expect(() =>
+      buildEnrichmentRun({
+        requestedWorkIds: workIds,
+        records: [outside],
+      }),
+    ).toThrow("targets an unrequested work");
+    expect(() =>
+      buildEnrichmentRun({
+        requestedWorkIds: [outside.targetWorkId],
+        records: [outside],
+      }),
+    ).toThrow("outside bukie-enrichment-diagnostic-five");
+  });
+
+  it("fails closed for pending policy, absent field permission, and missing revision", () => {
+    expect(() =>
+      buildEnrichmentRun({
+        requestedWorkIds: [workIds[0]],
+        records: [
+          {
+            ...SAMPLE_PROVIDER_RECORDS[0],
+            adapterId: "open-library.metadata",
+          },
+        ],
+      }),
+    ).toThrow("is pending");
+    expect(() =>
+      buildEnrichmentRun({
+        requestedWorkIds: [workIds[0]],
+        records: [
+          {
+            ...SAMPLE_PROVIDER_RECORDS[0],
+            evidence: [
+              {
+                fieldClass: "asset",
+                fieldKey: "edition.covers",
+                value: "/covers/not-allowed.webp",
+                sourcePath: "cover",
+                provenanceKind: "curated",
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow("may not acquire asset field edition.covers");
+    expect(() =>
+      buildEnrichmentRun({
+        requestedWorkIds: [workIds[0]],
+        records: [{ ...SAMPLE_PROVIDER_RECORDS[0], sourceRevision: "" }],
+      }),
+    ).toThrow("requires a source revision");
+  });
+
+  it("fails closed when deterministic source-revision identity is duplicated", () => {
+    expect(() =>
+      buildEnrichmentRun({
+        requestedWorkIds: [workIds[0]],
+        records: [SAMPLE_PROVIDER_RECORDS[0], SAMPLE_PROVIDER_RECORDS[0]],
+      }),
+    ).toThrow("duplicate source record revision");
+  });
+
+  it("records withdrawal without creating observations or heads", () => {
+    const withdrawn = buildEnrichmentRun({
+      requestedWorkIds: [workIds[0]],
+      records: [
+        {
+          ...SAMPLE_PROVIDER_RECORDS[0],
+          state: "withdrawn",
+        },
+      ],
+    });
+    expect(withdrawn.sourceRecords[0]?.state).toBe("withdrawn");
+    expect(withdrawn.sourceRecordLinks[0]?.outcome).toBe("withdrawn");
+    expect(withdrawn.fieldObservations).toHaveLength(0);
+    expect(withdrawn.proposedResolutionHeads).toHaveLength(0);
+  });
+
+  it("refuses sensitive or policy-prohibited raw payload retention", () => {
+    expect(() =>
+      buildEnrichmentRun({
+        requestedWorkIds: [workIds[0]],
+        records: [
+          {
+            ...SAMPLE_PROVIDER_RECORDS[0],
+            rawPayload: { authorization: "Bearer secret-value" },
+          },
+        ],
+      }),
+    ).toThrow("sensitive payload fields");
+    expect(() =>
+      buildEnrichmentRun({
+        requestedWorkIds: [workIds[0]],
+        records: [
+          {
+            ...SAMPLE_PROVIDER_RECORDS[0],
+            rawPayload: { title: "Dune" },
+          },
+        ],
+      }),
+    ).toThrow("raw payload retention is not permitted");
+  });
+});

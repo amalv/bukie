@@ -96,6 +96,13 @@ resolution heads, and the existing display-eligibility checks. Dry runs write
 to an isolated disposable target and cannot update current heads, projections,
 or cover pointers.
 
+The issue #131
+[policy-gated adapter foundation](./catalog-enrichment.md) implements that
+isolated proposed-evidence boundary for the versioned five-work diagnostic
+manifest. It registers only Bukie editorial and Wikidata work-fact adapters as
+enabled, keeps every other researched provider pending, and exposes no current
+resolution-head write path.
+
 ## Initialization
 
 `bun run db:init` migrates and idempotently imports the deterministic artifact
