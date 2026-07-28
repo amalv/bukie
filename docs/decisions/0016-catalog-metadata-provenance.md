@@ -352,9 +352,9 @@ explicitly an ISO partial date. IDs are opaque text UUIDs.
 | | `preferred_title` | R,P | Selected work title; non-empty |
 | | `sort_title` | D | Normalized title for ordering, never displayed |
 | | `description` | O,P | Selected work-level description |
-| | `first_publication_date` | O,P | Recommended ISO partial date of the work's first publication; not yet implemented |
-| | `first_publication_precision` | O,D | Recommended `year`, `month` or `day`, consistent with the work date |
-| | `first_publication_sort_date` | O,D | Recommended full ISO date for sorting only |
+| | `first_publication_date` | O,P | ISO partial date of the work's first publication, selected only from eligible work evidence |
+| | `first_publication_precision` | O,D | `year`, `month` or `day`, consistent with the work date |
+| | `first_publication_sort_date` | O,D | Full ISO date for sorting only; not used by current catalog sorting |
 | | `preferred_edition_id` | O,D | Selected display edition; must belong to this work |
 | | `created_at`, `updated_at` | R | Catalog audit timestamps |
 | `editions` | `id` | R | Internal immutable edition ID; existing `books.id` is copied exactly |

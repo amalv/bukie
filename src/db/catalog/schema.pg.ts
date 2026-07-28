@@ -86,6 +86,9 @@ export const worksPg = pgTable(
     preferredTitle: text("preferred_title").notNull(),
     sortTitle: text("sort_title").notNull(),
     description: text("description"),
+    firstPublicationDate: text("first_publication_date"),
+    firstPublicationPrecision: text("first_publication_precision"),
+    firstPublicationSortDate: text("first_publication_sort_date"),
     preferredEditionId: text("preferred_edition_id").references(
       (): AnyPgColumn => editionsPg.id,
       { onDelete: "set null" },
@@ -97,6 +100,40 @@ export const worksPg = pgTable(
     check(
       "works_titles_nonempty_ck",
       sql`length(trim(${table.preferredTitle})) > 0 and length(trim(${table.sortTitle})) > 0`,
+    ),
+    check(
+      "works_first_publication_precision_ck",
+      sql`${table.firstPublicationPrecision} is null or ${table.firstPublicationPrecision} in (${sql.raw(sqlList(PUBLICATION_PRECISIONS))})`,
+    ),
+    check(
+      "works_first_publication_date_ck",
+      sql`(
+        ${table.firstPublicationDate} is null
+        and ${table.firstPublicationPrecision} is null
+        and ${table.firstPublicationSortDate} is null
+      ) or (
+        ${table.firstPublicationDate} is not null
+        and ${table.firstPublicationPrecision} is not null
+        and ${table.firstPublicationSortDate} is not null
+        and (
+          (
+            ${table.firstPublicationPrecision} = 'year'
+            and length(${table.firstPublicationDate}) = 4
+            and ${table.firstPublicationSortDate} = ${table.firstPublicationDate} || '-01-01'
+          ) or (
+            ${table.firstPublicationPrecision} = 'month'
+            and length(${table.firstPublicationDate}) = 7
+            and substring(${table.firstPublicationDate} from 5 for 1) = '-'
+            and ${table.firstPublicationSortDate} = ${table.firstPublicationDate} || '-01'
+          ) or (
+            ${table.firstPublicationPrecision} = 'day'
+            and length(${table.firstPublicationDate}) = 10
+            and substring(${table.firstPublicationDate} from 5 for 1) = '-'
+            and substring(${table.firstPublicationDate} from 8 for 1) = '-'
+            and ${table.firstPublicationSortDate} = ${table.firstPublicationDate}
+          )
+        )
+      )`,
     ),
     index("works_sort_title_id_idx").on(table.sortTitle, table.id),
     index("works_preferred_edition_idx").on(table.preferredEditionId),

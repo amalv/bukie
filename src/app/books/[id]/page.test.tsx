@@ -38,7 +38,9 @@ describe("work detail page", () => {
       "@context": "https://schema.org",
       "@type": "Book",
       name: "Example Work",
+      datePublished: "1965-06",
       author: ["First Author", "Second Author"],
+      workExample: [{ datePublished: "2020" }],
     });
   });
 

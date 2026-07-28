@@ -71,7 +71,7 @@ isolated target, and they cannot create or advance current resolution heads.
 | Adapter | State | Metadata | Text | Assets | Operational decision |
 |---|---|---|---|---|---|
 | `bukie.editorial` | enabled | `work.preferred_title` | `work.description` | none | Bukie-owned evidence; internal actor/reason audit required |
-| `wikidata.work-facts` | enabled | `work.preferred_title` candidate | none | none | CC0 structured work facts only; no edition authority and no Wikipedia prose |
+| `wikidata.work-facts` | enabled | `work.preferred_title` and `work.first_publication_date` candidates | none | none | CC0 structured work facts only; no edition authority and no Wikipedia prose |
 | `open-library.metadata` | pending | none | none | none | Retention, display, and bulk-access policy pending |
 | `open-library.descriptions` | pending | none | none | none | Third-party prose rights policy pending |
 | `open-library.covers` | pending | none | none | none | Identity, caching, transformation, and asset-display policy pending |

@@ -93,6 +93,7 @@ export const workSummaryFixture: WorkSummary = {
 export const workDetailFixture: WorkDetail = {
   ...workSummaryFixture,
   description: "Stored catalog description.",
+  firstPublication: { date: "1965-06", precision: "month" },
   categories: [
     {
       id: "70000000-0000-4000-8000-000000000001",
@@ -113,6 +114,11 @@ export const workDetailFixture: WorkDetail = {
   provenance: [
     provenanceFixture("work", workSummaryFixture.id, "work.preferred_title"),
     provenanceFixture("work", workSummaryFixture.id, "work.description"),
+    provenanceFixture(
+      "work",
+      workSummaryFixture.id,
+      "work.first_publication_date",
+    ),
     provenanceFixture("work", workSummaryFixture.id, "work.authors"),
     provenanceFixture("work", workSummaryFixture.id, "work.categories"),
     provenanceFixture("work", workSummaryFixture.id, "work.preferred_edition", {
@@ -168,6 +174,7 @@ export const partialWorkDetailFixture: WorkDetail = {
     ...(
       [
         "work.description",
+        "work.first_publication_date",
         "work.authors",
         "work.categories",
         "work.preferred_edition",

@@ -62,6 +62,7 @@ export type EditionSummary = {
 export type DetailProvenanceField =
   | "work.preferred_title"
   | "work.description"
+  | "work.first_publication_date"
   | "work.preferred_edition"
   | "work.authors"
   | "work.categories"
@@ -102,6 +103,10 @@ export type WorkSummary = {
 
 export type WorkDetail = WorkSummary & {
   description?: string;
+  firstPublication?: {
+    date: string;
+    precision: "year" | "month" | "day";
+  };
   categories: WorkCategory[];
   editions: EditionSummary[];
   provenance: DetailProvenance[];

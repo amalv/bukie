@@ -10,6 +10,7 @@ export const CATALOG_ENTITY_TYPES = [
 export const CATALOG_FIELD_KEYS = [
   "work.preferred_title",
   "work.description",
+  "work.first_publication_date",
   "work.preferred_edition",
   "work.authors",
   "work.categories",

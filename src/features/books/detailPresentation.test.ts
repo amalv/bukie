@@ -44,6 +44,7 @@ describe("detail presentation", () => {
       "@context": "https://schema.org",
       "@type": "Book",
       name: "Example Work",
+      datePublished: "1965-06",
       description: "Stored catalog description.",
       author: ["First Author", "Second Author"],
       genre: ["Fiction", "Classics"],
@@ -61,6 +62,14 @@ describe("detail presentation", () => {
     expect(JSON.stringify(data)).not.toMatch(
       /rating|popularity|catalogedAt|objectKey|provenance/i,
     );
+    expect(data.datePublished).not.toBe(
+      (
+        (data.workExample as Array<Record<string, unknown>>)[0] as Record<
+          string,
+          unknown
+        >
+      ).datePublished,
+    );
   });
 
   it("keeps partial structured data valid and escapes script-breaking text", () => {
@@ -77,5 +86,16 @@ describe("detail presentation", () => {
     const serialized = serializeStructuredData(data);
     expect(serialized).not.toContain("<");
     expect(JSON.parse(serialized)).toEqual(data);
+  });
+
+  it("omits an ineligible work date without suppressing the edition date", () => {
+    const data = buildBookStructuredData({
+      ...workDetailFixture,
+      firstPublication: undefined,
+    });
+    expect(data).not.toHaveProperty("datePublished");
+    expect(data).toMatchObject({
+      workExample: [{ datePublished: "2020" }],
+    });
   });
 });

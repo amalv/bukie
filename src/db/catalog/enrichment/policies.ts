@@ -147,8 +147,8 @@ export const WIKIDATA_WORK_FACTS_ADAPTER = {
   sourceKey: "wikidata",
   sourceName: "Wikidata structured work facts",
   adapterId: "wikidata.work-facts",
-  adapterVersion: "1.0.0",
-  sourcePolicyVersion: "wikidata-cc0-2026-07-28",
+  adapterVersion: "1.1.0",
+  sourcePolicyVersion: "wikidata-cc0-first-publication-2026-07-28",
   policyReviewDate: POLICY_REVIEW_DATE,
   policySources: [
     "https://www.wikidata.org/wiki/Wikidata:Licensing",
@@ -159,12 +159,12 @@ export const WIKIDATA_WORK_FACTS_ADAPTER = {
   nextReviewDate: NEXT_POLICY_REVIEW_DATE,
   permissions: {
     metadata: {
-      allowedFields: ["work.preferred_title"],
+      allowedFields: ["work.preferred_title", "work.first_publication_date"],
       fetch: true,
       cache: true,
       retain: "full",
       transform: true,
-      display: false,
+      display: true,
     },
     text: denied(),
     asset: denied(),

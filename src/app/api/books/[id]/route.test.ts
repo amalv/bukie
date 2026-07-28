@@ -16,6 +16,14 @@ describe("GET /api/books/[id]", () => {
     const { provenance: _provenance, ...expected } = workDetailFixture;
     const body = await response.json();
     expect(body).toEqual(expected);
+    expect(body.firstPublication).toEqual({
+      date: "1965-06",
+      precision: "month",
+    });
+    expect(body.preferredEdition.publication).toEqual({
+      date: "2020",
+      precision: "year",
+    });
     expect(body).not.toHaveProperty("provenance");
     expect(find).toHaveBeenCalledWith(workDetailFixture.id);
   });

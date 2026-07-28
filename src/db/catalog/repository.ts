@@ -35,6 +35,10 @@ type WorkRow = {
   title: string;
   sortTitle: string;
   description: string | null;
+  firstPublicationDate: string | null;
+  firstPublicationPrecision:
+    | NonNullable<WorkDetail["firstPublication"]>["precision"]
+    | null;
   preferredEditionId: string | null;
   publicationSortDate: string | null;
   catalogedAt: number | string | Date | null;
@@ -145,6 +149,8 @@ const WORK_COLUMNS = `
     w.preferred_title as "title",
     w.sort_title as "sortTitle",
     w.description as "description",
+    w.first_publication_date as "firstPublicationDate",
+    w.first_publication_precision as "firstPublicationPrecision",
     w.preferred_edition_id as "preferredEditionId",
     preferred.publication_sort_date as "publicationSortDate",
     preferred.cataloged_at as "catalogedAt"
@@ -570,6 +576,13 @@ export function createCatalogRepository(
       description: eligible("work", detail.id, "work.description")
         ? detail.description
         : undefined,
+      firstPublication: eligible(
+        "work",
+        detail.id,
+        "work.first_publication_date",
+      )
+        ? detail.firstPublication
+        : undefined,
       categories,
       editions,
       provenance,
@@ -804,6 +817,13 @@ export function createCatalogRepository(
       return {
         ...summary,
         description: optional(row.description),
+        firstPublication:
+          row.firstPublicationDate && row.firstPublicationPrecision
+            ? {
+                date: row.firstPublicationDate,
+                precision: row.firstPublicationPrecision,
+              }
+            : undefined,
         categories,
         editions: allEditions,
       } satisfies Omit<WorkDetail, "provenance">;

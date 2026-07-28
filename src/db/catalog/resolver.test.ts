@@ -41,6 +41,59 @@ describe("catalog field resolver", () => {
     });
   });
 
+  it("resolves work first-publication objects without inventing precision", () => {
+    expect(
+      resolveField("work.first_publication_date", [
+        candidate({
+          id: "year",
+          value: { date: "1965", precision: "year" },
+        }),
+        candidate({
+          id: "month",
+          value: { date: "1965-06", precision: "month" },
+        }),
+      ]),
+    ).toMatchObject({
+      state: "present",
+      selectedObservationId: "month",
+    });
+  });
+
+  it("rejects invalid or mismatched publication precision", () => {
+    expect(
+      resolveField("work.first_publication_date", [
+        candidate({ value: { date: "1965", precision: "day" } }),
+        candidate({
+          id: "invalid-month",
+          value: { date: "1965-13", precision: "month" },
+        }),
+      ]),
+    ).toMatchObject({
+      state: "missing",
+      selectedObservationId: null,
+    });
+  });
+
+  it("keeps conflicting stale work dates out of resolution", () => {
+    expect(
+      resolveField("work.first_publication_date", [
+        candidate({
+          id: "stale-a",
+          value: { date: "1965", precision: "year" },
+          state: "stale",
+        }),
+        candidate({
+          id: "stale-b",
+          value: { date: "1966", precision: "year" },
+          state: "stale",
+        }),
+      ]),
+    ).toMatchObject({
+      state: "conflicting",
+      selectedObservationId: null,
+    });
+  });
+
   it("uses an attributable curated correction without deleting evidence", () => {
     expect(
       resolveField("work.preferred_title", [

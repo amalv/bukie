@@ -1,5 +1,5 @@
 import { canonicalJson, hashCanonicalJson } from "./identity";
-import { parsePartialDate } from "./normalize";
+import { type PartialDate, parsePartialDate } from "./normalize";
 import type {
   CatalogFieldKey,
   ObservationState,
@@ -47,19 +47,45 @@ function compareCandidate(
   return left.id.localeCompare(right.id);
 }
 
+export function parsePublicationObservationValue(
+  value: unknown,
+): PartialDate | null {
+  if (typeof value === "string" || typeof value === "number") {
+    return parsePartialDate(value);
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const candidate = value as { date?: unknown; precision?: unknown };
+  if (
+    typeof candidate.date !== "string" ||
+    typeof candidate.precision !== "string"
+  ) {
+    return null;
+  }
+  const parsed = parsePartialDate(candidate.date);
+  return parsed?.precision === candidate.precision ? parsed : null;
+}
+
+function isPublicationDateField(fieldKey: CatalogFieldKey): boolean {
+  return (
+    fieldKey === "edition.publication_date" ||
+    fieldKey === "work.first_publication_date"
+  );
+}
+
 function compatiblePublicationDate(
   candidates: ResolutionCandidate[],
 ): ResolutionCandidate | "conflicting" | null {
   const parsed = candidates.map((candidate) => ({
     candidate,
-    date: parsePartialDate(String(candidate.value)),
+    date: parsePublicationObservationValue(candidate.value),
   }));
   if (parsed.some((entry) => entry.date === null)) return null;
   const ordered = parsed.sort((left, right) => {
     const precision = { year: 1, month: 2, day: 3 } as const;
     return (
       precision[right.date?.precision ?? "year"] -
-      precision[left.date?.precision ?? "year"]
+        precision[left.date?.precision ?? "year"] ||
+      compareCandidate(left.candidate, right.candidate)
     );
   });
   const mostPrecise = ordered[0];
@@ -75,7 +101,13 @@ export function resolveField(
   fieldKey: CatalogFieldKey,
   candidates: ResolutionCandidate[],
 ): ResolutionDecision {
-  const approved = candidates.filter((candidate) => candidate.sourceApproved);
+  const approved = candidates
+    .filter((candidate) => candidate.sourceApproved)
+    .filter(
+      (candidate) =>
+        !isPublicationDateField(fieldKey) ||
+        parsePublicationObservationValue(candidate.value) !== null,
+    );
   const eligible = approved.filter(
     (candidate) =>
       candidate.state === "active" &&
@@ -118,7 +150,29 @@ export function resolveField(
         ),
     );
     if (stale.length) {
-      const selected = [...stale].sort(compareCandidate)[0];
+      const bestPriority = Math.min(
+        ...stale.map((candidate) => candidate.sourcePriority),
+      );
+      const preferred = stale.filter(
+        (candidate) => candidate.sourcePriority === bestPriority,
+      );
+      let selected = [...preferred].sort(compareCandidate)[0];
+      if (isPublicationDateField(fieldKey)) {
+        const compatible = compatiblePublicationDate(preferred);
+        if (compatible === "conflicting" || compatible === null) {
+          return {
+            state: "conflicting",
+            selectedObservationId: null,
+            comparisonHash: hashCanonicalJson(
+              preferred
+                .map((candidate) => canonicalJson(candidate.value))
+                .sort(),
+            ),
+            reason: "Equally eligible stale observations conflict",
+          };
+        }
+        selected = compatible;
+      }
       return {
         state: "stale",
         selectedObservationId: selected.id,
@@ -153,7 +207,7 @@ export function resolveField(
     };
   }
 
-  if (fieldKey === "edition.publication_date") {
+  if (isPublicationDateField(fieldKey)) {
     const compatible = compatiblePublicationDate(preferred);
     if (compatible && compatible !== "conflicting") {
       return {

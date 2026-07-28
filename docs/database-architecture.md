@@ -78,18 +78,19 @@ status and retrieval date as permitted by ADR 0016.
 ## Enrichment boundary
 
 The [book-detail enrichment benchmark](./research/book-detail-enrichment.md)
-recommends a future nullable, provenance-resolved work first-publication fact.
-It is separate from the preferred edition's publication date and must not
-change the current period filters or publication sort unless a later product
-decision explicitly does so.
+defines a nullable, provenance-resolved work first-publication fact. It is
+stored as `first_publication_date` plus precision and a derived sort date on
+`works`, resolved under `work.first_publication_date`. It is separate from the
+preferred edition's publication date and does not change period filters or
+publication sorting.
 
-The approved semantic shape is
-`first_publication_date` plus precision and a derived sort date on `works`,
-resolved under `work.first_publication_date`. It is not present in the current
-21-table runtime schema. A focused implementation must update SQLite and
-Postgres together, add resolution and projection tests, and backfill only from
-approved work evidence. Edition dates are never copied as an inferred
-work-level fact.
+The dedicated resolver promotes one explicitly selected work at a time. It
+advances immutable resolution history, the current head, and the three work
+projection columns in one transaction. Compatible partial dates select the
+greatest supported precision; conflicts and ineligible evidence clear the
+projection. Proposed-only enrichment evidence cannot be promoted. Migrations
+initialize every existing work projection to null and never copy an edition
+date.
 
 All other enrichment continues through source records, immutable observations,
 resolution heads, and the existing display-eligibility checks. Dry runs write
@@ -101,7 +102,9 @@ The issue #131
 isolated proposed-evidence boundary for the versioned five-work diagnostic
 manifest. It registers only Bukie editorial and Wikidata work-fact adapters as
 enabled, keeps every other researched provider pending, and exposes no current
-resolution-head write path.
+resolution-head write path. The first-publication resolver remains a separate
+explicit promotion boundary and does not turn that diagnostic workflow into a
+catalog-wide write path.
 
 ## Initialization
 
