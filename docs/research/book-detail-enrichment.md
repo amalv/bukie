@@ -195,6 +195,20 @@ The reusable pattern is not maximum density. It is:
 5. alternate-edition access when it is meaningful; and
 6. one or two real continuation actions.
 
+### Cross-product pattern comparison
+
+| Concern | Observed product pattern | Bukie implication |
+|---|---|---|
+| Information hierarchy | All six lead with cover, title, and creator; Apple/Kobo keep a compact edition block while Goodreads/Open Library expose more secondary sections | Preserve the current primary hierarchy and progressively disclose eligible facts |
+| Cover treatment | Large portrait imagery anchors identity; retail pages assume a specific product, while community/library pages may aggregate editions | Show an edition cover only after matching it to the selected edition; otherwise use an explicit work-representative asset or placeholder |
+| Description | Every evidence-rich example makes a synopsis prominent, sometimes mixing publisher, editorial, or community copy | Keep one provenance-classed description and do not combine text classes |
+| Work versus edition | StoryGraph is clearest about original year versus edition date; Open Library exposes a work plus many editions; retailer pages mostly describe one sellable edition | Use separate `First published` and `Published` labels and keep all edition facts internally coherent |
+| Continuation | Editions, preview, borrow, buy, save, library, series, and related-book paths are common | Render only a stable path Bukie actually supports; do not imitate unavailable account or commerce actions |
+| Missing data | Sparse records generally collapse unavailable facts, although aggregated pages may leave uneven or ambiguous sections | Omit empty sections and punctuation; never use a famous work fact as an edition fallback |
+| Mobile | Retrieved structures imply a cover-first single-column stack and progressive disclosure, but this was not screenshot-verified | Preserve semantic reading order and validate 320px behavior in the future UI slice |
+| Accessibility | Products expose named links/actions and Kobo publishes edition accessibility metadata; this study did not audit any competitor for WCAG conformance | Treat competitor accessibility as inspiration only and retain Bukie's own heading, focus, target, contrast, alt-text, and motion requirements |
+| Clutter | Goodreads and Open Library are information-dense; Apple and Kobo use stronger grouping but add commerce; Google Books sits between them | Prefer a concise work summary, one edition block, and at most two useful continuation actions |
+
 ## Source and licensing decision matrix
 
 `Primary` means suitable to win a field after a source policy and field-specific
@@ -256,6 +270,45 @@ resolution path.
   [CC0/public-domain approach](https://standardebooks.org/about), controlled
   [feed access](https://standardebooks.org/feeds), and
   [cover proof and quality workflow](https://standardebooks.org/contribute/how-tos/how-to-choose-and-create-a-cover-image).
+
+### Fixed-sample source evidence
+
+The 4/5 official-publisher signal is work coverage, not proof that the page
+matches Bukie's current selected edition. Current product pages were found for
+[*Dune*](https://www.penguinrandomhouse.com/books/352036/dune-movie-tie-in-by-frank-herbert/9780143111580/),
+[*The City and the Stars*](https://www.hachette.co.uk/titles/arthur-c-clarke/the-city-and-the-stars/9781857987638/),
+[*Born a Crime*](https://www.penguinrandomhouse.com/books/537515/born-a-crime-by-trevor-noah/),
+and
+[*Faithful Place*](https://www.penguinrandomhouse.com/books/304337/faithful-place-by-tana-french/9781101190265/).
+Those pages support manual candidate evidence only until their field and usage
+policies are approved.
+
+For *Moby-Dick*, both
+[Project Gutenberg](https://www.gutenberg.org/ebooks/28794) and
+[Standard Ebooks](https://standardebooks.org/ebooks/herman-melville/moby-dick)
+expose a specific public-domain digital edition. Neither is evidence for an
+arbitrary modern print edition. No public publisher page was counted for that
+work.
+
+### Provider operations matrix
+
+`Pending` means no adapter may create a public winner. Numeric limits are
+recorded only when the current official documentation states them.
+
+| Source | Identifier and matching | Attribution | Cache, transformation, retention | Quota and refresh | Pricing and withdrawal |
+|---|---|---|---|---|---|
+| Bukie editorial | Internal work/edition ID plus cited parent evidence | Internal editor/reviewer audit | Retain versioned original text and observations; transformations are new reviewed revisions | Project-scheduled | Contributor/reviewer time; supersede or withdraw through a tombstone and new resolution |
+| Official publisher/author | Prefer exact ISBN/product URL; title/author creates only a candidate | Contract or page-specific policy | No bulk cache, transformation, or indefinite retention by default | No scraper; use an approved feed cadence or manual curation | Usually quote/relationship-based; contract must define takedown and purge |
+| Open Library metadata | OLID, ISBN, and explicit work/edition relations; fuzzy results remain candidates | Courtesy backlink requested | Cache is requested operationally, but content retention and field rights still require policy; monthly dump revisions are identifiable | Current API guidance states about 1 request/second by default and 3/second for identified clients; use monthly dumps for bulk refresh | No API fee stated; withdrawal/policy suspension recomputes affected heads |
+| Open Library Covers | CoverID/OLID/ISBN improves lookup but does not prove rights or Bukie's selected edition | Courtesy backlink requested | Public direct URLs are recommended; crawling and Bukie's private transformed cache are not approved by default | Non-CoverID/OLID access currently has a documented 100 requests per 5 minutes per IP limit; refresh only on approved asset schedule | No fee stated; takedown or policy change purges cached derivatives when required |
+| Wikidata | QID, stated identifiers, claims, qualifiers, and references; ambiguous title search never activates a link | Structured main-namespace data is CC0; retain source provenance even though attribution is not a CC0 condition | Structured facts may be normalized and retained under CC0; do not treat Wikipedia sitelinks as the same license | Entity/search access for bounded updates; dumps for bulk; WDQS is not a fuzzy/bulk pipeline | No access fee stated; revision or deletion creates a new observation/tombstone and reruns resolution |
+| Wikipedia | Page and revision IDs identify prose, not book editions | CC BY-SA attribution and share-alike requirements | Reuse/adaptation would need a compliant product design; default policy rejects public description ingestion | Not scheduled because public ingestion is rejected | No access fee; remove cached text if a future policy is suspended or rights change |
+| LOC/national libraries | LCCN/control number, authority ID, ISBN, and MARC/BIBFRAME relations | Preserve institution/record attribution where required | Record metadata and collection content need separate rights review; no cover/text assumption | LOC JSON API is rate-limited and not the full catalog; use the appropriate catalog/bulk interface and version | Public access, with operational cost only; withdrawal follows institution and Bukie policy |
+| WorldCat/OCLC | OCLC number, ISBN, and edition catalog record | Applicable OCLC attribution/terms | Public-page inspection grants no bulk cache or transformation rights | No adapter until licensed access, quota, and refresh terms are recorded | Contract-dependent; purge/disable behavior must be negotiated |
+| Google Books | Volume ID plus ISBN; a volume is edition-like but still requires tuple validation | Required branding, links, and attribution | Cache only as permitted by response headers/terms; third-party content and transformations need rights; termination can require deletion | Project-console quota; five unauthenticated sample calls returned 429, so no fixed usable quota was assumed | Check current project billing/terms; delete retained permitted content when terms require |
+| Bowker/Books In Print | ISBN is strong edition identity; work grouping still needs evidence | Contract-dependent | Retention, display, derivatives, and geography are contract-dependent | Licensed update feed/cadence | Quote required; contract must specify termination and purge |
+| Project Gutenberg | Gutenberg ebook ID identifies its digital edition; work link requires matching | Follow Project Gutenberg license/trademark terms and retain provenance | Use mirrors/offline feeds for automation; reuse depends on the reader's jurisdiction, not only US status | Human site discourages high-volume automation; refresh from approved feeds | No content fee; geography or rights conflict makes the value ineligible and purgeable |
+| Standard Ebooks | Canonical ebook/repository identity plus documented text basis | CC0 does not require attribution, but Bukie retains source provenance | CC0 project contributions permit reuse/transformations subject to jurisdiction caveats | OPDS/production feed access requires project approval; refresh by released revision | No listed per-record fee, but access/sponsorship may apply; geography or project correction triggers re-resolution |
 
 ## Coverage and field recommendations
 
