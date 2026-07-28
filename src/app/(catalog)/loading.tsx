@@ -5,9 +5,9 @@ import {
   HOME_SECTIONS,
   sectionContext,
 } from "@/features/discovery/homeSections";
-import { CategoryDiscovery } from "./components/CategoryDiscovery";
-import { SectionHeader } from "./components/SectionHeader";
-import { pageStyles as s } from "./pageStyles";
+import { CategoryDiscovery } from "../components/CategoryDiscovery";
+import { SectionHeader } from "../components/SectionHeader";
+import { pageStyles as s } from "../pageStyles";
 
 export default function Loading() {
   const arrivals = HOME_SECTIONS["new-arrivals"];

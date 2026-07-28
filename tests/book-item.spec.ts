@@ -78,8 +78,11 @@ test.describe("Book item page", () => {
     const html = await response.text();
     expect(response.ok()).toBe(true);
     expect(html).toContain("Dune");
+    expect(html).toContain("Opening book");
     expect(html).toContain("About the book");
     expect(html).toContain("Book details");
+    expect(html).not.toContain("book-card-skeleton");
+    expect(html).not.toContain("new-arrivals-loading");
     expect(html).not.toMatch(/preferred edition|metadata sources|provenance/i);
     expect(html).toContain('type="application/ld+json"');
 
