@@ -178,6 +178,77 @@ describe("normalized catalog repository", () => {
     ).toBe(false);
   });
 
+  it("omits fields selected from withdrawn or invalid observations", async () => {
+    const [summary] = await repository.listWorkSummaries(
+      query({ q: "Glass Harbors" }),
+    );
+    const initial = await repository.getWorkDetail(summary.id);
+    const editionId = initial?.preferredEdition?.id;
+    expect(initial?.preferredEdition?.pages).toBe(384);
+    expect(editionId).toBeTruthy();
+
+    const selected = raw
+      .prepare(
+        `select r.selected_observation_id as id
+         from field_resolution_heads h
+         join field_resolutions r on r.id = h.resolution_id
+         where h.entity_type = 'edition'
+           and h.entity_id = ?
+           and h.field_key = 'edition.pages'`,
+      )
+      .get(editionId) as { id: string } | undefined;
+    expect(selected?.id).toBeTruthy();
+
+    for (const state of ["withdrawn", "invalid"] as const) {
+      raw.exec("begin");
+      try {
+        raw
+          .prepare("update field_observations set state = ? where id = ?")
+          .run(state, selected?.id);
+        const detail = await repository.getWorkDetail(summary.id);
+        expect(detail?.preferredEdition?.pages).toBeUndefined();
+        expect(
+          detail?.provenance.find(
+            (item) =>
+              item.entityId === editionId && item.field === "edition.pages",
+          )?.evidence?.eligible,
+        ).toBe(false);
+      } finally {
+        raw.exec("rollback");
+      }
+    }
+  });
+
+  it("uses asset policy rather than metadata policy for covers", async () => {
+    const [summary] = await repository.listWorkSummaries(
+      query({ q: "Glass Harbors" }),
+    );
+    const initial = await repository.getWorkDetail(summary.id);
+    expect(initial?.preferredEdition?.cover).toBeDefined();
+    expect(initial?.preferredEdition?.pages).toBe(384);
+
+    raw.exec("begin");
+    try {
+      raw
+        .prepare(
+          "update metadata_sources set asset_policy = ? where key = 'legacy_catalog'",
+        )
+        .run(JSON.stringify({ display: false }));
+      const detail = await repository.getWorkDetail(summary.id);
+      expect(detail?.preferredEdition?.cover).toBeUndefined();
+      expect(detail?.preferredEdition?.pages).toBe(384);
+      expect(
+        detail?.provenance.find(
+          (item) =>
+            item.entityId === detail?.preferredEdition?.id &&
+            item.field === "edition.covers",
+        )?.evidence?.eligible,
+      ).toBe(false);
+    } finally {
+      raw.exec("rollback");
+    }
+  });
+
   it("returns deterministic new arrivals", async () => {
     const first = await repository.listNewArrivals(4);
     const second = await repository.listNewArrivals(4);

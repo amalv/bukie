@@ -25,7 +25,7 @@ const fieldOrder: DetailProvenanceField[] = [
 const fieldLabels: Record<DetailProvenanceField, string> = {
   "work.preferred_title": "Title",
   "work.description": "Description",
-  "work.preferred_edition": "Preferred edition selection",
+  "work.preferred_edition": "Edition used for display",
   "work.authors": "Creators",
   "work.categories": "Categories",
   "edition.title": "Edition title",
@@ -130,12 +130,15 @@ export function groupDetailProvenance(
     );
   const groups: DetailProvenanceGroup[] = [];
   const workItems = work.provenance.filter(
-    (item) => item.entityType === "work" && item.entityId === work.id,
+    (item) =>
+      item.entityType === "work" &&
+      item.entityId === work.id &&
+      item.state !== "missing",
   );
   if (workItems.length > 0) {
     groups.push({
       id: `work:${work.id}`,
-      label: "Work record",
+      label: "Work details",
       scope: "work",
       items: sorted(workItems),
     });
@@ -149,7 +152,10 @@ export function groupDetailProvenance(
   let alternateNumber = 0;
   for (const edition of orderedEditions) {
     const items = work.provenance.filter(
-      (item) => item.entityType === "edition" && item.entityId === edition.id,
+      (item) =>
+        item.entityType === "edition" &&
+        item.entityId === edition.id &&
+        item.state !== "missing",
     );
     if (items.length === 0) continue;
     const isPreferred = edition.id === preferredId;
@@ -157,7 +163,7 @@ export function groupDetailProvenance(
     groups.push({
       id: `edition:${edition.id}`,
       label: isPreferred
-        ? "Preferred edition"
+        ? "Preferred edition details"
         : editionDisplayLabel(edition, `Alternate edition ${alternateNumber}`),
       scope: isPreferred ? "preferred-edition" : "alternate-edition",
       items: sorted(items),

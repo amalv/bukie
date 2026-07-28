@@ -79,7 +79,7 @@ test.describe("Book item page", () => {
     expect(response.ok()).toBe(true);
     expect(html).toContain("Dune");
     expect(html).toContain("Preferred edition");
-    expect(html).toContain("About this metadata");
+    expect(html).toContain("Metadata sources");
     expect(html).toContain('type="application/ld+json"');
 
     await page.goto(url, { waitUntil: "domcontentloaded" });
@@ -92,9 +92,8 @@ test.describe("Book item page", () => {
       "Dune",
       "About this work",
       "Preferred edition",
-      "About this metadata",
+      "Metadata sources",
     ]);
-    await expect(page.getByText("Work", { exact: true })).toBeVisible();
     await expect(page.getByText("1965", { exact: true })).toBeVisible();
     await expect(page.getByText("ISBN-13", { exact: true })).toBeVisible();
 
@@ -163,6 +162,14 @@ test.describe("Book item page", () => {
             document.documentElement.clientWidth,
         ),
       ).toBe(true);
+      if (width === 1440) {
+        const columnGap = await page
+          .locator("[data-book-detail-layout]")
+          .evaluate((element) =>
+            Number.parseFloat(getComputedStyle(element).columnGap),
+          );
+        expect(columnGap).toBeGreaterThanOrEqual(32);
+      }
 
       const catalogLink = page.getByRole("link", { name: "Back to catalog" });
       let catalogFocused = false;

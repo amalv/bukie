@@ -64,10 +64,15 @@ describe("detail presentation", () => {
     expect(
       groupDetailProvenance(work).map(({ label, scope }) => ({ label, scope })),
     ).toEqual([
-      { label: "Work record", scope: "work" },
-      { label: "Preferred edition", scope: "preferred-edition" },
+      { label: "Work details", scope: "work" },
+      { label: "Preferred edition details", scope: "preferred-edition" },
       { label: "Paperback edition", scope: "alternate-edition" },
     ]);
+    expect(
+      groupDetailProvenance(work).every((group) =>
+        group.items.every((item) => item.state !== "missing"),
+      ),
+    ).toBe(true);
   });
 
   it("collapses edition groups that have no bibliographic facts", () => {

@@ -117,10 +117,12 @@ type ProvenanceRow = {
     | NonNullable<DetailProvenance["evidence"]>["sourceApproval"]
     | null;
   provenanceKind: NonNullable<DetailProvenance["evidence"]>["kind"] | null;
+  observationState: "active" | "stale" | "withdrawn" | "invalid" | null;
   retrievedAt: number | string | Date | null;
   sourceRecordState: "active" | "withdrawn" | "deleted" | null;
   sourceLinkState: "active" | "candidate" | "rejected" | null;
   metadataPolicy: string | Record<string, unknown> | null;
+  assetPolicy: string | Record<string, unknown> | null;
 };
 
 type ProjectedWork = WorkSummary | Omit<WorkDetail, "provenance">;
@@ -439,10 +441,12 @@ export function createCatalogRepository(
           s.name as "sourceName",
           s.approval_state as "sourceApproval",
           o.provenance_kind as "provenanceKind",
+          o.state as "observationState",
           o.retrieved_at as "retrievedAt",
           sr.state as "sourceRecordState",
           sl.state as "sourceLinkState",
-          s.metadata_policy as "metadataPolicy"
+          s.metadata_policy as "metadataPolicy",
+          s.asset_policy as "assetPolicy"
         from field_resolution_heads h
         join field_resolutions r on r.id = h.resolution_id
         left join field_observations o on o.id = r.selected_observation_id
@@ -477,11 +481,20 @@ export function createCatalogRepository(
               kind: row.provenanceKind,
               retrievedAt: epochMilliseconds(row.retrievedAt),
               eligible:
+                (row.state === "present"
+                  ? row.observationState === "active"
+                  : row.state === "stale" &&
+                    (row.observationState === "active" ||
+                      row.observationState === "stale")) &&
                 row.sourceApproval === "approved" &&
                 row.sourceRecordState === "active" &&
                 row.sourceLinkState === "active" &&
                 row.provenanceKind !== "synthetic" &&
-                sourcePolicyAllowsDisplay(row.metadataPolicy),
+                sourcePolicyAllowsDisplay(
+                  row.field === "edition.covers"
+                    ? row.assetPolicy
+                    : row.metadataPolicy,
+                ),
             }
           : undefined,
     }));

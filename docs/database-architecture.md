@@ -64,12 +64,15 @@ Detail reads also load current work and edition resolution heads in two bounded
 queries. `WorkDetail.provenance` exposes the resolution state and reason plus
 the selected observation's approved source, provenance kind, and retrieval
 time when one exists. Detail facts are retained only for `present` or `stale`
-resolutions backed by an approved, display-permitted, non-synthetic source with
-an active source record and entity link. Missing, conflicting, withdrawn,
-inactive-link, suspended-source, policy-ineligible, and synthetic values remain
-available to the audit ledger but are not projected into detail UI, page
-metadata, or structured data. A stale bibliographic fact may remain visible
-with its stored status and retrieval date as permitted by ADR 0016.
+resolutions backed by an active or appropriately stale selected observation
+from an approved, display-permitted, non-synthetic source with an active source
+record and entity link. Cover observations use the source's separate asset
+display policy; non-cover observations use its metadata display policy.
+Missing, conflicting, withdrawn, invalid-observation, inactive-link,
+suspended-source, policy-ineligible, and synthetic values remain available to
+the audit ledger but are not projected into detail UI, page metadata, or
+structured data. A stale bibliographic fact may remain visible with its stored
+status and retrieval date as permitted by ADR 0016.
 
 ## Initialization
 

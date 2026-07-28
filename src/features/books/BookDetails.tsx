@@ -148,10 +148,13 @@ export function BookDetails({ work }: BookDetailsProps) {
           &larr; Back to catalog
         </a>
 
-        <div className="grid min-w-0 grid-cols-1 items-start gap-[var(--spacing-4)] md:grid-cols-[minmax(180px,260px)_minmax(0,1fr)] lg:grid-cols-[minmax(240px,320px)_minmax(0,1fr)] lg:gap-[var(--spacing-5)]">
+        <div
+          data-book-detail-layout
+          className="grid min-w-0 grid-cols-1 items-start gap-[var(--spacing-4)] md:grid-cols-[minmax(180px,260px)_minmax(0,1fr)] lg:grid-cols-[minmax(240px,300px)_minmax(0,1fr)] lg:gap-[var(--spacing-6)]"
+        >
           <figure className="m-0 w-full">
             <div
-              className="relative mx-auto aspect-[2/3] w-full max-w-[260px] md:mx-0 lg:max-w-[320px]"
+              className="relative mx-auto aspect-[2/3] w-full max-w-[260px] md:mx-0 lg:max-w-[300px]"
               data-cover-state={cover ? "available" : "missing"}
             >
               <Image
@@ -172,13 +175,10 @@ export function BookDetails({ work }: BookDetailsProps) {
           </figure>
 
           <div className="flex min-w-0 flex-col gap-[var(--spacing-3)]">
-            <header className="flex min-w-0 flex-col gap-[var(--spacing-1)]">
-              <p className="m-0 text-[var(--type-xs)] font-semibold tracking-[0.08em] text-[var(--color-primary)] uppercase">
-                Work
-              </p>
+            <header className="flex min-w-0 flex-col gap-[var(--spacing-1-5)]">
               <h1
                 id="book-title"
-                className="m-0 text-[var(--type-xl)] leading-[var(--line-tight)] font-semibold text-[var(--color-on-surface)]"
+                className="m-0 text-[clamp(1.75rem,3vw,2.5rem)] leading-[var(--line-tight)] font-semibold text-[var(--color-on-surface)]"
               >
                 {work.title}
               </h1>
@@ -230,7 +230,7 @@ export function BookDetails({ work }: BookDetailsProps) {
               <EditionSection
                 id="preferred-edition-heading"
                 heading="Preferred edition"
-                description="Publication-specific details for the edition Bukie currently uses on catalog surfaces."
+                description="Publication details for the edition shown across Bukie."
                 facts={preferredFacts}
               />
             ) : (
@@ -283,28 +283,30 @@ export function BookDetails({ work }: BookDetailsProps) {
             ) : null}
 
             {provenanceGroups.length > 0 ? (
-              <section aria-labelledby="metadata-heading">
+              <section
+                className="rounded-[var(--radius-lg)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] shadow-[var(--elevation-1)]"
+                aria-labelledby="metadata-heading"
+              >
                 <h2
                   id="metadata-heading"
-                  className="m-0 text-[var(--type-lg)] font-semibold"
+                  className="m-0 px-[var(--spacing-3)] pt-[var(--spacing-3)] text-[var(--type-lg)] font-semibold md:px-[var(--spacing-4)] md:pt-[var(--spacing-4)]"
                 >
-                  About this metadata
+                  Metadata sources
                 </h2>
-                <p className="mt-[var(--spacing-1)] mb-[var(--spacing-2)] text-[var(--type-sm)] text-[var(--color-on-surface)] opacity-80">
-                  Review where the displayed catalog facts came from and whether
-                  any stored evidence needs attention.
+                <p className="mt-[var(--spacing-1)] mb-[var(--spacing-2)] px-[var(--spacing-3)] text-[var(--type-sm)] text-[var(--color-on-surface)] opacity-80 md:px-[var(--spacing-4)]">
+                  Sources and freshness for the catalog facts shown here.
                 </p>
-                <details className="rounded-[var(--radius-lg)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] shadow-[var(--elevation-1)]">
-                  <summary className="flex min-h-11 cursor-pointer items-center rounded-[var(--radius-lg)] px-[var(--spacing-3)] py-[var(--spacing-2)] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-primary)]">
+                <details>
+                  <summary className="flex min-h-11 cursor-pointer items-center border-t border-[color:var(--color-outline)] px-[var(--spacing-3)] py-[var(--spacing-2)] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-primary)] md:px-[var(--spacing-4)]">
                     View sources and status
                   </summary>
-                  <div className="grid gap-[var(--spacing-3)] border-t border-[color:var(--color-outline)] p-[var(--spacing-3)]">
+                  <div className="grid gap-[var(--spacing-3)] border-t border-[color:var(--color-outline)] p-[var(--spacing-3)] md:p-[var(--spacing-4)]">
                     {provenanceGroups.map((group) => (
                       <div key={group.id}>
                         <h3 className="m-0 mb-[var(--spacing-1)] text-[var(--type-md)] font-semibold">
                           {group.label}
                         </h3>
-                        <dl className="m-0 grid gap-[var(--spacing-1)]">
+                        <dl className="m-0 grid">
                           {group.items.map((item) => (
                             <ProvenanceDetail
                               key={`${item.entityId}:${item.field}`}
@@ -371,7 +373,7 @@ function ProvenanceDetail({ item }: { item: DetailProvenance }) {
     ? new Date(item.evidence.retrievedAt).toISOString()
     : undefined;
   return (
-    <div className="grid gap-[var(--spacing-0-5)] rounded-[var(--radius-sm)] bg-[color:color-mix(in_srgb,var(--color-surface)_88%,var(--color-primary)_12%)] p-[var(--spacing-2)] sm:grid-cols-[minmax(9rem,0.6fr)_minmax(0,1.4fr)] sm:gap-[var(--spacing-2)]">
+    <div className="grid gap-[var(--spacing-0-5)] border-t border-[color:var(--color-outline)] py-[var(--spacing-1-5)] first:border-t-0 sm:grid-cols-[minmax(9rem,0.6fr)_minmax(0,1.4fr)] sm:gap-[var(--spacing-2)]">
       <dt className="text-[var(--type-sm)] font-semibold">
         {detailFieldLabel(item.field)}
       </dt>
