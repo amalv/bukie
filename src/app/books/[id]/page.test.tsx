@@ -2,8 +2,11 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as repo from "@/features/books/repo";
-import { workDetailFixture } from "@/test/catalog-fixtures";
-import BookPage, { generateMetadata } from "./page";
+import {
+  partialWorkDetailFixture,
+  workDetailFixture,
+} from "@/test/catalog-fixtures";
+import BookPage, { buildWorkMetadata, generateMetadata } from "./page";
 
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
@@ -14,11 +17,11 @@ vi.mock("next/navigation", () => ({
 describe("work detail page", () => {
   beforeEach(() => vi.restoreAllMocks());
 
-  it("loads canonical detail by work ID", async () => {
+  it("loads canonical detail by work ID with server-rendered structured data", async () => {
     const find = vi
       .spyOn(repo, "findWorkById")
       .mockResolvedValue(workDetailFixture);
-    render(
+    const { container } = render(
       await BookPage({
         params: Promise.resolve({ id: workDetailFixture.id }),
       }),
@@ -27,14 +30,37 @@ describe("work detail page", () => {
       screen.getByRole("heading", { level: 1, name: workDetailFixture.title }),
     ).toBeInTheDocument();
     expect(find).toHaveBeenCalledWith(workDetailFixture.id);
+    const script = container.querySelector(
+      'script[type="application/ld+json"]',
+    );
+    expect(script).toBeInTheDocument();
+    expect(JSON.parse(script?.textContent ?? "")).toMatchObject({
+      "@context": "https://schema.org",
+      "@type": "Book",
+      name: "Example Work",
+      author: ["First Author", "Second Author"],
+    });
   });
 
-  it("builds metadata only from normalized stored facts", async () => {
+  it("builds metadata only from supported normalized facts", async () => {
     vi.spyOn(repo, "findWorkById").mockResolvedValue(workDetailFixture);
     const metadata = await generateMetadata({
       params: Promise.resolve({ id: workDetailFixture.id }),
     });
+    expect(metadata).toEqual(buildWorkMetadata(workDetailFixture));
     expect(metadata.title).toContain("Example Work");
     expect(metadata.description).toBe(workDetailFixture.description);
+    expect(metadata.alternates?.canonical).toBe(
+      `/books/${workDetailFixture.id}`,
+    );
+  });
+
+  it("keeps partial metadata factual without inventing a description", () => {
+    const metadata = buildWorkMetadata(partialWorkDetailFixture);
+    expect(metadata.title).toBe("Partial Work");
+    expect(metadata.description).toBe("Partial Work");
+    expect(JSON.stringify(metadata)).not.toMatch(
+      /full details|rating|publisher|popular/i,
+    );
   });
 });

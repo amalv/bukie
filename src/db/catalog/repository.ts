@@ -10,6 +10,7 @@ import {
   type PageResult,
 } from "@/features/books/pagination";
 import type {
+  DetailProvenance,
   EditionCover,
   EditionIdentifier,
   EditionLanguage,
@@ -103,6 +104,29 @@ type CoverRow = {
   height: number | null;
 };
 
+type ProvenanceRow = {
+  entityType: DetailProvenance["entityType"];
+  entityId: string;
+  field: DetailProvenance["field"];
+  state: DetailProvenance["state"];
+  reason: string;
+  resolvedAt: number | string | Date;
+  sourceKey: string | null;
+  sourceName: string | null;
+  sourceApproval:
+    | NonNullable<DetailProvenance["evidence"]>["sourceApproval"]
+    | null;
+  provenanceKind: NonNullable<DetailProvenance["evidence"]>["kind"] | null;
+  observationState: "active" | "stale" | "withdrawn" | "invalid" | null;
+  retrievedAt: number | string | Date | null;
+  sourceRecordState: "active" | "withdrawn" | "deleted" | null;
+  sourceLinkState: "active" | "candidate" | "rejected" | null;
+  metadataPolicy: string | Record<string, unknown> | null;
+  assetPolicy: string | Record<string, unknown> | null;
+};
+
+type ProjectedWork = WorkSummary | Omit<WorkDetail, "provenance">;
+
 export type CatalogRepository = {
   listWorkSummaries(query?: CatalogQuery): Promise<WorkSummary[]>;
   pageWorkSummaries(params: {
@@ -141,6 +165,36 @@ function addToMap<T>(map: Map<string, T[]>, key: string, value: T): void {
 function boundedLimit(limit: number, maximum = 50): number {
   if (!Number.isFinite(limit)) return 1;
   return Math.max(1, Math.min(maximum, Math.trunc(limit)));
+}
+
+function epochMilliseconds(value: number | string | Date): number {
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === "number") return value;
+  const numeric = Number(value);
+  if (Number.isFinite(numeric)) return numeric;
+  return new Date(value).getTime();
+}
+
+function sourcePolicyAllowsDisplay(
+  policy: string | Record<string, unknown> | null,
+): boolean {
+  if (!policy) return false;
+  try {
+    const parsed = typeof policy === "string" ? JSON.parse(policy) : policy;
+    return parsed.display === true;
+  } catch {
+    return false;
+  }
+}
+
+export function isDetailFieldDisplayEligible(
+  provenance: DetailProvenance | undefined,
+): boolean {
+  return Boolean(
+    provenance &&
+      (provenance.state === "present" || provenance.state === "stale") &&
+      provenance.evidence?.eligible,
+  );
 }
 
 export function createCatalogRepository(
@@ -369,10 +423,163 @@ export function createCatalogRepository(
     );
   }
 
+  async function loadProvenanceRows(
+    entityType: "work" | "edition",
+    entityIds: string[],
+  ): Promise<DetailProvenance[]> {
+    const rows = await queryInChunks<ProvenanceRow>(
+      entityIds,
+      (values) => `
+        select
+          h.entity_type as "entityType",
+          h.entity_id as "entityId",
+          h.field_key as "field",
+          r.state as "state",
+          r.reason as "reason",
+          r.resolved_at as "resolvedAt",
+          s.key as "sourceKey",
+          s.name as "sourceName",
+          s.approval_state as "sourceApproval",
+          o.provenance_kind as "provenanceKind",
+          o.state as "observationState",
+          o.retrieved_at as "retrievedAt",
+          sr.state as "sourceRecordState",
+          sl.state as "sourceLinkState",
+          s.metadata_policy as "metadataPolicy",
+          s.asset_policy as "assetPolicy"
+        from field_resolution_heads h
+        join field_resolutions r on r.id = h.resolution_id
+        left join field_observations o on o.id = r.selected_observation_id
+        left join source_records sr on sr.id = o.source_record_id
+        left join metadata_sources s on s.id = sr.source_id
+        left join source_record_links sl
+          on sl.source_record_id = sr.id
+         and sl.entity_type = r.entity_type
+         and sl.entity_id = r.entity_id
+        where h.entity_type = '${entityType}'
+          and h.entity_id in (${values})
+        order by h.entity_id asc, h.field_key asc
+      `,
+    );
+    return rows.map((row) => ({
+      entityType: row.entityType,
+      entityId: row.entityId,
+      field: row.field,
+      state: row.state,
+      reason: row.reason,
+      resolvedAt: epochMilliseconds(row.resolvedAt),
+      evidence:
+        row.sourceKey &&
+        row.sourceName &&
+        row.sourceApproval &&
+        row.provenanceKind &&
+        row.retrievedAt !== null
+          ? {
+              sourceKey: row.sourceKey,
+              sourceName: row.sourceName,
+              sourceApproval: row.sourceApproval,
+              kind: row.provenanceKind,
+              retrievedAt: epochMilliseconds(row.retrievedAt),
+              eligible:
+                (row.state === "present"
+                  ? row.observationState === "active"
+                  : row.state === "stale" &&
+                    (row.observationState === "active" ||
+                      row.observationState === "stale")) &&
+                row.sourceApproval === "approved" &&
+                row.sourceRecordState === "active" &&
+                row.sourceLinkState === "active" &&
+                row.provenanceKind !== "synthetic" &&
+                sourcePolicyAllowsDisplay(
+                  row.field === "edition.covers"
+                    ? row.assetPolicy
+                    : row.metadataPolicy,
+                ),
+            }
+          : undefined,
+    }));
+  }
+
+  function applyDetailEligibility(
+    detail: Omit<WorkDetail, "provenance">,
+    provenance: DetailProvenance[],
+  ): WorkDetail | undefined {
+    const byTargetField = new Map(
+      provenance.map((item) => [
+        `${item.entityType}:${item.entityId}:${item.field}`,
+        item,
+      ]),
+    );
+    const eligible = (
+      entityType: "work" | "edition",
+      entityId: string,
+      field: DetailProvenance["field"],
+    ) =>
+      isDetailFieldDisplayEligible(
+        byTargetField.get(`${entityType}:${entityId}:${field}`),
+      );
+
+    if (!eligible("work", detail.id, "work.preferred_title")) return undefined;
+
+    const editions = detail.editions.map((edition) => ({
+      ...edition,
+      title: eligible("edition", edition.id, "edition.title")
+        ? edition.title
+        : undefined,
+      subtitle: eligible("edition", edition.id, "edition.subtitle")
+        ? edition.subtitle
+        : undefined,
+      format: eligible("edition", edition.id, "edition.format")
+        ? edition.format
+        : undefined,
+      publication: eligible("edition", edition.id, "edition.publication_date")
+        ? edition.publication
+        : undefined,
+      pages: eligible("edition", edition.id, "edition.pages")
+        ? edition.pages
+        : undefined,
+      publishers: eligible("edition", edition.id, "edition.publishers")
+        ? edition.publishers
+        : [],
+      languages: eligible("edition", edition.id, "edition.languages")
+        ? edition.languages
+        : [],
+      identifiers: eligible("edition", edition.id, "edition.identifiers")
+        ? edition.identifiers
+        : [],
+      cover: eligible("edition", edition.id, "edition.covers")
+        ? edition.cover
+        : undefined,
+    }));
+    const preferredEdition =
+      detail.preferredEdition &&
+      eligible("work", detail.id, "work.preferred_edition")
+        ? editions.find((edition) => edition.id === detail.preferredEdition?.id)
+        : undefined;
+    const categories = eligible("work", detail.id, "work.categories")
+      ? detail.categories
+      : [];
+
+    return {
+      ...detail,
+      authors: eligible("work", detail.id, "work.authors")
+        ? detail.authors
+        : [],
+      primaryCategory: categories.find((category) => category.isPrimary),
+      preferredEdition,
+      description: eligible("work", detail.id, "work.description")
+        ? detail.description
+        : undefined,
+      categories,
+      editions,
+      provenance,
+    };
+  }
+
   async function projectWorks(
     workRows: WorkRow[],
     options: { includeAllEditions?: boolean } = {},
-  ): Promise<Array<WorkSummary | WorkDetail>> {
+  ): Promise<ProjectedWork[]> {
     if (workRows.length === 0) return [];
     const workIds = workRows.map((row) => row.id);
     const preferredEditionIds = workRows
@@ -599,7 +806,7 @@ export function createCatalogRepository(
         description: optional(row.description),
         categories,
         editions: allEditions,
-      } satisfies WorkDetail;
+      } satisfies Omit<WorkDetail, "provenance">;
     });
   }
 
@@ -689,8 +896,20 @@ export function createCatalogRepository(
       );
       const projected = (await projectWorks(rows, {
         includeAllEditions: true,
-      })) as WorkDetail[];
-      return projected[0];
+      })) as Array<Omit<WorkDetail, "provenance">>;
+      const detail = projected[0];
+      if (!detail) return undefined;
+      const [workProvenance, editionProvenance] = await Promise.all([
+        loadProvenanceRows("work", [detail.id]),
+        loadProvenanceRows(
+          "edition",
+          detail.editions.map((edition) => edition.id),
+        ),
+      ]);
+      return applyDetailEligibility(detail, [
+        ...workProvenance,
+        ...editionProvenance,
+      ]);
     },
   };
 }

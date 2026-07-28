@@ -5,12 +5,14 @@ import type Database from "better-sqlite3";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { CatalogQuery, CatalogSort } from "@/features/books/catalogQuery";
 import { encodeCursor } from "@/features/books/pagination";
+import { provenanceFixture } from "@/test/catalog-fixtures";
 import { ADR_REPRESENTATIVE_RECORDS } from "./fixtures";
 import { buildCatalogImportGraph } from "./importer";
 import {
   type CatalogQueryExecutor,
   type CatalogRepository,
   createCatalogRepository,
+  isDetailFieldDisplayEligible,
 } from "./repository";
 import { openCatalogSqlite, rebuildCatalogSqlite } from "./sqlite-rebuild";
 
@@ -19,6 +21,7 @@ describe("normalized catalog repository", () => {
   const sqlitePath = path.join(directory, "repository.sqlite");
   let repository: CatalogRepository;
   let raw: InstanceType<typeof Database>;
+  let queryCount = 0;
 
   beforeAll(() => {
     rebuildCatalogSqlite({
@@ -32,6 +35,7 @@ describe("normalized catalog repository", () => {
         statement: string,
         parameters: unknown[] = [],
       ) {
+        queryCount += 1;
         return raw.prepare(statement).all(...parameters) as T[];
       },
     };
@@ -87,7 +91,9 @@ describe("normalized catalog repository", () => {
     const [summary] = await repository.listWorkSummaries(
       query({ q: "Glass Harbors" }),
     );
+    const beforeDetailQueries = queryCount;
     const detail = await repository.getWorkDetail(summary.id);
+    expect(queryCount - beforeDetailQueries).toBeLessThanOrEqual(10);
     expect(detail?.authors.map((author) => author.name)).toEqual([
       "Tomas Grey",
     ]);
@@ -99,6 +105,34 @@ describe("normalized catalog repository", () => {
     expect(
       detail?.editions.map((edition) => edition.languages[0]?.tag),
     ).toEqual(["en", "es"]);
+    expect(
+      detail?.provenance.find(
+        (item) =>
+          item.entityId === detail.preferredEdition?.id &&
+          item.field === "edition.publication_date",
+      ),
+    ).toMatchObject({
+      state: "present",
+      evidence: {
+        sourceKey: "legacy_catalog",
+        sourceName: "Bukie legacy catalog artifact",
+        sourceApproval: "approved",
+        kind: "imported",
+        eligible: true,
+      },
+    });
+    expect(
+      detail?.provenance.find(
+        (item) => item.field === "work.preferred_edition",
+      ),
+    ).toMatchObject({
+      state: "present",
+      evidence: {
+        sourceKey: "bukie_derivation",
+        kind: "derived",
+        eligible: true,
+      },
+    });
   });
 
   it("keeps missing metadata absent and never projects rating/popularity fields", async () => {
@@ -109,7 +143,110 @@ describe("normalized catalog repository", () => {
     expect(detail?.authors).toEqual([]);
     expect(detail?.preferredEdition?.identifiers).toEqual([]);
     expect(detail?.preferredEdition?.cover).toBeUndefined();
+    expect(
+      detail?.provenance.find(
+        (item) =>
+          item.entityId === detail.preferredEdition?.id &&
+          item.field === "edition.identifiers",
+      )?.state,
+    ).toBe("missing");
+    expect(
+      detail?.provenance.find(
+        (item) =>
+          item.entityId === detail.preferredEdition?.id &&
+          item.field === "edition.covers",
+      )?.state,
+    ).toBe("missing");
     expect(JSON.stringify(detail)).not.toMatch(/rating|trending|popularity/i);
+  });
+
+  it("requires an eligible source record, link, and display policy", () => {
+    const present = provenanceFixture("work", "work-id", "work.description");
+    if (!present.evidence) throw new Error("Expected fixture evidence");
+    expect(isDetailFieldDisplayEligible(present)).toBe(true);
+    expect(isDetailFieldDisplayEligible({ ...present, state: "stale" })).toBe(
+      true,
+    );
+    expect(
+      isDetailFieldDisplayEligible({ ...present, state: "conflicting" }),
+    ).toBe(false);
+    expect(
+      isDetailFieldDisplayEligible({
+        ...present,
+        evidence: { ...present.evidence, eligible: false },
+      }),
+    ).toBe(false);
+  });
+
+  it("omits fields selected from withdrawn or invalid observations", async () => {
+    const [summary] = await repository.listWorkSummaries(
+      query({ q: "Glass Harbors" }),
+    );
+    const initial = await repository.getWorkDetail(summary.id);
+    const editionId = initial?.preferredEdition?.id;
+    expect(initial?.preferredEdition?.pages).toBe(384);
+    expect(editionId).toBeTruthy();
+
+    const selected = raw
+      .prepare(
+        `select r.selected_observation_id as id
+         from field_resolution_heads h
+         join field_resolutions r on r.id = h.resolution_id
+         where h.entity_type = 'edition'
+           and h.entity_id = ?
+           and h.field_key = 'edition.pages'`,
+      )
+      .get(editionId) as { id: string } | undefined;
+    expect(selected?.id).toBeTruthy();
+
+    for (const state of ["withdrawn", "invalid"] as const) {
+      raw.exec("begin");
+      try {
+        raw
+          .prepare("update field_observations set state = ? where id = ?")
+          .run(state, selected?.id);
+        const detail = await repository.getWorkDetail(summary.id);
+        expect(detail?.preferredEdition?.pages).toBeUndefined();
+        expect(
+          detail?.provenance.find(
+            (item) =>
+              item.entityId === editionId && item.field === "edition.pages",
+          )?.evidence?.eligible,
+        ).toBe(false);
+      } finally {
+        raw.exec("rollback");
+      }
+    }
+  });
+
+  it("uses asset policy rather than metadata policy for covers", async () => {
+    const [summary] = await repository.listWorkSummaries(
+      query({ q: "Glass Harbors" }),
+    );
+    const initial = await repository.getWorkDetail(summary.id);
+    expect(initial?.preferredEdition?.cover).toBeDefined();
+    expect(initial?.preferredEdition?.pages).toBe(384);
+
+    raw.exec("begin");
+    try {
+      raw
+        .prepare(
+          "update metadata_sources set asset_policy = ? where key = 'legacy_catalog'",
+        )
+        .run(JSON.stringify({ display: false }));
+      const detail = await repository.getWorkDetail(summary.id);
+      expect(detail?.preferredEdition?.cover).toBeUndefined();
+      expect(detail?.preferredEdition?.pages).toBe(384);
+      expect(
+        detail?.provenance.find(
+          (item) =>
+            item.entityId === detail?.preferredEdition?.id &&
+            item.field === "edition.covers",
+        )?.evidence?.eligible,
+      ).toBe(false);
+    } finally {
+      raw.exec("rollback");
+    }
   });
 
   it("returns deterministic new arrivals", async () => {

@@ -29,7 +29,7 @@ The presentation must:
 
 1. support quick recognition by cover, title and creator;
 2. distinguish works without turning the card into a miniature detail page;
-3. expose rating evidence only when its sample and provenance state permit it;
+3. expose ratings only when internal sample and provenance policy permits them;
 4. survive long, multiple and missing metadata from the work-first catalog;
 5. provide one clear detail action without duplicate keyboard stops;
 6. remain useful from 320 through 1440 CSS pixels;
@@ -270,8 +270,9 @@ arbitrary foreground color.
 - every popularity, trend, recommendation or library claim without a real
   supported signal/action.
 
-Deferred fields belong on the detail page, in an accessible provenance
-disclosure, or in a surface designed for that user job.
+Deferred bibliographic fields belong on the detail page or in a surface
+designed for that user job. Provenance remains an internal eligibility concern,
+not reader-facing product copy.
 
 ## Truncation and missing-data rules
 

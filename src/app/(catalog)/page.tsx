@@ -21,13 +21,13 @@ import {
   NEW_ARRIVALS_PREVIEW_LIMIT,
   sectionContext,
 } from "@/features/discovery/homeSections";
-import { CatalogFilters } from "./CatalogFilters";
-import { BooksCount } from "./components/BooksCount";
-import { CategoryDiscovery } from "./components/CategoryDiscovery";
-import { SectionHeader } from "./components/SectionHeader";
-import { normalizeAfter } from "./helpers/pageParams";
-import { pageStyles as s } from "./pageStyles";
-import { SearchForm } from "./SearchForm";
+import { CatalogFilters } from "../CatalogFilters";
+import { BooksCount } from "../components/BooksCount";
+import { CategoryDiscovery } from "../components/CategoryDiscovery";
+import { SectionHeader } from "../components/SectionHeader";
+import { normalizeAfter } from "../helpers/pageParams";
+import { pageStyles as s } from "../pageStyles";
+import { SearchForm } from "../SearchForm";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 

@@ -67,6 +67,31 @@ describe.skipIf(!isolatedUrl)("Postgres normalized catalog rebuild", () => {
       expect(dune.length).toBeGreaterThan(0);
       const detail = await repository.getWorkDetail(dune[0].id);
       expect(detail?.id).toBe(dune[0].id);
+      expect(
+        detail?.provenance.find(
+          (item) => item.field === "work.preferred_title",
+        ),
+      ).toMatchObject({
+        state: "present",
+        evidence: {
+          sourceKey: "legacy_catalog",
+          sourceApproval: "approved",
+          kind: "imported",
+          eligible: true,
+        },
+      });
+      expect(
+        detail?.provenance.find(
+          (item) => item.field === "work.preferred_edition",
+        ),
+      ).toMatchObject({
+        state: "present",
+        evidence: {
+          sourceKey: "bukie_derivation",
+          kind: "derived",
+          eligible: true,
+        },
+      });
       expect(JSON.stringify(detail)).not.toMatch(/rating|trending/i);
       const firstPage = await repository.pageWorkSummaries({
         query: { sort: "title" },
