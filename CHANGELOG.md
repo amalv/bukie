@@ -1,3 +1,17 @@
+# [0.37.0](https://github.com/amalv/bukie/compare/v0.36.0...v0.37.0) (2026-07-28)
+
+
+### Bug Fixes
+
+* **books:** add focused detail loading state ([fc0a04e](https://github.com/amalv/bukie/commit/fc0a04ee72f9722b11a8907c0b784b699a6a6013))
+* **books:** make details reader-focused ([75b6d26](https://github.com/amalv/bukie/commit/75b6d262568d5aebb503cc3d7dc029637f79a503))
+* **books:** tighten detail provenance and layout ([8211649](https://github.com/amalv/bukie/commit/821164939959c52fa6afbdc9b653ee086569036c))
+
+
+### Features
+
+* **books:** add provenance-aware book details ([920e12f](https://github.com/amalv/bukie/commit/920e12fcf70999ed613108d7fa08f01febc3207c))
+
 # [0.36.0](https://github.com/amalv/bukie/compare/v0.35.0...v0.36.0) (2026-07-27)
 
 
