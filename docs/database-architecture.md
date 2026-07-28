@@ -61,9 +61,10 @@ with bounded follow-up queries. This avoids a Cartesian product and preserves
 relationship order.
 
 Detail reads also load current work and edition resolution heads in two bounded
-queries. `WorkDetail.provenance` exposes the resolution state and reason plus
-the selected observation's approved source, provenance kind, and retrieval
-time when one exists. Detail facts are retained only for `present` or `stale`
+queries. The internal `WorkDetail.provenance` projection exposes the resolution
+state and selected evidence needed to enforce display eligibility. It is not
+rendered as reader-facing content or returned by the public detail API. Detail
+facts are retained only for `present` or `stale`
 resolutions backed by an active or appropriately stale selected observation
 from an approved, display-permitted, non-synthetic source with an active source
 record and entity link. Cover observations use the source's separate asset
@@ -113,7 +114,8 @@ database, and deployment must remain available for rollback.
 - `GET /api/books?<catalog-query>` returns `WorkSummary[]`.
 - `GET /api/books/page?<catalog-query>&after=<cursor>&limit=<n>` returns a
   normalized work page including the filtered total.
-- `GET /api/books/<work-id>` returns `WorkDetail`.
+- `GET /api/books/<work-id>` returns reader-facing work detail with internal
+  provenance omitted.
 
 Both list routes parse the same canonical catalog query used by the
 server-rendered homepage and client-side load-more requests.

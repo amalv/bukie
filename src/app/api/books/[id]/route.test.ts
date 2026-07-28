@@ -13,7 +13,10 @@ describe("GET /api/books/[id]", () => {
     const response = await GET(new Request("https://test"), {
       params: Promise.resolve({ id: workDetailFixture.id }),
     });
-    expect(await response.json()).toEqual(workDetailFixture);
+    const { provenance: _provenance, ...expected } = workDetailFixture;
+    const body = await response.json();
+    expect(body).toEqual(expected);
+    expect(body).not.toHaveProperty("provenance");
     expect(find).toHaveBeenCalledWith(workDetailFixture.id);
   });
 

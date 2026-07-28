@@ -2,80 +2,17 @@ import { describe, expect, it } from "vitest";
 import {
   editionFixture,
   partialWorkDetailFixture,
-  provenanceFixture,
   workDetailFixture,
 } from "@/test/catalog-fixtures";
 import {
   buildBookStructuredData,
-  detailEvidenceKindLabel,
-  detailFieldLabel,
-  detailProvenanceStatusLabel,
-  detailStateLabel,
-  groupDetailProvenance,
+  editionDisplayLabel,
   hasEditionBibliographicFacts,
   serializeStructuredData,
 } from "./detailPresentation";
 
 describe("detail presentation", () => {
-  it("uses plain-language labels for every resolution and evidence state", () => {
-    expect(detailStateLabel("present")).toBe("Available");
-    expect(detailStateLabel("missing")).toBe("Not available");
-    expect(detailStateLabel("conflicting")).toBe("Conflicting evidence");
-    expect(detailStateLabel("stale")).toBe("Stale");
-    expect(detailStateLabel("withdrawn")).toBe("Withdrawn");
-    expect(detailEvidenceKindLabel("curated")).toBe("Curated");
-    expect(detailEvidenceKindLabel("imported")).toBe("Imported");
-    expect(detailEvidenceKindLabel("derived")).toBe("Derived");
-    expect(detailFieldLabel("work.authors")).toBe("Creators");
-    expect(detailFieldLabel("edition.publication_date")).toBe(
-      "Publication date",
-    );
-    const unavailable = provenanceFixture(
-      "work",
-      "work-id",
-      "work.description",
-    );
-    if (!unavailable.evidence) throw new Error("Expected fixture evidence");
-    expect(
-      detailProvenanceStatusLabel({
-        ...unavailable,
-        evidence: {
-          ...unavailable.evidence,
-          eligible: false,
-        },
-      }),
-    ).toBe("Not available");
-  });
-
-  it("groups work, preferred-edition, and alternate-edition evidence separately", () => {
-    const alternate = {
-      ...editionFixture,
-      id: "20000000-0000-4000-8000-000000000002",
-      format: "paperback" as const,
-    };
-    const work = {
-      ...workDetailFixture,
-      editions: [editionFixture, alternate],
-      provenance: [
-        ...workDetailFixture.provenance,
-        provenanceFixture("edition", alternate.id, "edition.publication_date"),
-      ],
-    };
-    expect(
-      groupDetailProvenance(work).map(({ label, scope }) => ({ label, scope })),
-    ).toEqual([
-      { label: "Work details", scope: "work" },
-      { label: "Preferred edition details", scope: "preferred-edition" },
-      { label: "Paperback edition", scope: "alternate-edition" },
-    ]);
-    expect(
-      groupDetailProvenance(work).every((group) =>
-        group.items.every((item) => item.state !== "missing"),
-      ),
-    ).toBe(true);
-  });
-
-  it("collapses edition groups that have no bibliographic facts", () => {
+  it("recognizes informative editions and uses reader-facing labels", () => {
     expect(hasEditionBibliographicFacts(undefined)).toBe(false);
     expect(
       hasEditionBibliographicFacts({
@@ -87,6 +24,18 @@ describe("detail presentation", () => {
       }),
     ).toBe(false);
     expect(hasEditionBibliographicFacts(editionFixture)).toBe(true);
+    expect(
+      editionDisplayLabel(
+        { ...editionFixture, title: "Collector's edition" },
+        "Edition 2",
+      ),
+    ).toBe("Collector's edition");
+    expect(
+      editionDisplayLabel(
+        { ...editionFixture, format: "paperback" },
+        "Edition 2",
+      ),
+    ).toBe("Paperback edition");
   });
 
   it("builds Book structured data only from supported stored facts", () => {
@@ -110,7 +59,7 @@ describe("detail presentation", () => {
       ],
     });
     expect(JSON.stringify(data)).not.toMatch(
-      /rating|popularity|catalogedAt|objectKey/i,
+      /rating|popularity|catalogedAt|objectKey|provenance/i,
     );
   });
 

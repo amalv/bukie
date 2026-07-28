@@ -4,21 +4,16 @@ import User from "lucide-react/dist/esm/icons/user.js";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { resolveBookCoverSrc, shouldUnoptimizeImage } from "@/media/covers";
-import {
-  detailEvidenceKindLabel,
-  detailFieldLabel,
-  detailProvenanceStatusLabel,
-  editionDisplayLabel,
-  groupDetailProvenance,
-} from "./detailPresentation";
-import type {
-  DetailProvenance,
-  EditionSummary,
-  WorkAuthor,
-  WorkDetail,
-} from "./types";
+import { editionDisplayLabel } from "./detailPresentation";
+import type { EditionSummary, WorkAuthor, WorkDetail } from "./types";
 
 export type BookDetailsProps = { work: WorkDetail };
+
+type EditionFact = {
+  key: string;
+  label: string;
+  value: ReactNode;
+};
 
 function joinValues(values: string[]): string | undefined {
   return values.length > 0 ? values.join(", ") : undefined;
@@ -37,18 +32,7 @@ function creatorLabel(creator: WorkAuthor): string {
     : `${creator.name} (${humanize(creator.role)})`;
 }
 
-function formatEvidenceDate(timestamp: number): string {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeZone: "UTC",
-  }).format(timestamp);
-}
-
-function editionFacts(edition: EditionSummary): Array<{
-  key: string;
-  label: string;
-  value: ReactNode;
-}> {
+function editionFacts(edition: EditionSummary): EditionFact[] {
   const publishers = joinValues(
     edition.publishers.map((publisher) =>
       publisher.role && publisher.role !== "publisher"
@@ -59,6 +43,7 @@ function editionFacts(edition: EditionSummary): Array<{
   const languages = joinValues(
     edition.languages.map((language) => language.label),
   );
+
   return [
     ...(edition.title
       ? [{ key: "title", label: "Edition title", value: edition.title }]
@@ -79,7 +64,7 @@ function editionFacts(edition: EditionSummary): Array<{
       ? [
           {
             key: "publication",
-            label: "Publication date",
+            label: "Published",
             value: (
               <span className="inline-flex items-center gap-[var(--spacing-1)]">
                 <Calendar className="h-4 w-4" aria-hidden="true" />
@@ -104,10 +89,22 @@ function editionFacts(edition: EditionSummary): Array<{
         ]
       : []),
     ...(publishers
-      ? [{ key: "publishers", label: "Publishers", value: publishers }]
+      ? [
+          {
+            key: "publishers",
+            label: edition.publishers.length === 1 ? "Publisher" : "Publishers",
+            value: publishers,
+          },
+        ]
       : []),
     ...(languages
-      ? [{ key: "languages", label: "Languages", value: languages }]
+      ? [
+          {
+            key: "languages",
+            label: edition.languages.length === 1 ? "Language" : "Languages",
+            value: languages,
+          },
+        ]
       : []),
     ...edition.identifiers.map((identifier) => ({
       key: `identifier:${identifier.id}`,
@@ -119,8 +116,7 @@ function editionFacts(edition: EditionSummary): Array<{
 
 export function BookDetails({ work }: BookDetailsProps) {
   const edition = work.preferredEdition;
-  const creatorNames = work.authors.map(creatorLabel);
-  const authors = joinValues(creatorNames);
+  const authors = joinValues(work.authors.map(creatorLabel));
   const cover = edition?.cover;
   const coverSrc = resolveBookCoverSrc(cover?.objectKey);
   const coverAlt = cover
@@ -128,11 +124,15 @@ export function BookDetails({ work }: BookDetailsProps) {
       ? `Cover of ${work.title} by ${authors}`
       : `Cover of ${work.title}`
     : `No cover available for ${work.title}`;
-  const preferredFacts = edition ? editionFacts(edition) : [];
-  const alternateEditions = work.editions.filter(
-    (item) => item.id !== edition?.id,
-  );
-  const provenanceGroups = groupDetailProvenance(work);
+  const bookFacts = edition ? editionFacts(edition) : [];
+  const otherEditions = work.editions
+    .filter((item) => item.id !== edition?.id)
+    .map((item, index) => ({
+      edition: item,
+      facts: editionFacts(item),
+      fallbackLabel: `Edition ${index + 2}`,
+    }))
+    .filter((item) => item.facts.length > 0);
 
   return (
     <article
@@ -164,7 +164,7 @@ export function BookDetails({ work }: BookDetailsProps) {
                 height={960}
                 className="h-full w-full rounded-[var(--radius-md)] object-cover shadow-[var(--elevation-1)]"
                 unoptimized={shouldUnoptimizeImage(coverSrc)}
-                sizes="(max-width: 767px) min(70vw, 260px), (max-width: 1199px) 260px, 320px"
+                sizes="(max-width: 767px) min(70vw, 260px), (max-width: 1199px) 260px, 300px"
               />
             </div>
             {!cover ? (
@@ -191,14 +191,17 @@ export function BookDetails({ work }: BookDetailsProps) {
               {work.categories.length > 0 ? (
                 <ul
                   className="m-0 flex list-none flex-wrap gap-[var(--spacing-1)] p-0"
-                  aria-label="Work categories"
+                  aria-label="Browse by category"
                 >
                   {work.categories.map((category) => (
-                    <li
-                      key={category.id}
-                      className="rounded-full border border-[color:var(--color-outline)] bg-[var(--color-surface)] px-[var(--spacing-1)] py-[var(--spacing-0-5)] text-[var(--type-xs)]"
-                    >
-                      {category.label}
+                    <li key={category.id}>
+                      <a
+                        href={`/?category=${encodeURIComponent(category.slug)}`}
+                        data-book-detail-action
+                        className="inline-flex min-h-11 items-center rounded-full border border-[color:var(--color-outline)] bg-[var(--color-surface)] px-[var(--spacing-1-5)] py-[var(--spacing-0-5)] text-[var(--type-sm)] text-[var(--color-on-surface)] no-underline transition-colors hover:border-[color:var(--color-primary)] hover:text-[var(--color-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-primary)] motion-reduce:transition-none"
+                      >
+                        {category.label}
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -208,116 +211,54 @@ export function BookDetails({ work }: BookDetailsProps) {
             {work.description ? (
               <section
                 className="rounded-[var(--radius-lg)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] p-[var(--spacing-3)] shadow-[var(--elevation-1)] md:p-[var(--spacing-4)]"
-                aria-labelledby="about-work-heading"
+                aria-labelledby="about-book-heading"
               >
                 <h2
-                  id="about-work-heading"
+                  id="about-book-heading"
                   className="m-0 mb-[var(--spacing-2)] text-[var(--type-lg)] font-semibold"
                 >
-                  About this work
+                  About the book
                 </h2>
-                <p className="m-0 text-[var(--type-sm)] leading-[var(--line-relaxed)] text-[var(--color-on-surface)] opacity-80">
+                <p className="m-0 text-[var(--type-md)] leading-[var(--line-relaxed)] text-[var(--color-on-surface)] opacity-80">
                   {work.description}
                 </p>
               </section>
-            ) : (
-              <p className="m-0 rounded-[var(--radius-md)] bg-[color:color-mix(in_srgb,var(--color-surface)_88%,var(--color-primary)_12%)] p-[var(--spacing-2)] text-[var(--type-sm)] text-[var(--color-on-surface)]">
-                A description is not available in the catalog for this work.
-              </p>
-            )}
+            ) : null}
 
-            {edition && preferredFacts.length > 0 ? (
-              <EditionSection
-                id="preferred-edition-heading"
-                heading="Preferred edition"
-                description="Publication details for the edition shown across Bukie."
-                facts={preferredFacts}
+            {bookFacts.length > 0 ? (
+              <DetailSection
+                id="book-details-heading"
+                heading="Book details"
+                facts={bookFacts}
               />
-            ) : (
-              <p className="m-0 rounded-[var(--radius-md)] bg-[color:color-mix(in_srgb,var(--color-surface)_88%,var(--color-primary)_12%)] p-[var(--spacing-2)] text-[var(--type-sm)] text-[var(--color-on-surface)]">
-                Preferred-edition publication details are not available in the
-                catalog.
-              </p>
-            )}
+            ) : null}
 
-            {alternateEditions.length > 0 ? (
+            {otherEditions.length > 0 ? (
               <section
                 className="rounded-[var(--radius-lg)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] p-[var(--spacing-3)] shadow-[var(--elevation-1)] md:p-[var(--spacing-4)]"
-                aria-labelledby="alternate-editions-heading"
+                aria-labelledby="other-editions-heading"
               >
                 <h2
-                  id="alternate-editions-heading"
-                  className="m-0 text-[var(--type-lg)] font-semibold"
+                  id="other-editions-heading"
+                  className="m-0 mb-[var(--spacing-2)] text-[var(--type-lg)] font-semibold"
                 >
-                  Alternate editions
+                  Other editions
                 </h2>
-                <p className="mt-[var(--spacing-1)] mb-[var(--spacing-2)] text-[var(--type-sm)] text-[var(--color-on-surface)] opacity-80">
-                  Other stored publication records for this work.
-                </p>
                 <ul className="m-0 grid list-none gap-[var(--spacing-2)] p-0">
-                  {alternateEditions.map((item, index) => {
-                    const facts = editionFacts(item);
-                    return (
+                  {otherEditions.map(
+                    ({ edition: item, facts, fallbackLabel }) => (
                       <li
                         key={item.id}
                         className="rounded-[var(--radius-md)] border border-[color:var(--color-outline)] p-[var(--spacing-2)]"
                       >
                         <h3 className="m-0 mb-[var(--spacing-1)] text-[var(--type-md)] font-semibold">
-                          {editionDisplayLabel(
-                            item,
-                            `Alternate edition ${index + 1}`,
-                          )}
+                          {editionDisplayLabel(item, fallbackLabel)}
                         </h3>
-                        {facts.length > 0 ? (
-                          <DetailList facts={facts} />
-                        ) : (
-                          <p className="m-0 text-[var(--type-sm)] text-[var(--color-on-surface)] opacity-80">
-                            No additional publication details are available.
-                          </p>
-                        )}
+                        <DetailList facts={facts} />
                       </li>
-                    );
-                  })}
+                    ),
+                  )}
                 </ul>
-              </section>
-            ) : null}
-
-            {provenanceGroups.length > 0 ? (
-              <section
-                className="rounded-[var(--radius-lg)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] shadow-[var(--elevation-1)]"
-                aria-labelledby="metadata-heading"
-              >
-                <h2
-                  id="metadata-heading"
-                  className="m-0 px-[var(--spacing-3)] pt-[var(--spacing-3)] text-[var(--type-lg)] font-semibold md:px-[var(--spacing-4)] md:pt-[var(--spacing-4)]"
-                >
-                  Metadata sources
-                </h2>
-                <p className="mt-[var(--spacing-1)] mb-[var(--spacing-2)] px-[var(--spacing-3)] text-[var(--type-sm)] text-[var(--color-on-surface)] opacity-80 md:px-[var(--spacing-4)]">
-                  Sources and freshness for the catalog facts shown here.
-                </p>
-                <details>
-                  <summary className="flex min-h-11 cursor-pointer items-center border-t border-[color:var(--color-outline)] px-[var(--spacing-3)] py-[var(--spacing-2)] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-primary)] md:px-[var(--spacing-4)]">
-                    View sources and status
-                  </summary>
-                  <div className="grid gap-[var(--spacing-3)] border-t border-[color:var(--color-outline)] p-[var(--spacing-3)] md:p-[var(--spacing-4)]">
-                    {provenanceGroups.map((group) => (
-                      <div key={group.id}>
-                        <h3 className="m-0 mb-[var(--spacing-1)] text-[var(--type-md)] font-semibold">
-                          {group.label}
-                        </h3>
-                        <dl className="m-0 grid">
-                          {group.items.map((item) => (
-                            <ProvenanceDetail
-                              key={`${item.entityId}:${item.field}`}
-                              item={item}
-                            />
-                          ))}
-                        </dl>
-                      </div>
-                    ))}
-                  </div>
-                </details>
               </section>
             ) : null}
           </div>
@@ -327,72 +268,38 @@ export function BookDetails({ work }: BookDetailsProps) {
   );
 }
 
-function EditionSection({
+function DetailSection({
   id,
   heading,
-  description,
   facts,
 }: {
   id: string;
   heading: string;
-  description: string;
-  facts: Array<{ key: string; label: string; value: ReactNode }>;
+  facts: EditionFact[];
 }) {
   return (
     <section
       className="rounded-[var(--radius-lg)] border border-[color:var(--color-outline)] bg-[var(--color-surface)] p-[var(--spacing-3)] shadow-[var(--elevation-1)] md:p-[var(--spacing-4)]"
       aria-labelledby={id}
     >
-      <h2 id={id} className="m-0 text-[var(--type-lg)] font-semibold">
+      <h2
+        id={id}
+        className="m-0 mb-[var(--spacing-2)] text-[var(--type-lg)] font-semibold"
+      >
         {heading}
       </h2>
-      <p className="mt-[var(--spacing-1)] mb-[var(--spacing-2)] text-[var(--type-sm)] text-[var(--color-on-surface)] opacity-80">
-        {description}
-      </p>
       <DetailList facts={facts} />
     </section>
   );
 }
 
-function DetailList({
-  facts,
-}: {
-  facts: Array<{ key: string; label: string; value: ReactNode }>;
-}) {
+function DetailList({ facts }: { facts: EditionFact[] }) {
   return (
     <dl className="m-0 grid grid-cols-1 gap-[var(--spacing-2)] sm:grid-cols-2">
       {facts.map((fact) => (
         <Detail key={fact.key} label={fact.label} value={fact.value} />
       ))}
     </dl>
-  );
-}
-
-function ProvenanceDetail({ item }: { item: DetailProvenance }) {
-  const dateTime = item.evidence
-    ? new Date(item.evidence.retrievedAt).toISOString()
-    : undefined;
-  return (
-    <div className="grid gap-[var(--spacing-0-5)] border-t border-[color:var(--color-outline)] py-[var(--spacing-1-5)] first:border-t-0 sm:grid-cols-[minmax(9rem,0.6fr)_minmax(0,1.4fr)] sm:gap-[var(--spacing-2)]">
-      <dt className="text-[var(--type-sm)] font-semibold">
-        {detailFieldLabel(item.field)}
-      </dt>
-      <dd className="m-0 text-[var(--type-sm)] text-[var(--color-on-surface)] opacity-80">
-        <span>{detailProvenanceStatusLabel(item)}</span>
-        {item.evidence ? (
-          <>
-            {" · "}
-            <span>{detailEvidenceKindLabel(item.evidence.kind)}</span>
-            {" · "}
-            <span>{item.evidence.sourceName}</span>
-            {" · retrieved "}
-            <time dateTime={dateTime}>
-              {formatEvidenceDate(item.evidence.retrievedAt)}
-            </time>
-          </>
-        ) : null}
-      </dd>
-    </div>
   );
 }
 

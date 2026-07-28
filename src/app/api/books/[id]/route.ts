@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
 import { findWorkById } from "@/features/books/repo";
+import type { WorkDetail } from "@/features/books/types";
+
+function readerFacingDetail({
+  provenance: _provenance,
+  ...detail
+}: WorkDetail): Omit<WorkDetail, "provenance"> {
+  return detail;
+}
 
 export async function GET(
   _request: Request,
@@ -10,7 +18,7 @@ export async function GET(
   if (!work) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json(work);
+  return NextResponse.json(readerFacingDetail(work));
 }
 
 export async function OPTIONS() {

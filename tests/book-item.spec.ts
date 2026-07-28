@@ -68,7 +68,7 @@ test.describe("Book item page", () => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
-  test("server renders work and preferred-edition hierarchy, provenance, and structured data", async ({
+  test("server renders reader-facing book content and structured data", async ({
     baseURL,
     page,
     request,
@@ -78,8 +78,9 @@ test.describe("Book item page", () => {
     const html = await response.text();
     expect(response.ok()).toBe(true);
     expect(html).toContain("Dune");
-    expect(html).toContain("Preferred edition");
-    expect(html).toContain("Metadata sources");
+    expect(html).toContain("About the book");
+    expect(html).toContain("Book details");
+    expect(html).not.toMatch(/preferred edition|metadata sources|provenance/i);
     expect(html).toContain('type="application/ld+json"');
 
     await page.goto(url, { waitUntil: "domcontentloaded" });
@@ -88,14 +89,19 @@ test.describe("Book item page", () => {
       page.getByRole("heading", { level: 1, name: "Dune" }),
     ).toBeVisible();
     const headings = await page.getByRole("heading").allTextContents();
-    expect(headings.slice(0, 4)).toEqual([
+    expect(headings.slice(0, 3)).toEqual([
       "Dune",
-      "About this work",
-      "Preferred edition",
-      "Metadata sources",
+      "About the book",
+      "Book details",
     ]);
     await expect(page.getByText("1965", { exact: true })).toBeVisible();
     await expect(page.getByText("ISBN-13", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Science Fiction" }),
+    ).toHaveAttribute("href", "/?category=science-fiction");
+    await expect(
+      page.getByText(/metadata sources|view sources|resolution/i),
+    ).toHaveCount(0);
 
     const jsonLd = JSON.parse(
       (await page.locator('script[type="application/ld+json"]').textContent()) ??
@@ -122,22 +128,20 @@ test.describe("Book item page", () => {
       page.getByRole("heading", { level: 1, name: "Moby-Dick" }),
     ).toBeVisible();
     await expect(
-      page.getByText(/a description is not available in the catalog/i),
-    ).toBeVisible();
-    await expect(
-      page.getByText(/publication details are not available in the catalog/i),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "About this work" }),
+      page.getByRole("heading", { name: "About the book" }),
     ).toHaveCount(0);
     await expect(
-      page.getByRole("heading", { name: "Preferred edition" }),
+      page.getByRole("heading", { name: "Book details" }),
     ).toHaveCount(0);
-    await expect(page.getByText("Book Details", { exact: true })).toHaveCount(0);
+    await expect(
+      page.getByText(
+        /description is not available|publication details are not available/i,
+      ),
+    ).toHaveCount(0);
     await expect(page.getByText(/rating|publisher:/i)).toHaveCount(0);
   });
 
-  test("catalog navigation and provenance disclosure have keyboard focus at responsive widths", async ({
+  test("catalog and category navigation have keyboard focus at responsive widths", async ({
     baseURL,
     page,
   }) => {
@@ -195,23 +199,35 @@ test.describe("Book item page", () => {
       );
       expect(focusStyle.transitionDuration).toBe("0s");
 
-      const summary = page.locator("summary", {
-        hasText: "View sources and status",
+      const categoryLink = page.getByRole("link", {
+        name: "Science Fiction",
       });
-      let summaryFocused = false;
+      let categoryFocused = false;
       for (let index = 0; index < 10; index += 1) {
         await page.keyboard.press("Tab");
-        if (await summary.evaluate((element) => element === document.activeElement)) {
-          summaryFocused = true;
+        if (
+          await categoryLink.evaluate(
+            (element) => element === document.activeElement,
+          )
+        ) {
+          categoryFocused = true;
           break;
         }
       }
-      expect(summaryFocused).toBe(true);
-      await page.keyboard.press("Enter");
-      await expect(summary.locator("..")).toHaveAttribute("open", "");
-      await expect(
-        page.getByText("Bukie legacy catalog artifact").first(),
-      ).toBeVisible();
+      expect(categoryFocused).toBe(true);
+      const categoryFocusStyle = await categoryLink.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          outlineStyle: style.outlineStyle,
+          outlineWidth: style.outlineWidth,
+          transitionDuration: style.transitionDuration,
+        };
+      });
+      expect(categoryFocusStyle.outlineStyle).not.toBe("none");
+      expect(
+        Number.parseFloat(categoryFocusStyle.outlineWidth),
+      ).toBeGreaterThanOrEqual(2);
+      expect(categoryFocusStyle.transitionDuration).toBe("0s");
     }
   });
 
@@ -304,10 +320,9 @@ test.describe("Book item page", () => {
         page.getByRole("img", { name: "No cover available for Dune" }),
       ).toBeVisible();
       await expect(page.getByText("Cover not available")).toBeVisible();
-      await page
-        .locator("summary", { hasText: "View sources and status" })
-        .click();
-      await expect(page.getByText("Withdrawn", { exact: true })).toBeVisible();
+      await expect(
+        page.getByText(/withdrawn|metadata sources|view sources/i),
+      ).toHaveCount(0);
     } finally {
       database.transaction(() => {
         database

@@ -1,9 +1,9 @@
 import "@testing-library/jest-dom";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
+  editionFixture,
   partialWorkDetailFixture,
-  provenanceFixture,
   workDetailFixture,
 } from "@/test/catalog-fixtures";
 import { BookDetails } from "./BookDetails";
@@ -15,7 +15,7 @@ vi.mock("next/image", () => ({
 }));
 
 describe("BookDetails", () => {
-  it("presents work facts before preferred-edition facts", () => {
+  it("presents reader-facing identity, description, and useful book facts", () => {
     render(<BookDetails work={workDetailFixture} />);
     const headings = screen.getAllByRole("heading").map((heading) => ({
       level: Number(heading.tagName.slice(1)),
@@ -23,48 +23,57 @@ describe("BookDetails", () => {
     }));
     expect(headings.slice(0, 3)).toEqual([
       { level: 1, name: "Example Work" },
-      { level: 2, name: "About this work" },
-      { level: 2, name: "Preferred edition" },
+      { level: 2, name: "About the book" },
+      { level: 2, name: "Book details" },
     ]);
     expect(screen.getByText("First Author, Second Author")).toBeInTheDocument();
     expect(screen.getByText("Stored catalog description.")).toBeInTheDocument();
     expect(screen.getByText("Example Press")).toBeInTheDocument();
     expect(screen.getByText("978-0-441-17271-9")).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        /preferred edition|metadata sources|provenance|resolution|stale/i,
+      ),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/rating/i)).not.toBeInTheDocument();
   });
 
-  it("suppresses empty groups and states partial data honestly", () => {
+  it("omits unavailable content instead of rendering empty or explanatory sections", () => {
     render(<BookDetails work={partialWorkDetailFixture} />);
     expect(
-      screen.queryByRole("heading", { name: /about this work/i }),
+      screen.queryByRole("heading", { name: "About the book" }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("heading", { name: /preferred edition/i }),
+      screen.queryByRole("heading", { name: "Book details" }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("heading", { name: /alternate editions/i }),
+      screen.queryByRole("heading", { name: "Other editions" }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText(/a description is not available/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/publication details are not available/i),
-    ).toBeInTheDocument();
+      screen.queryByText(
+        /description is not available|details are not available/i,
+      ),
+    ).not.toBeInTheDocument();
     expect(
       screen.getByRole("img", {
         name: "No cover available for Partial Work",
       }),
     ).toBeInTheDocument();
     expect(screen.getByText("Cover not available")).toBeInTheDocument();
-    expect(screen.queryByText(/book details/i)).not.toBeInTheDocument();
   });
 
-  it("uses an accurate catalog destination and visible focus target", () => {
+  it("offers accurate catalog and category continuation links", () => {
     render(<BookDetails work={workDetailFixture} />);
     const catalogLink = screen.getByRole("link", { name: /back to catalog/i });
     expect(catalogLink).toHaveAttribute("href", "/");
-    catalogLink.focus();
-    expect(catalogLink).toHaveFocus();
+    const fictionLink = screen.getByRole("link", { name: "Fiction" });
+    expect(fictionLink).toHaveAttribute("href", "/?category=fiction");
+    expect(screen.getByRole("link", { name: "Classics" })).toHaveAttribute(
+      "href",
+      "/?category=classics",
+    );
+    fictionLink.focus();
+    expect(fictionLink).toHaveFocus();
   });
 
   it("uses the selected cover only when cover evidence is eligible", () => {
@@ -76,58 +85,35 @@ describe("BookDetails", () => {
     ).toHaveAttribute("data-src", "/api/media/covers/example.webp");
   });
 
-  it.each([
-    ["conflicting", "Conflicting evidence"],
-    ["stale", "Stale"],
-    ["withdrawn", "Withdrawn"],
-  ] as const)("labels %s provenance without inventing a value", (state, label) => {
-    const work = {
-      ...partialWorkDetailFixture,
-      provenance: [
-        ...partialWorkDetailFixture.provenance,
-        provenanceFixture(
-          "edition",
-          "edition-state",
-          "edition.publication_date",
-          {
-            state,
-            evidence:
-              state === "stale"
-                ? provenanceFixture(
-                    "edition",
-                    "edition-state",
-                    "edition.publication_date",
-                  ).evidence
-                : undefined,
-          },
-        ),
-      ],
-      editions: [
-        {
-          id: "edition-state",
-          catalogedAt: 1,
-          publishers: [],
-          languages: [],
-          identifiers: [],
-        },
-      ],
+  it("shows only informative alternate editions", () => {
+    const alternate = {
+      ...editionFixture,
+      id: "20000000-0000-4000-8000-000000000002",
+      format: "paperback" as const,
+      publication: { date: "2024", precision: "year" as const },
+      cover: undefined,
     };
-    render(<BookDetails work={work} />);
-    expect(screen.getByText(label)).toBeInTheDocument();
-  });
-
-  it("exposes provenance through a native keyboard-operable disclosure", () => {
-    render(<BookDetails work={workDetailFixture} />);
-    const summary = screen.getByText("View sources and status");
-    const details = summary.closest("details");
-    expect(details).not.toHaveAttribute("open");
-    summary.focus();
-    expect(summary).toHaveFocus();
-    fireEvent.click(summary);
-    expect(details).toHaveAttribute("open");
+    const empty = {
+      id: "20000000-0000-4000-8000-000000000003",
+      catalogedAt: 1,
+      publishers: [],
+      languages: [],
+      identifiers: [],
+    };
+    render(
+      <BookDetails
+        work={{
+          ...workDetailFixture,
+          editions: [editionFixture, alternate, empty],
+        }}
+      />,
+    );
     expect(
-      screen.getAllByText("Bukie legacy catalog artifact").length,
-    ).toBeGreaterThan(0);
-    expect(screen.getAllByText("Jul 26, 2026").length).toBeGreaterThan(0);
+      screen.getByRole("heading", { level: 2, name: "Other editions" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 3, name: "Paperback edition" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Edition 3")).not.toBeInTheDocument();
   });
 });
