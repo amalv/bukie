@@ -1,4 +1,5 @@
 import type Database from "better-sqlite3";
+import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { canonicalJson, hashCanonicalJson } from "../identity";
 import {
@@ -16,6 +17,92 @@ export type EnrichmentPersistenceRows = {
   sourceRecordLinks: Record<string, unknown>[];
   fieldObservations: Record<string, unknown>[];
 };
+
+const SEMANTIC_ROW_KEYS = {
+  metadataSources: [
+    "id",
+    "key",
+    "name",
+    "termsUrl",
+    "attributionUrl",
+    "reviewedAt",
+    "approvalState",
+    "metadataPolicy",
+    "assetPolicy",
+    "payloadPolicy",
+    "refreshIntervalMs",
+  ],
+  sourceRecords: [
+    "id",
+    "sourceId",
+    "recordKey",
+    "sourceRevision",
+    "sourceModifiedAt",
+    "payloadJson",
+    "payloadHash",
+    "importerVersion",
+    "sourceRowHash",
+    "state",
+  ],
+  sourceRecordLinks: [
+    "sourceRecordId",
+    "entityType",
+    "entityId",
+    "matchKind",
+    "mappingConfidence",
+    "state",
+    "actorRef",
+    "reason",
+  ],
+  fieldObservations: [
+    "id",
+    "sourceRecordId",
+    "entityType",
+    "entityId",
+    "fieldKey",
+    "valueJson",
+    "comparisonHash",
+    "provenanceKind",
+    "sourcePath",
+    "sourceModifiedAt",
+    "mappingConfidence",
+    "state",
+    "actorRef",
+    "reason",
+    "derivationName",
+    "derivationVersion",
+    "parentIdsJson",
+  ],
+} as const satisfies Record<keyof EnrichmentPersistenceRows, readonly string[]>;
+
+function projectedRow(
+  row: Readonly<Record<string, unknown>>,
+  keys: readonly string[],
+): Record<string, unknown> {
+  return Object.fromEntries(keys.map((key) => [key, row[key]]));
+}
+
+export function assertEnrichmentPersistenceRow(
+  table: keyof EnrichmentPersistenceRows,
+  expected: Readonly<Record<string, unknown>>,
+  actual: Readonly<Record<string, unknown>> | undefined,
+  identity: string,
+): void {
+  if (!actual) {
+    throw new Error(
+      `Enrichment persistence conflict: ${table} row ${identity} was not persisted`,
+    );
+  }
+  const keys = SEMANTIC_ROW_KEYS[table];
+  if (
+    canonicalJson(projectedRow(expected, keys)) !==
+    canonicalJson(projectedRow(actual, keys))
+  ) {
+    throw new Error(
+      `Enrichment persistence conflict: immutable ${table} row ${identity} differs from the recorded revision`,
+    );
+  }
+}
 
 function parseJson(value: unknown): unknown {
   return typeof value === "string" ? JSON.parse(value) : value;
@@ -128,6 +215,55 @@ export function persistEnrichmentRunSqlite(
         )
         .onConflictDoNothing()
         .run();
+    }
+    for (const expected of rows.metadataSources) {
+      const id = String(expected.id);
+      const actual = db
+        .select()
+        .from(metadataSources)
+        .where(eq(metadataSources.id, id))
+        .get();
+      assertEnrichmentPersistenceRow("metadataSources", expected, actual, id);
+    }
+    for (const expected of rows.sourceRecords) {
+      const id = String(expected.id);
+      const actual = db
+        .select()
+        .from(sourceRecords)
+        .where(eq(sourceRecords.id, id))
+        .get();
+      assertEnrichmentPersistenceRow("sourceRecords", expected, actual, id);
+    }
+    for (const expected of rows.sourceRecordLinks) {
+      const sourceRecordId = String(expected.sourceRecordId);
+      const entityType = String(expected.entityType);
+      const entityId = String(expected.entityId);
+      const actual = db
+        .select()
+        .from(sourceRecordLinks)
+        .where(
+          and(
+            eq(sourceRecordLinks.sourceRecordId, sourceRecordId),
+            eq(sourceRecordLinks.entityType, entityType),
+            eq(sourceRecordLinks.entityId, entityId),
+          ),
+        )
+        .get();
+      assertEnrichmentPersistenceRow(
+        "sourceRecordLinks",
+        expected,
+        actual,
+        `${sourceRecordId}:${entityType}:${entityId}`,
+      );
+    }
+    for (const expected of rows.fieldObservations) {
+      const id = String(expected.id);
+      const actual = db
+        .select()
+        .from(fieldObservations)
+        .where(eq(fieldObservations.id, id))
+        .get();
+      assertEnrichmentPersistenceRow("fieldObservations", expected, actual, id);
     }
   });
   persist.immediate();

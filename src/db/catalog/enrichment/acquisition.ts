@@ -1,7 +1,11 @@
 import { sha256 } from "../identity";
 import type { CatalogFieldKey } from "../values";
 import { assertAdapterEnabled, authorizeField } from "./policies";
-import type { AdapterManifest, EnrichmentFieldClass } from "./types";
+import type {
+  AcquisitionStatusClass,
+  AdapterManifest,
+  EnrichmentFieldClass,
+} from "./types";
 
 const SENSITIVE_KEY =
   /authorization|cookie|credential|password|secret|token|api[-_]?key/i;
@@ -32,8 +36,17 @@ export type AcquisitionResult = {
   conditionalHit: boolean;
   retries: number;
   throttled: boolean;
+  throttles: number;
   retryAfterMs: number;
   responseBytes: number;
+  statusClasses: Record<AcquisitionStatusClass, number>;
+};
+
+export type AcquisitionFailureTelemetry = {
+  retries: number;
+  throttles: number;
+  retryAfterMs: number;
+  statusClasses: Record<AcquisitionStatusClass, number>;
 };
 
 export type AcquisitionDependencies = {
@@ -55,11 +68,22 @@ export class AcquisitionError extends Error {
     | "host_not_allowed"
     | "retry_exhausted"
     | "terminal_failure";
+  readonly telemetry: AcquisitionFailureTelemetry;
 
-  constructor(code: AcquisitionError["code"], message: string) {
+  constructor(
+    code: AcquisitionError["code"],
+    message: string,
+    telemetry: AcquisitionFailureTelemetry = {
+      retries: 0,
+      throttles: 0,
+      retryAfterMs: 0,
+      statusClasses: emptyStatusClasses(),
+    },
+  ) {
     super(message);
     this.name = "AcquisitionError";
     this.code = code;
+    this.telemetry = telemetry;
   }
 }
 
@@ -105,12 +129,22 @@ function retryableStatus(status: number): boolean {
   return status === 408 || status === 429 || status >= 500;
 }
 
-function statusClass(status: number): string {
+function statusClass(status: number): AcquisitionStatusClass {
   if (status >= 200 && status < 300) return "2xx";
   if (status >= 300 && status < 400) return "3xx";
   if (status >= 400 && status < 500) return "4xx";
   if (status >= 500 && status < 600) return "5xx";
   return "other";
+}
+
+function emptyStatusClasses(): Record<AcquisitionStatusClass, number> {
+  return {
+    "2xx": 0,
+    "3xx": 0,
+    "4xx": 0,
+    "5xx": 0,
+    other: 0,
+  };
 }
 
 function assertCredentials(
@@ -185,6 +219,7 @@ export async function acquireRecord(input: {
       ? await dependencies.cache.get(cacheKey)
       : undefined;
   const requestHeaders: Record<string, string> = { ...request.headers };
+  const statusClasses = emptyStatusClasses();
   if (
     cached &&
     adapter.acquisition.conditionalRetrieval === "etag_and_last_modified"
@@ -203,19 +238,27 @@ export async function acquireRecord(input: {
       conditionalHit: false,
       retries: 0,
       throttled: false,
+      throttles: 0,
       retryAfterMs: 0,
       responseBytes: Buffer.byteLength(cached.body),
+      statusClasses,
     };
   }
 
   let retries = 0;
   let throttled = false;
+  let throttles = 0;
   let retryAfterMs = 0;
   while (true) {
     const response = await dependencies.transport({
       ...request,
       headers: requestHeaders,
     });
+    statusClasses[statusClass(response.status)] += 1;
+    if (response.status === 429) {
+      throttled = true;
+      throttles += 1;
+    }
     if (response.status === 304 && cached) {
       return {
         response: cached,
@@ -223,8 +266,10 @@ export async function acquireRecord(input: {
         conditionalHit: true,
         retries,
         throttled,
+        throttles,
         retryAfterMs,
         responseBytes: 0,
+        statusClasses,
       };
     }
     if (response.status >= 200 && response.status < 300) {
@@ -242,25 +287,28 @@ export async function acquireRecord(input: {
         conditionalHit: false,
         retries,
         throttled,
+        throttles,
         retryAfterMs,
         responseBytes: Buffer.byteLength(response.body),
+        statusClasses,
       };
     }
     if (!retryableStatus(response.status)) {
       throw new AcquisitionError(
         "terminal_failure",
         `Provider request failed with terminal ${statusClass(response.status)} response`,
+        { retries, throttles, retryAfterMs, statusClasses },
       );
     }
     if (retries >= adapter.acquisition.retry.ceiling) {
       throw new AcquisitionError(
         "retry_exhausted",
         `Provider request exhausted the retry ceiling after ${retries} retries`,
+        { retries, throttles, retryAfterMs, statusClasses },
       );
     }
     const retryNumber = retries;
     retries += 1;
-    if (response.status === 429) throttled = true;
     const providerDelay = adapter.acquisition.retry.respectRetryAfter
       ? parseRetryAfter(header(response.headers, "retry-after"), now())
       : null;

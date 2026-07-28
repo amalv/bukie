@@ -60,6 +60,42 @@ describe.skipIf(!isolatedUrl)(
         fieldObservations: 9,
       });
       expect(second.currentHeadHash).toBe(first.currentHeadHash);
+
+      const changedRecords = SAMPLE_PROVIDER_RECORDS.map((record, index) =>
+        index === 0
+          ? {
+              ...record,
+              evidence: record.evidence.map((evidence) => ({
+                ...evidence,
+                value: "Changed title under reused source revision",
+              })),
+            }
+          : record,
+      );
+      const changedRun = buildEnrichmentRun({
+        manifest: ENRICHMENT_SAMPLE_MANIFEST,
+        requestedWorkIds: ENRICHMENT_SAMPLE_MANIFEST.works.map(
+          (work) => work.workId,
+        ),
+        records: changedRecords,
+      });
+      await expect(
+        persistEnrichmentRunPostgres({
+          url: target.url,
+          run: changedRun,
+        }),
+      ).rejects.toThrow("immutable sourceRecords row");
+      const afterConflict = await persistEnrichmentRunPostgres({
+        url: target.url,
+        run,
+      });
+      expect(afterConflict.created).toEqual({
+        metadataSources: 0,
+        sourceRecords: 0,
+        sourceRecordLinks: 0,
+        fieldObservations: 0,
+      });
+      expect(afterConflict.reused.fieldObservations).toBe(9);
     }, 120_000);
   },
 );

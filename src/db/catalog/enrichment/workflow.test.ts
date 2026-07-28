@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 import { canonicalJson, hashCanonicalJson } from "../identity";
 import { SAMPLE_PROVIDER_RECORDS } from "./fixtures";
 import { ENRICHMENT_SAMPLE_MANIFEST } from "./sample-manifest";
-import type { ProviderRecord } from "./types";
+import type { EnrichmentRunFailure, ProviderRecord } from "./types";
 import { buildEnrichmentRun as buildEnrichmentRunForManifest } from "./workflow";
 
 function buildEnrichmentRun(input: {
   requestedWorkIds: readonly string[];
   records: readonly ProviderRecord[];
+  failures?: readonly EnrichmentRunFailure[];
 }) {
   return buildEnrichmentRunForManifest({
     manifest: ENRICHMENT_SAMPLE_MANIFEST,
@@ -181,6 +182,111 @@ describe("isolated five-work enrichment workflow", () => {
         records: [SAMPLE_PROVIDER_RECORDS[0], SAMPLE_PROVIDER_RECORDS[0]],
       }),
     ).toThrow("duplicate source record revision");
+  });
+
+  it("hashes structured identity tuples without delimiter collisions", () => {
+    const base = SAMPLE_PROVIDER_RECORDS[0];
+    const left = buildEnrichmentRun({
+      requestedWorkIds: [base.targetWorkId],
+      records: [{ ...base, recordKey: "record@part", sourceRevision: "v1" }],
+    });
+    const right = buildEnrichmentRun({
+      requestedWorkIds: [base.targetWorkId],
+      records: [{ ...base, recordKey: "record", sourceRevision: "part@v1" }],
+    });
+    expect(left.sourceRecords[0].id).not.toBe(right.sourceRecords[0].id);
+    expect(left.sourceRecords[0].recordKey).not.toBe(
+      right.sourceRecords[0].recordKey,
+    );
+
+    const firstSnapshot = buildEnrichmentRun({
+      requestedWorkIds: [base.targetWorkId],
+      records: [
+        { ...base, recordKey: "first", sourceRevision: "a+b" },
+        { ...base, recordKey: "second", sourceRevision: "c" },
+      ],
+    });
+    const secondSnapshot = buildEnrichmentRun({
+      requestedWorkIds: [base.targetWorkId],
+      records: [
+        { ...base, recordKey: "first", sourceRevision: "a" },
+        { ...base, recordKey: "second", sourceRevision: "b+c" },
+      ],
+    });
+    expect(firstSnapshot.adapterSnapshots[0].sourceRevision).not.toBe(
+      secondSnapshot.adapterSnapshots[0].sourceRevision,
+    );
+    expect(firstSnapshot.adapterSnapshots[0].snapshotId).not.toBe(
+      secondSnapshot.adapterSnapshots[0].snapshotId,
+    );
+  });
+
+  it("accounts for policy, acquisition, provider, parsing, and normalization outcomes", () => {
+    const rejected = {
+      ...SAMPLE_PROVIDER_RECORDS[0],
+      rejectedReason: "Reviewed identity rejection",
+      acquisition: {
+        successful: true,
+        status: 200,
+        statusClasses: { "2xx": 1 },
+        throttles: 0,
+      },
+    };
+    const run = buildEnrichmentRun({
+      requestedWorkIds: [rejected.targetWorkId],
+      records: [rejected],
+      failures: [
+        { kind: "policy", adapterId: "pending", recordKey: "policy" },
+        {
+          kind: "acquisition",
+          adapterId: "wikidata.work-facts",
+          recordKey: "network",
+          retries: 2,
+        },
+        {
+          kind: "provider",
+          adapterId: "wikidata.work-facts",
+          recordKey: "Q1",
+          statusClasses: { "4xx": 1, "5xx": 1 },
+          throttles: 1,
+          retryAfterMs: 2_000,
+        },
+        {
+          kind: "parsing",
+          adapterId: "wikidata.work-facts",
+          recordKey: "parse",
+        },
+        {
+          kind: "normalization",
+          adapterId: "wikidata.work-facts",
+          recordKey: "normalize",
+        },
+      ],
+    });
+
+    expect(run.report).toMatchObject({
+      requestedRecords: 6,
+      successfulRequests: 1,
+      policyBlocks: 1,
+      acquisitionFailures: 1,
+      providerFailures: 1,
+      parsingFailures: 1,
+      normalizationFailures: 1,
+      retries: 2,
+      throttles: 1,
+      retryAfterMs: 2_000,
+      statusClasses: {
+        "2xx": 1,
+        "4xx": 1,
+        "5xx": 1,
+      },
+      observations: {
+        created: 0,
+        reused: 0,
+        rejected: 1,
+        omitted: 0,
+      },
+    });
   });
 
   it("records withdrawal without creating observations or heads", () => {

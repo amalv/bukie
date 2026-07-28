@@ -111,12 +111,21 @@ source-record revisions in one run fail closed because deterministic identity
 would be ambiguous. Provider response order, input order, and database row
 order are sorted away before hashing.
 
+Composite identities use canonical JSON tuple hashes rather than delimiter-
+joined strings, so provider-controlled record keys and revisions cannot create
+ambiguous identities. Snapshot revision sets are likewise hashed as sorted
+arrays.
+
 ## Isolated persistence and telemetry
 
 The run artifact contains ADR 0016-compatible metadata-source, source-record,
 source-link, and field-observation rows. Persistence intentionally has no
 field-resolution or field-resolution-head write path. SQLite persistence
 checks the complete current-head hash before and after every transaction.
+SQLite and Postgres also compare every reused row with its recorded semantic
+content inside the transaction. Reusing an identity with a different policy,
+source-row hash, link decision, value, or provenance fails closed and rolls
+back the complete run.
 
 The structured report distinguishes:
 
@@ -129,6 +138,13 @@ The structured report distinguishes:
 - policy blocks;
 - acquisition, provider, parsing, and normalization failures; and
 - review-queue candidates.
+
+Acquisition telemetry retains per-attempt status classes and 429 counts,
+including failed retry sequences. Structured failure inputs carry stable
+categories and numeric diagnostics without retaining error text that could
+contain provider payloads or credentials. Persistence reports created and
+reused rows separately; rejected and omitted observations are distinguished in
+the deterministic run report.
 
 No external observability vendor is used.
 

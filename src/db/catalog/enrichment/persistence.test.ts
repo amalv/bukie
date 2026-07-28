@@ -114,4 +114,41 @@ describe("enrichment persistence parity and idempotency", () => {
     });
     expect(normalizeSqlite(sqlite)).toEqual(postgres);
   });
+
+  it("fails closed and rolls back when a reused source revision changes", () => {
+    rebuildCatalogSqlite({ sqlitePath, graph });
+    const changedRecords = SAMPLE_PROVIDER_RECORDS.map((record, index) =>
+      index === 0
+        ? {
+            ...record,
+            evidence: record.evidence.map((evidence) => ({
+              ...evidence,
+              value: "Changed title under reused source revision",
+            })),
+          }
+        : record,
+    );
+    const changedRun = buildEnrichmentRun({
+      manifest: ENRICHMENT_SAMPLE_MANIFEST,
+      requestedWorkIds: workIds,
+      records: changedRecords,
+    });
+    const { raw } = openCatalogSqlite(sqlitePath);
+    try {
+      persistEnrichmentRunSqlite(raw, run);
+      expect(() => persistEnrichmentRunSqlite(raw, changedRun)).toThrow(
+        "immutable sourceRecords row",
+      );
+      const afterConflict = persistEnrichmentRunSqlite(raw, run);
+      expect(afterConflict.created).toEqual({
+        metadataSources: 0,
+        sourceRecords: 0,
+        sourceRecordLinks: 0,
+        fieldObservations: 0,
+      });
+      expect(afterConflict.reused.fieldObservations).toBe(9);
+    } finally {
+      raw.close();
+    }
+  });
 });

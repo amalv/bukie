@@ -6,6 +6,7 @@ import type {
 
 export type EnrichmentFieldClass = "metadata" | "text" | "asset";
 export type AdapterState = "enabled" | "pending" | "suspended" | "retired";
+export type AcquisitionStatusClass = "2xx" | "3xx" | "4xx" | "5xx" | "other";
 export type LinkOutcome =
   | "unmatched"
   | "candidate"
@@ -126,9 +127,24 @@ export type ProviderRecord = {
     latencyMs?: number;
     retries?: number;
     status?: number;
+    statusClasses?: Partial<Record<AcquisitionStatusClass, number>>;
+    throttles?: number;
     retryAfterMs?: number;
     responseBytes?: number;
   };
+};
+
+export type EnrichmentRunFailure = {
+  kind: "policy" | "acquisition" | "provider" | "parsing" | "normalization";
+  adapterId: string;
+  recordKey?: string;
+  status?: number;
+  statusClasses?: Partial<Record<AcquisitionStatusClass, number>>;
+  throttles?: number;
+  retries?: number;
+  retryAfterMs?: number;
+  latencyMs?: number;
+  responseBytes?: number;
 };
 
 export type MatchDecision = {
@@ -199,7 +215,7 @@ export type EnrichmentRunReport = {
   conditionalHits: number;
   latencyMs: number;
   retries: number;
-  statusClasses: Record<"2xx" | "3xx" | "4xx" | "5xx" | "other", number>;
+  statusClasses: Record<AcquisitionStatusClass, number>;
   throttles: number;
   retryAfterMs: number;
   responseBytes: number;

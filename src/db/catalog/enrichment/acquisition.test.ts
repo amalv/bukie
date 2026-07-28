@@ -52,8 +52,16 @@ describe("provider-neutral acquisition resilience", () => {
     expect(result).toMatchObject({
       retries: 2,
       throttled: true,
+      throttles: 1,
       retryAfterMs: 2_000,
       responseBytes: Buffer.byteLength('{"ok":true}'),
+      statusClasses: {
+        "2xx": 1,
+        "3xx": 0,
+        "4xx": 1,
+        "5xx": 1,
+        other: 0,
+      },
     });
     expect(sleeps).toEqual([2_000, 2_200]);
   });
@@ -88,6 +96,13 @@ describe("provider-neutral acquisition resilience", () => {
       cacheHit: true,
       conditionalHit: true,
       responseBytes: 0,
+      statusClasses: {
+        "2xx": 0,
+        "3xx": 1,
+        "4xx": 0,
+        "5xx": 0,
+        other: 0,
+      },
     });
     expect(result.response.body).toBe('{"cached":true}');
   });
@@ -103,6 +118,17 @@ describe("provider-neutral acquisition resilience", () => {
       }),
     ).rejects.toMatchObject({
       code: "terminal_failure",
+      telemetry: {
+        retries: 0,
+        throttles: 0,
+        statusClasses: {
+          "2xx": 0,
+          "3xx": 0,
+          "4xx": 1,
+          "5xx": 0,
+          other: 0,
+        },
+      },
     });
     await expect(
       acquireRecord({
@@ -125,6 +151,17 @@ describe("provider-neutral acquisition resilience", () => {
       }),
     ).rejects.toMatchObject({
       code: "retry_exhausted",
+      telemetry: {
+        retries: 1,
+        throttles: 0,
+        statusClasses: {
+          "2xx": 0,
+          "3xx": 0,
+          "4xx": 0,
+          "5xx": 2,
+          other: 0,
+        },
+      },
     });
   });
 

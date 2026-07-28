@@ -1,3 +1,4 @@
+import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { hashCanonicalJson } from "../identity";
@@ -7,7 +8,10 @@ import {
   sourceRecordLinksPg,
   sourceRecordsPg,
 } from "../schema.pg";
-import { prepareEnrichmentPersistenceRows } from "./persistence";
+import {
+  assertEnrichmentPersistenceRow,
+  prepareEnrichmentPersistenceRows,
+} from "./persistence";
 import type { EnrichmentRunArtifact } from "./types";
 
 const TABLE_NAMES = {
@@ -86,6 +90,60 @@ export async function persistEnrichmentRunPostgres(input: {
             rows.fieldObservations as (typeof fieldObservationsPg.$inferInsert)[],
           )
           .onConflictDoNothing();
+      }
+      for (const expected of rows.metadataSources) {
+        const id = String(expected.id);
+        const [actual] = await tx
+          .select()
+          .from(metadataSourcesPg)
+          .where(eq(metadataSourcesPg.id, id))
+          .limit(1);
+        assertEnrichmentPersistenceRow("metadataSources", expected, actual, id);
+      }
+      for (const expected of rows.sourceRecords) {
+        const id = String(expected.id);
+        const [actual] = await tx
+          .select()
+          .from(sourceRecordsPg)
+          .where(eq(sourceRecordsPg.id, id))
+          .limit(1);
+        assertEnrichmentPersistenceRow("sourceRecords", expected, actual, id);
+      }
+      for (const expected of rows.sourceRecordLinks) {
+        const sourceRecordId = String(expected.sourceRecordId);
+        const entityType = String(expected.entityType);
+        const entityId = String(expected.entityId);
+        const [actual] = await tx
+          .select()
+          .from(sourceRecordLinksPg)
+          .where(
+            and(
+              eq(sourceRecordLinksPg.sourceRecordId, sourceRecordId),
+              eq(sourceRecordLinksPg.entityType, entityType),
+              eq(sourceRecordLinksPg.entityId, entityId),
+            ),
+          )
+          .limit(1);
+        assertEnrichmentPersistenceRow(
+          "sourceRecordLinks",
+          expected,
+          actual,
+          `${sourceRecordId}:${entityType}:${entityId}`,
+        );
+      }
+      for (const expected of rows.fieldObservations) {
+        const id = String(expected.id);
+        const [actual] = await tx
+          .select()
+          .from(fieldObservationsPg)
+          .where(eq(fieldObservationsPg.id, id))
+          .limit(1);
+        assertEnrichmentPersistenceRow(
+          "fieldObservations",
+          expected,
+          actual,
+          id,
+        );
       }
     });
     const after = Object.fromEntries(

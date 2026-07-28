@@ -12,8 +12,10 @@ import {
   metadataSourceRow,
 } from "./policies";
 import type {
+  AcquisitionStatusClass,
   AdapterManifest,
   EnrichmentRunArtifact,
+  EnrichmentRunFailure,
   EnrichmentRunReport,
   EnrichmentScopeManifest,
   EnrichmentTargetWork,
@@ -121,6 +123,38 @@ function incrementStatus(
   report.statusClasses[key] += 1;
 }
 
+function addStatusClasses(
+  report: EnrichmentRunReport,
+  statuses: Partial<Record<AcquisitionStatusClass, number>> | undefined,
+): boolean {
+  if (!statuses) return false;
+  for (const key of Object.keys(
+    report.statusClasses,
+  ) as AcquisitionStatusClass[]) {
+    report.statusClasses[key] += statuses[key] ?? 0;
+  }
+  return true;
+}
+
+function recordFailure(
+  report: EnrichmentRunReport,
+  failure: EnrichmentRunFailure,
+): void {
+  if (failure.kind === "policy") report.policyBlocks += 1;
+  else if (failure.kind === "acquisition") report.acquisitionFailures += 1;
+  else if (failure.kind === "provider") report.providerFailures += 1;
+  else if (failure.kind === "parsing") report.parsingFailures += 1;
+  else report.normalizationFailures += 1;
+  if (!addStatusClasses(report, failure.statusClasses)) {
+    incrementStatus(report, failure.status);
+  }
+  report.throttles += failure.throttles ?? 0;
+  report.retries += failure.retries ?? 0;
+  report.retryAfterMs += failure.retryAfterMs ?? 0;
+  report.latencyMs += failure.latencyMs ?? 0;
+  report.responseBytes += failure.responseBytes ?? 0;
+}
+
 function containsSensitiveKey(value: unknown): boolean {
   if (Array.isArray(value)) return value.some(containsSensitiveKey);
   if (!value || typeof value !== "object") return false;
@@ -196,6 +230,7 @@ export function buildEnrichmentRun(input: {
   manifest: EnrichmentScopeManifest;
   requestedWorkIds: readonly string[];
   records: readonly ProviderRecord[];
+  failures?: readonly EnrichmentRunFailure[];
 }): EnrichmentRunArtifact {
   const { requestedWorks, workById } = resolveEnrichmentScope(
     input.manifest,
@@ -205,8 +240,12 @@ export function buildEnrichmentRun(input: {
   const records = [...input.records].sort((left, right) =>
     canonicalJson(left).localeCompare(canonicalJson(right)),
   );
+  const failures = [...(input.failures ?? [])].sort((left, right) =>
+    canonicalJson(left).localeCompare(canonicalJson(right)),
+  );
   const report = emptyReport();
-  report.requestedRecords = records.length;
+  report.requestedRecords = records.length + failures.length;
+  for (const failure of failures) recordFailure(report, failure);
   const adapters = new Map<string, AdapterManifest>();
   const recordRevisions = new Set<string>();
   for (const record of records) {
@@ -218,7 +257,11 @@ export function buildEnrichmentRun(input: {
     const adapter = getAdapterManifest(record.adapterId);
     assertAdapterEnabled(adapter);
     assertRecordRevision(adapter, record);
-    const recordRevisionKey = `${adapter.adapterId}:${record.recordKey}:${record.sourceRevision}`;
+    const recordRevisionKey = canonicalJson({
+      adapterId: adapter.adapterId,
+      recordKey: record.recordKey,
+      sourceRevision: record.sourceRevision,
+    });
     if (recordRevisions.has(recordRevisionKey)) {
       throw new Error(
         `Enrichment identity refused: duplicate source record revision ${recordRevisionKey}`,
@@ -245,6 +288,7 @@ export function buildEnrichmentRun(input: {
       .sort((left, right) => left.adapterId.localeCompare(right.adapterId)),
     manifestId: input.manifest.id,
     manifestVersion: input.manifest.version,
+    failures,
     records,
     requestedWorkIds: [...requestedIds].sort(),
     runnerVersion: ENRICHMENT_RUNNER_VERSION,
@@ -278,11 +322,14 @@ export function buildEnrichmentRun(input: {
       report.reviewQueueCandidates += 1;
     }
     const payload = retainedPayload(adapter, record);
-    const upstreamRevisionKey = `${record.recordKey}@${record.sourceRevision}`;
+    const sourceRevisionIdentity = hashCanonicalJson({
+      recordKey: record.recordKey,
+      sourceRevision: record.sourceRevision,
+    });
     const sourceRecordId = deterministicCatalogId(
       "source_record_revision",
       adapter.sourceKey,
-      upstreamRevisionKey,
+      sourceRevisionIdentity,
     );
     const payloadJson = payload === null ? null : canonicalJson(payload);
     const sourceRowHash = hashCanonicalJson({
@@ -294,7 +341,7 @@ export function buildEnrichmentRun(input: {
     sourceRecords.push({
       id: sourceRecordId,
       sourceId: adapter.sourceId,
-      recordKey: upstreamRevisionKey,
+      recordKey: sourceRevisionIdentity,
       upstreamRecordKey: record.recordKey,
       sourceRevision: record.sourceRevision,
       sourceModifiedAt: null,
@@ -308,7 +355,11 @@ export function buildEnrichmentRun(input: {
     const linkId = deterministicCatalogId(
       "source_record_link",
       sourceRecordId,
-      `work:${record.targetWorkId}:${match.outcome}`,
+      hashCanonicalJson({
+        entityId: record.targetWorkId,
+        entityType: "work",
+        outcome: match.outcome,
+      }),
     );
     sourceRecordLinks.push({
       id: linkId,
@@ -339,15 +390,21 @@ export function buildEnrichmentRun(input: {
     report.retries += acquisition?.retries ?? 0;
     report.retryAfterMs += acquisition?.retryAfterMs ?? 0;
     report.responseBytes += acquisition?.responseBytes ?? 0;
-    report.throttles += Number((acquisition?.retryAfterMs ?? 0) > 0);
-    incrementStatus(report, acquisition?.status);
+    report.throttles += acquisition?.throttles ?? 0;
+    if (!addStatusClasses(report, acquisition?.statusClasses)) {
+      incrementStatus(report, acquisition?.status);
+    }
     report.sourceRevisionAgeMs = Math.max(
       report.sourceRevisionAgeMs,
       latestRetrievedAt - record.retrievedAt,
     );
 
     if (match.outcome !== "active") {
-      report.observations.omitted += record.evidence.length;
+      if (match.outcome === "rejected") {
+        report.observations.rejected += record.evidence.length;
+      } else {
+        report.observations.omitted += record.evidence.length;
+      }
       continue;
     }
     for (const evidence of record.evidence) {
@@ -355,7 +412,12 @@ export function buildEnrichmentRun(input: {
       const observationId = deterministicCatalogId(
         "field_observation",
         sourceRecordId,
-        `work:${record.targetWorkId}:${evidence.fieldKey}:${comparisonHash}`,
+        hashCanonicalJson({
+          comparisonHash,
+          entityId: record.targetWorkId,
+          entityType: "work",
+          fieldKey: evidence.fieldKey,
+        }),
       );
       fieldObservations.push({
         id: observationId,
@@ -383,11 +445,11 @@ export function buildEnrichmentRun(input: {
 
   const adapterSnapshots = [...adapters.values()]
     .map((adapter) => {
-      const sourceRevision = records
+      const sourceRevisions = records
         .filter((record) => record.adapterId === adapter.adapterId)
         .map((record) => record.sourceRevision)
-        .sort()
-        .join("+");
+        .sort();
+      const sourceRevision = hashCanonicalJson(sourceRevisions);
       return {
         adapterId: adapter.adapterId,
         adapterVersion: adapter.adapterVersion,
