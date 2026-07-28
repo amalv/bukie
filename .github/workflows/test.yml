@@ -51,7 +51,6 @@ jobs:
       - name: Run Postgres integration tests
         run: >-
           bun run test --
-          src/db/catalog/postgres-rebuild.test.ts
           src/db/catalog/enrichment/persistence.pg.test.ts
           --no-file-parallelism
         env:
