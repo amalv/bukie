@@ -34,6 +34,7 @@ describe.skipIf(!isolatedUrl)(
       const editionId = String(graph.editions[0].id);
       await rebuildCatalogPostgres({ url: target.url, graph });
       const client = postgres(target.url, { max: 1 });
+      const evidenceTimestamp = Date.UTC(2026, 6, 28);
       const addEvidence = async (
         key: string,
         value: { date: string; precision: "year" | "month" | "day" },
@@ -48,7 +49,7 @@ describe.skipIf(!isolatedUrl)(
             refresh_interval_ms
           ) values (
             ${sourceId}, ${`pg-${key}`}, ${`PG source ${key}`}, null, null,
-            ${new Date(Date.UTC(2026, 6, 28))}, 'approved',
+            ${evidenceTimestamp}, 'approved',
             ${client.json({
               display: true,
               fieldPermission: {
@@ -66,7 +67,7 @@ describe.skipIf(!isolatedUrl)(
             source_row_hash, state
           ) values (
             ${recordId}, ${sourceId}, ${key}, 'v1', null,
-            ${new Date(Date.UTC(2026, 6, 28))}, null, null, 'test',
+            ${evidenceTimestamp}, null, null, 'test',
             ${hashCanonicalJson({ key })}, 'active'
           )
         `;
@@ -76,7 +77,7 @@ describe.skipIf(!isolatedUrl)(
             mapping_confidence, state, actor_ref, reason, created_at
           ) values (
             ${recordId}, 'work', ${workId}, 'source_relationship', 1,
-            'active', null, null, ${new Date(Date.UTC(2026, 6, 28))}
+            'active', null, null, ${evidenceTimestamp}
           )
         `;
         await client`
@@ -90,7 +91,7 @@ describe.skipIf(!isolatedUrl)(
             ${observationId}, ${recordId}, 'work', ${workId},
             'work.first_publication_date', ${client.json(value)},
             ${hashCanonicalJson(value)}, 'imported', 'publication', null,
-            ${new Date(Date.UTC(2026, 6, 28))}, 1, 'active', null, null,
+            ${evidenceTimestamp}, 1, 'active', null, null,
             null, null, null
           )
         `;
