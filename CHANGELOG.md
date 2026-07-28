@@ -1,3 +1,15 @@
+# [0.38.0](https://github.com/amalv/bukie/compare/v0.37.0...v0.38.0) (2026-07-28)
+
+
+### Bug Fixes
+
+* **catalog:** enforce immutable enrichment revisions ([ce85272](https://github.com/amalv/bukie/commit/ce852722de61598672efcf9d71c266d12883abf6))
+
+
+### Features
+
+* **catalog:** add policy-gated enrichment adapters ([c2b26f4](https://github.com/amalv/bukie/commit/c2b26f49fcac46aa60110c9dc41e664a83eec673))
+
 # [0.37.0](https://github.com/amalv/bukie/compare/v0.36.0...v0.37.0) (2026-07-28)
 
 
