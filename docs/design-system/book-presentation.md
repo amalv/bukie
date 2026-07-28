@@ -274,6 +274,25 @@ Deferred bibliographic fields belong on the detail page or in a surface
 designed for that user job. Provenance remains an internal eligibility concern,
 not reader-facing product copy.
 
+### Detail-page enrichment hierarchy
+
+The [book-detail enrichment benchmark](../research/book-detail-enrichment.md)
+keeps cards unchanged and defines the detail-page order for future eligible
+facts:
+
+1. verified cover, work title, ordered creators, and primary category;
+2. optional work context labeled `First published <date>`;
+3. optional `About` section with an eligible description;
+4. optional `Book details` with selected-edition facts, including
+   `Published <date>`, format, pages, publisher, language, and identifiers;
+5. alternate editions and a real, approved continuation path.
+
+Work first publication and selected-edition publication must never share an
+ambiguous `Publication` label. Empty sections, placeholder punctuation,
+invented fallbacks, dead actions, and rights- or identity-ineligible covers are
+omitted. Mobile preserves the same reading order in one column; desktop may
+place the cover beside the text without changing heading or focus order.
+
 ## Truncation and missing-data rules
 
 - Title: two visual lines in a grid card and two in a compact row. The complete
