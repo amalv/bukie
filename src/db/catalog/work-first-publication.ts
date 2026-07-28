@@ -358,7 +358,7 @@ export async function resolveWorkFirstPublicationPostgres(
           current?.id ?? null,
           options.actorRef ?? "system:work-first-publication-resolver",
           WORK_FIRST_PUBLICATION_RESOLVER_VERSION,
-          new Date(resolvedAt),
+          resolvedAt,
         ],
       );
       if (options.failAfter === "resolution") {
@@ -388,7 +388,7 @@ export async function resolveWorkFirstPublicationPostgres(
           projection.firstPublicationDate,
           projection.firstPublicationPrecision,
           projection.firstPublicationSortDate,
-          new Date(resolvedAt),
+          resolvedAt,
           options.workId,
         ],
       );
