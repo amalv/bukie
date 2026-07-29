@@ -1,3 +1,16 @@
+# [0.39.0](https://github.com/amalv/bukie/compare/v0.38.0...v0.39.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* **catalog:** enforce field display policy ([d80a6c9](https://github.com/amalv/bukie/commit/d80a6c95caf3a0927c37c5fee8162aaa1514121d))
+* **catalog:** persist postgres resolution epochs ([991f7c0](https://github.com/amalv/bukie/commit/991f7c0a9ec7bcd3b88dfd953dd297138e4747bb))
+
+
+### Features
+
+* **catalog:** resolve work first publication ([5ec2e27](https://github.com/amalv/bukie/commit/5ec2e273db110210f07a922d6679975a972dcfb9))
+
 # [0.38.0](https://github.com/amalv/bukie/compare/v0.37.0...v0.38.0) (2026-07-28)
 
 
