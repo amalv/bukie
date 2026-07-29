@@ -18,6 +18,7 @@
     "db:catalog:enrichment-sample": "bunx tsx ./scripts/db/run-enrichment-sample.ts",
     "db:catalog:description-sample": "bunx tsx ./scripts/db/run-description-enrichment-sample.ts",
     "db:catalog:cover-sample": "bunx tsx ./scripts/db/run-cover-enrichment-sample.ts",
+    "db:catalog:enrichment-dry-run": "bunx tsx ./scripts/db/run-catalog-enrichment-dry-run.ts",
     "lint": "bunx @biomejs/biome check --no-errors-on-unmatched .",
     "lint:fix": "bunx @biomejs/biome check --write --no-errors-on-unmatched .",
     "release": "semantic-release",
