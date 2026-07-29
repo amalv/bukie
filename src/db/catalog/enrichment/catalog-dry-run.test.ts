@@ -41,7 +41,7 @@ describe("catalog-wide enrichment dry run", () => {
       matcher: "conservative-work-matcher-v1",
       resolver: "catalog-resolver-v1",
       description: "description-gates-2026-07-29.v1",
-      cover: "cover-gates-2026-07-29.v1",
+      cover: "poc-cover-policy-2026-07.v1",
       coverInspection: "cover-inspection-2026-07-29.v1",
     });
     expect(

@@ -38,7 +38,7 @@ describe("SQLite normalized catalog rebuild", () => {
     expect(second.hash).toBe(first.hash);
     expect(second.tables.works).toHaveLength(500);
     expect(second.tables.editions).toHaveLength(500);
-    expect(second.tables.cover_assets).toHaveLength(500);
+    expect(second.tables.cover_assets).toHaveLength(505);
     expect(second.tables.field_resolution_heads).toHaveLength(8016);
   }, 30_000);
 
@@ -300,7 +300,7 @@ describe("SQLite normalized catalog rebuild", () => {
                  and length(source_row_hash) = 64`,
           )
           .get(),
-      ).toEqual({ count: 1004 });
+      ).toEqual({ count: 1009 });
 
       const workIndexes = raw
         .prepare("pragma index_list('works')")

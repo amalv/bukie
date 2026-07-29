@@ -263,7 +263,10 @@ checksum, decode result, source revision, object key, representation type, and
 transformation history. Stable flags cover corruption, tiny dimensions,
 square canvases, sidebars, extreme aspect/crop, blur or upscaling risk,
 duplicates, and locale/adaptation conflicts. The quality score is advisory;
-it cannot override source policy, rights, attribution, identity, or review.
+it cannot override source policy, attribution, identity, or review. Issue #143
+supersedes the display-rights gate for covers only during the PoC: rights stay
+recorded as `deferred_poc` / not cleared and require review before definitive
+production launch. An explicit denial remains ineligible.
 Cached candidates require fetch, cache, and display permission, while any
 recorded transformation also requires transformation permission. A strong
 edition tuple is eligible only when its approval is backed by a persisted
@@ -383,25 +386,53 @@ prerequisites and rollback boundary used by the narrow issue #143 slice below.
 
 Issue #143 reviews the dry-run output without treating coverage as a target.
 Exactly four first-publication proposals are accepted: Moby-Dick, The City and
-the Stars, Born a Crime, and Faithful Place. Dune remains unresolved. No title,
-description, or cover proposal is promoted.
+the Stars, Born a Crime, and Faithful Place. Dune's first-publication evidence
+remains unresolved. No title or description proposal is promoted; description
+queue overflow remains paused.
 
 The slice pins the exact committed report SHA-256, manifest hash, run hash,
-approval ID, and four deterministic proposal IDs. SQLite and PostgreSQL
-transactions recheck the source policy, retained record revision and hashes,
-active work relation, observation value and state, withdrawal state, mapping
-confidence, and field-level display permission while the affected work and
-head rows are locked. Any drift aborts the complete transaction.
+approval ID, and four date proposal IDs. A second pinned manifest and exact
+five-ID allow-list records reviewed PoC covers from Open Library, Standard
+Ebooks, Hachette, and Penguin Random House. Dune is edition-scoped through its
+exact selected-edition ISBN; the other four are explicitly work-scoped and are
+never attached to an edition they do not identify.
+
+Every cover record retains provider-native identity, stable source and asset
+URLs, retrieval time, original and normalized SHA-256 hashes, media type,
+dimensions, byte size, aspect ratio, inspection flags and score, reviewer,
+review reason, immutable decision/projection predecessors, and
+`rightsStatus: deferred_poc` / `rightsCleared: false`. The source allow-list,
+identity, attribution, decode, quality, withdrawal, and review gates remain
+blocking. Display-rights evidence alone is deferred for covers and for no other
+field.
+
+SQLite and PostgreSQL transactions recheck the source policy, retained record
+revision and hashes, active relation, identity scope, observation/candidate
+state, withdrawal state, mapping confidence, technical inspection, review
+head, and field-level display permission while affected rows are locked. Any
+drift aborts the complete transaction.
 
 Promotion appends a resolution whose `previous_resolution_id` retains the
 explicit prior missing state. Retry is idempotent. Rollback appends another
 missing resolution rather than moving a head backward or deleting evidence.
-Isolation hashes ensure that preferred titles, descriptions, preferred
-editions, cover assets/relations, and every unrelated resolution head remain
-unchanged.
+Cover promotion likewise retains a placeholder predecessor and appends a
+reviewed selected projection; rollback appends a new placeholder head without
+deleting the selected candidate, inspection, review, asset record, or history.
+Public queries expose the selected cover at work level and reapply current
+source, policy, decision, asset, and withdrawal state. Isolation hashes ensure
+that preferred titles, descriptions, preferred editions, legacy cover
+relations, and every unrelated resolution head remain unchanged.
 
-The same four reviewed observations and resolution histories are part of the
-deterministic full-catalog import graph. The #135 command explicitly builds
-the pre-promotion graph so the pinned dry-run report remains reproducible and
-byte-stable. Production database execution is not approved by issue #143 and
-is recorded as disabled in the approval manifest.
+The four observations plus five cover candidates, inspections, two-step
+decision histories, placeholder predecessors, selected projections, and asset
+metadata are part of the deterministic full-catalog import graph. The #135
+command explicitly builds the pre-promotion graph so its pinned report stays
+byte-stable.
+
+The five namespaced WebP objects are published explicitly to private R2;
+application and Vercel builds never upload them. Existing-database execution is
+allowed only for a proven PR #144 Vercel Preview with a distinct matching Neon
+branch. On 2026-07-29 that operational check found the Preview variables
+pointing at the same Neon endpoint as the existing production configuration
+and no `NEON_BRANCH_ID`, so the transaction was correctly not executed.
+Production database execution remains unauthorized.

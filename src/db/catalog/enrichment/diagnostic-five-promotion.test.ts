@@ -69,7 +69,7 @@ describe("diagnostic-five promotion approval", () => {
     );
   });
 
-  it("keeps Dune, descriptions, and covers unresolved in deterministic inputs", () => {
+  it("keeps Dune's date and descriptions unresolved while retaining reviewed PoC covers", () => {
     const graph = buildCatalogImportGraph(
       legacyBooksToImportRecords(baseCatalog),
     );
@@ -90,10 +90,8 @@ describe("diagnostic-five promotion approval", () => {
       payloadPolicy: "full",
     });
     expect(
-      graph.fieldObservations.filter((observation) =>
-        ["work.description", "edition.covers"].includes(
-          String(observation.fieldKey),
-        ),
+      graph.fieldObservations.filter(
+        (observation) => observation.fieldKey === "work.description",
       ),
     ).not.toEqual(
       expect.arrayContaining([
@@ -102,6 +100,7 @@ describe("diagnostic-five promotion approval", () => {
         }),
       ]),
     );
+    expect(graph.coverProjectionHeads).toHaveLength(5);
     expect(
       DIAGNOSTIC_FIVE_PROMOTION_APPROVAL.productionDatabaseExecutionApproved,
     ).toBe(false);

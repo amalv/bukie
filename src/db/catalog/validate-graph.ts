@@ -131,6 +131,88 @@ export function validateCatalogImportGraph(graph: CatalogImportGraph): void {
     );
   }
 
+  const coverAssetsByObjectKey = new Map(
+    graph.coverAssets.map((row) => [row.objectKey, row]),
+  );
+  const coverCandidates = new Map(
+    graph.coverCandidates.map((row) => [row.id, row]),
+  );
+  for (const candidate of graph.coverCandidates) {
+    requireInvariant(
+      entityIds.work.has(candidate.workId) &&
+        sourceRecords.has(candidate.sourceRecordId),
+      `cover candidate ${String(candidate.id)} lacks work or source evidence`,
+    );
+    requireInvariant(
+      candidate.representationType === "work_representative"
+        ? candidate.editionId === null
+        : editions.get(candidate.editionId)?.workId === candidate.workId,
+      `cover candidate ${String(candidate.id)} has a mismatched identity scope`,
+    );
+    requireInvariant(
+      coverAssetsByObjectKey.get(candidate.objectKey)?.state === "available",
+      `cover candidate ${String(candidate.id)} lacks an available asset`,
+    );
+  }
+  const coverInspections = new Map(
+    graph.coverInspections.map((row) => [row.id, row]),
+  );
+  for (const inspection of graph.coverInspections) {
+    requireInvariant(
+      coverCandidates.has(inspection.candidateId),
+      `cover inspection ${String(inspection.id)} lacks a candidate`,
+    );
+  }
+  const coverDecisions = new Map(
+    graph.coverDecisions.map((row) => [row.id, row]),
+  );
+  for (const decision of graph.coverDecisions) {
+    requireInvariant(
+      coverCandidates.has(decision.candidateId) &&
+        coverInspections.get(decision.inspectionId)?.candidateId ===
+          decision.candidateId,
+      `cover decision ${String(decision.id)} has mismatched evidence`,
+    );
+    if (decision.previousDecisionId) {
+      requireInvariant(
+        coverDecisions.get(decision.previousDecisionId)?.candidateId ===
+          decision.candidateId,
+        `cover decision ${String(decision.id)} has a mismatched predecessor`,
+      );
+    }
+  }
+  for (const head of graph.coverDecisionHeads) {
+    requireInvariant(
+      coverDecisions.get(head.decisionId)?.candidateId === head.candidateId,
+      `cover decision head ${String(head.candidateId)} is mismatched`,
+    );
+  }
+  const coverProjections = new Map(
+    graph.coverProjections.map((row) => [row.id, row]),
+  );
+  for (const projection of graph.coverProjections) {
+    requireInvariant(
+      entityIds.work.has(projection.workId) &&
+        (projection.candidateId === null ||
+          coverCandidates.get(projection.candidateId)?.workId ===
+            projection.workId),
+      `cover projection ${String(projection.id)} is mismatched`,
+    );
+    if (projection.previousProjectionId) {
+      requireInvariant(
+        coverProjections.get(projection.previousProjectionId)?.workId ===
+          projection.workId,
+        `cover projection ${String(projection.id)} has a mismatched predecessor`,
+      );
+    }
+  }
+  for (const head of graph.coverProjectionHeads) {
+    requireInvariant(
+      coverProjections.get(head.projectionId)?.workId === head.workId,
+      `cover projection head ${String(head.workId)} is mismatched`,
+    );
+  }
+
   for (const [name, rows, ownerKey] of [
     ["work category", graph.workCategories, "workId"],
     ["edition cover", graph.editionCovers, "editionId"],

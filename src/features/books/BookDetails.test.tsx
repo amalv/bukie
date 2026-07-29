@@ -88,6 +88,32 @@ describe("BookDetails", () => {
     ).toHaveAttribute("data-src", "/api/media/covers/example.webp");
   });
 
+  it("uses an honestly work-scoped cover without attaching it to an edition", () => {
+    render(
+      <BookDetails
+        work={{
+          ...workDetailFixture,
+          cover: {
+            id: "cover-candidate",
+            objectKey: "/covers/work-representative.webp",
+            identityScope: "work",
+            rightsStatus: "deferred_poc",
+            rightsCleared: false,
+          },
+          preferredEdition: {
+            ...editionFixture,
+            cover: undefined,
+          },
+        }}
+      />,
+    );
+    expect(
+      screen.getByRole("img", {
+        name: /cover of example work by first author, second author/i,
+      }),
+    ).toHaveAttribute("data-src", "/api/media/covers/work-representative.webp");
+  });
+
   it("shows only informative alternate editions", () => {
     const alternate = {
       ...editionFixture,

@@ -8,6 +8,7 @@ import {
 } from "../importer";
 import { rebuildCatalogPostgres } from "../postgres-rebuild";
 import { resolveRebuildTarget } from "../rebuild-safety";
+import { APPROVED_COVER_PROPOSAL_IDS } from "./diagnostic-five-cover-promotion";
 import {
   DIAGNOSTIC_FIVE_PROMOTION_APPROVAL,
   DIAGNOSTIC_FIVE_PROMOTION_APPROVAL_ID,
@@ -25,6 +26,7 @@ const promotionInput = {
   reportBytes,
   approvalId: DIAGNOSTIC_FIVE_PROMOTION_APPROVAL_ID,
   proposalIds: DIAGNOSTIC_FIVE_PROMOTION_APPROVAL.approvedProposalIds,
+  coverProposalIds: APPROVED_COVER_PROPOSAL_IDS,
   actorRef: "review:issue-143-postgres-test",
   executionTarget: "disposable",
   promotedAt: Date.UTC(2026, 6, 29, 18, 0, 0),

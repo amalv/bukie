@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import baseCatalog from "@/../artifacts/catalog";
+import { APPROVED_COVER_PROMOTION_PROPOSALS } from "./enrichment/diagnostic-five-cover-promotion";
 import { ADR_REPRESENTATIVE_RECORDS } from "./fixtures";
 import { canonicalJson, hashCanonicalJson } from "./identity";
 import {
@@ -18,9 +19,9 @@ describe("normalized catalog importer", () => {
     expect(catalogGraphCounts(graph)).toMatchObject({
       works: 500,
       editions: 500,
-      sourceRecords: 1009,
+      sourceRecords: 1014,
       editionCovers: 500,
-      coverAssets: 500,
+      coverAssets: 505,
     });
     expect(new Set(graph.works.map((row) => row.id)).size).toBe(500);
     expect(
@@ -91,7 +92,12 @@ describe("normalized catalog importer", () => {
 
   it("preserves cover object keys independently of target IDs", () => {
     expect(new Set(graph.coverAssets.map((row) => row.objectKey))).toEqual(
-      new Set(baseCatalog.map((book) => book.cover)),
+      new Set([
+        ...baseCatalog.map((book) => book.cover),
+        ...APPROVED_COVER_PROMOTION_PROPOSALS.map(
+          (proposal) => proposal.objectKey,
+        ),
+      ]),
     );
     expect(
       graph.coverAssets.every(

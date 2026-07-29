@@ -80,6 +80,12 @@ export type CatalogImportGraph = {
   editionIdentifiers: Array<Record<string, unknown>>;
   coverAssets: Array<Record<string, unknown>>;
   editionCovers: Array<Record<string, unknown>>;
+  coverCandidates: Array<Record<string, unknown>>;
+  coverInspections: Array<Record<string, unknown>>;
+  coverDecisions: Array<Record<string, unknown>>;
+  coverDecisionHeads: Array<Record<string, unknown>>;
+  coverProjections: Array<Record<string, unknown>>;
+  coverProjectionHeads: Array<Record<string, unknown>>;
   sourceRecords: Array<Record<string, unknown>>;
   sourceRecordLinks: Array<Record<string, unknown>>;
   fieldObservations: Array<Record<string, unknown>>;
@@ -231,6 +237,12 @@ export function buildCatalogImportGraph(
     editionIdentifiers: [],
     coverAssets: [],
     editionCovers: [],
+    coverCandidates: [],
+    coverInspections: [],
+    coverDecisions: [],
+    coverDecisionHeads: [],
+    coverProjections: [],
+    coverProjectionHeads: [],
     sourceRecords: [],
     sourceRecordLinks: [],
     fieldObservations: [],

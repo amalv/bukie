@@ -48,7 +48,11 @@ This command:
 The command never mutates a runtime database or a public cover projection.
 Works without an exact selected-edition ISBN remain review candidates instead
 of falling back to title/author search. Inspection flags are advisory; identity
-and permission remain hard gates.
+and approved-source policy remain hard gates. During the PoC, issue #143
+defers display-rights clearance for covers only. Such candidates must record
+`rightsStatus: deferred_poc`, `rightsCleared: false`, provenance, deterministic
+withdrawal/purge support, and mandatory re-review before definitive production
+launch. Explicitly denied assets remain ineligible.
 
 `covers:fetch:r2` is deliberately blocked while the recorded Open Library
 asset policy is pending. Publishing resumes only after a reviewed dry run and

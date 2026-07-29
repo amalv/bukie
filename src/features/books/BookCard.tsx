@@ -13,7 +13,9 @@ export function BookCard({ work, presentation = "grid" }: BookCardProps) {
   const isCompact = presentation === "compact";
   const authors = presentAuthors(work);
   const bibliographicMeta = presentBibliographicMeta(work);
-  const coverSrc = resolveBookCoverSrc(work.preferredEdition?.cover?.objectKey);
+  const coverSrc = resolveBookCoverSrc(
+    work.cover?.objectKey ?? work.preferredEdition?.cover?.objectKey,
+  );
 
   return (
     <article

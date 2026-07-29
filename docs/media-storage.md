@@ -85,6 +85,12 @@ configured for Preview and Production. Its historical name has no runtime
 effect. If strict environment isolation becomes useful later, create a separate
 production bucket and migrate it as an explicit operation.
 
+Because Preview and Production currently share this bucket, new reviewed
+assets use immutable issue/version-namespaced keys and upload only after an
+explicit absence check. Database projection still fails closed unless the
+target is a proven Preview Neon branch; an R2 upload by itself never selects a
+cover.
+
 The backfill maps:
 
 ```text

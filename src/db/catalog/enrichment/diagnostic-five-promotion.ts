@@ -8,6 +8,7 @@ import type { CatalogImportGraph } from "../importer";
 import { normalizeSortText } from "../normalize";
 import { sourcePolicyAllowsFieldDisplay } from "../policy-eligibility";
 import { validateCatalogImportGraph } from "../validate-graph";
+import { applyDiagnosticFiveCoverPromotionToGraph } from "./diagnostic-five-cover-promotion";
 
 export const DIAGNOSTIC_FIVE_PROMOTION_VERSION =
   "diagnostic-five-first-publication-2026-07-29.v1";
@@ -94,8 +95,6 @@ export const DIAGNOSTIC_FIVE_PROMOTION_APPROVAL = {
   repositoryInputApproved: true,
   productionDatabaseExecutionApproved: false,
   exclusions: {
-    covers:
-      "No candidate has both strong identity and display-rights evidence.",
     descriptions:
       "No candidate is review-eligible; queue overflow remains paused.",
     duneFirstPublication:
@@ -476,6 +475,7 @@ export const applyDiagnosticFivePromotionToGraph = (
     work.firstPublicationSortDate = `${entry.proposal.value.date}-01-01`;
     work.updatedAt = PROMOTED_AT;
   }
+  applyDiagnosticFiveCoverPromotionToGraph(graph);
   for (const key of Object.keys(graph) as Array<keyof CatalogImportGraph>) {
     graph[key].sort((left, right) =>
       canonicalJson(left).localeCompare(canonicalJson(right)),

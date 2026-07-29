@@ -18,9 +18,11 @@ import type {
   EditionSummary,
   WorkAuthor,
   WorkCategory,
+  WorkCover,
   WorkDetail,
   WorkSummary,
 } from "@/features/books/types";
+import { COVER_POLICY_VERSION } from "./enrichment/covers/types";
 import { sourcePolicyAllowsFieldDisplay } from "./policy-eligibility";
 
 export type CatalogQueryExecutor = {
@@ -107,6 +109,23 @@ type CoverRow = {
   mediaType: string | null;
   width: number | null;
   height: number | null;
+};
+
+type WorkCoverRow = {
+  workId: string;
+  id: string;
+  objectKey: string;
+  representationType: "selected_edition" | "work_representative";
+  editionId: string | null;
+  permissionState: "approved" | "pending" | "denied";
+  mediaType: string | null;
+  width: number | null;
+  height: number | null;
+  sourceRecordState: "active" | "withdrawn" | "deleted";
+  sourceApproval: "pending" | "approved" | "suspended" | "retired";
+  assetPolicy: string | Record<string, unknown> | null;
+  decisionPolicyVersion: string;
+  projectionPolicyVersion: string;
 };
 
 type ProvenanceRow = {
@@ -595,10 +614,11 @@ export function createCatalogRepository(
       .map((row) => row.preferredEditionId)
       .filter((id): id is string => Boolean(id));
 
-    const [authorRows, categoryRows, editionRows] = await Promise.all([
-      queryInChunks<AuthorRow>(
-        workIds,
-        (values) => `
+    const [authorRows, categoryRows, editionRows, workCoverRows] =
+      await Promise.all([
+        queryInChunks<AuthorRow>(
+          workIds,
+          (values) => `
           select
             wa.work_id as "workId",
             a.id as "id",
@@ -610,10 +630,10 @@ export function createCatalogRepository(
           where wa.work_id in (${values})
           order by wa.work_id asc, wa.position asc, a.id asc
         `,
-      ),
-      queryInChunks<CategoryRow>(
-        workIds,
-        (values) => `
+        ),
+        queryInChunks<CategoryRow>(
+          workIds,
+          (values) => `
           select
             wc.work_id as "workId",
             c.id as "id",
@@ -626,11 +646,45 @@ export function createCatalogRepository(
           where wc.work_id in (${values}) and c.status = 'active'
           order by wc.work_id asc, wc.position asc, c.id asc
         `,
-      ),
-      options.includeAllEditions
-        ? loadEditionRowsByWorkIds(workIds)
-        : loadEditionRowsByIds(preferredEditionIds),
-    ]);
+        ),
+        options.includeAllEditions
+          ? loadEditionRowsByWorkIds(workIds)
+          : loadEditionRowsByIds(preferredEditionIds),
+        queryInChunks<WorkCoverRow>(
+          workIds,
+          (values) => `
+          select
+            p.work_id as "workId",
+            c.id as "id",
+            c.object_key as "objectKey",
+            c.representation_type as "representationType",
+            c.edition_id as "editionId",
+            c.permission_state as "permissionState",
+            i.media_type as "mediaType",
+            i.width as "width",
+            i.height as "height",
+            sr.state as "sourceRecordState",
+            ms.approval_state as "sourceApproval",
+            ms.asset_policy as "assetPolicy",
+            d.policy_version as "decisionPolicyVersion",
+            p.policy_version as "projectionPolicyVersion"
+          from cover_projection_heads h
+          join cover_projections p on p.id = h.projection_id
+          join cover_candidates c on c.id = p.candidate_id
+          join cover_decision_heads dh on dh.candidate_id = c.id
+          join cover_decisions d on d.id = dh.decision_id
+          join cover_inspections i on i.id = d.inspection_id
+          join source_records sr on sr.id = c.source_record_id
+          join metadata_sources ms on ms.id = sr.source_id
+          join cover_assets ca
+            on ca.object_key = c.object_key and ca.state = 'available'
+          where p.work_id in (${values})
+            and p.state in ('selected', 'rolled_back')
+            and d.state = 'eligible'
+          order by p.work_id asc, c.id asc
+        `,
+        ),
+      ]);
 
     const editionIds = editionRows.map((row) => row.id);
     const [publisherRows, languageRows, identifierRows, coverRows] =
@@ -762,6 +816,38 @@ export function createCatalogRepository(
       });
     }
 
+    const coversByWork = new Map<string, WorkCover>();
+    for (const row of workCoverRows) {
+      const requiredField =
+        row.representationType === "selected_edition"
+          ? "edition.covers"
+          : "work.covers";
+      if (
+        coversByWork.has(row.workId) ||
+        row.sourceRecordState !== "active" ||
+        row.sourceApproval !== "approved" ||
+        row.permissionState === "denied" ||
+        row.decisionPolicyVersion !== COVER_POLICY_VERSION ||
+        row.projectionPolicyVersion !== COVER_POLICY_VERSION ||
+        !sourcePolicyAllowsFieldDisplay(row.assetPolicy, requiredField)
+      ) {
+        continue;
+      }
+      coversByWork.set(row.workId, {
+        id: row.id,
+        objectKey: row.objectKey,
+        mediaType: optional(row.mediaType),
+        width: optional(row.width),
+        height: optional(row.height),
+        identityScope:
+          row.representationType === "selected_edition" ? "edition" : "work",
+        editionId: optional(row.editionId),
+        rightsStatus:
+          row.permissionState === "approved" ? "cleared" : "deferred_poc",
+        rightsCleared: row.permissionState === "approved",
+      });
+    }
+
     const editionsById = new Map<string, EditionSummary>();
     const editionsByWork = new Map<string, EditionSummary[]>();
     for (const row of editionRows) {
@@ -799,6 +885,7 @@ export function createCatalogRepository(
         authors: authorsByWork.get(row.id) ?? [],
         primaryCategory: categories.find((category) => category.isPrimary),
         preferredEdition,
+        cover: coversByWork.get(row.id),
       };
       if (!options.includeAllEditions) return summary;
       const allEditions = editionsByWork.get(row.id) ?? [];

@@ -6,6 +6,13 @@ import {
   hashCanonicalJson,
 } from "../identity";
 import { sourcePolicyAllowsFieldDisplay } from "../policy-eligibility";
+import { COVER_POLICY_VERSION } from "./covers/types";
+import {
+  APPROVED_COVER_PROMOTION_PROPOSALS,
+  assertDiagnosticFiveCoverEligibility,
+  assertExactCoverProposalAllowlist,
+  diagnosticFiveCoverRows,
+} from "./diagnostic-five-cover-promotion";
 import {
   APPROVED_PROMOTION_PROPOSALS,
   assertPromotionEvidenceEligibility,
@@ -20,8 +27,17 @@ export type DiagnosticFivePromotionInput = {
   reportBytes: Uint8Array;
   approvalId: string;
   proposalIds: readonly string[];
+  coverProposalIds?: readonly string[];
   actorRef: string;
-  executionTarget: "disposable";
+  executionTarget: "disposable" | "preview";
+  previewTarget?: {
+    vercelEnv: "preview";
+    vercelDeploymentId: string;
+    gitBranch: "feat/catalog-enrichment-promotion";
+    pullRequest: 144;
+    neonBranchId: string;
+    databaseHost: string;
+  };
   promotedAt?: number;
   failAfter?: "evidence" | "resolution";
 };
@@ -29,6 +45,7 @@ export type DiagnosticFivePromotionInput = {
 export type DiagnosticFivePromotionResult = {
   changed: boolean;
   resolutionIds: readonly string[];
+  coverProjectionIds: readonly string[];
   publicProjectionHash: string;
 };
 
@@ -41,6 +58,46 @@ type CurrentResolution = {
 
 const FIELD_KEY = "work.first_publication_date";
 
+const assertPostgresExecutionTarget = (
+  url: string,
+  input: Pick<
+    DiagnosticFivePromotionInput,
+    "executionTarget" | "previewTarget"
+  >,
+): void => {
+  const parsed = new URL(url);
+  const databaseName = decodeURIComponent(parsed.pathname)
+    .replace(/^\/+/u, "")
+    .toLowerCase();
+  if (input.executionTarget === "disposable") {
+    if (
+      !/(?:^|[-_])(test|testing|isolated|disposable|issue[-_]?143)(?:$|[-_])/u.test(
+        databaseName,
+      )
+    ) {
+      throw new Error(
+        "Catalog promotion refused: production database execution is not approved",
+      );
+    }
+    return;
+  }
+  const proof = input.previewTarget;
+  if (
+    !proof ||
+    proof.vercelEnv !== "preview" ||
+    proof.pullRequest !== 144 ||
+    proof.gitBranch !== "feat/catalog-enrichment-promotion" ||
+    !proof.vercelDeploymentId.trim() ||
+    !proof.neonBranchId.trim() ||
+    proof.databaseHost !== parsed.hostname ||
+    !parsed.hostname.endsWith(".neon.tech")
+  ) {
+    throw new Error(
+      "Catalog promotion refused: exact PR #144 Vercel/Neon preview proof is required",
+    );
+  }
+};
+
 const protectedSqliteHash = (raw: SqliteDatabase): string =>
   hashCanonicalJson({
     covers: raw
@@ -51,7 +108,8 @@ const protectedSqliteHash = (raw: SqliteDatabase): string =>
       .all(),
     coverAssets: raw
       .prepare(
-        `select id, object_key, state, checksum from cover_assets order by id`,
+        `select id, object_key, state, checksum from cover_assets
+         where object_key not like '/covers/issue-143-%' order by id`,
       )
       .all(),
     descriptions: raw
@@ -71,15 +129,25 @@ const protectedSqliteHash = (raw: SqliteDatabase): string =>
   });
 
 const publicProjectionSqliteHash = (raw: SqliteDatabase): string =>
-  hashCanonicalJson(
-    raw
+  hashCanonicalJson({
+    works: raw
       .prepare(
         `select id, first_publication_date, first_publication_precision,
                 first_publication_sort_date
          from works order by id`,
       )
       .all(),
-  );
+    covers: raw
+      .prepare(
+        `select h.work_id, h.projection_id, p.candidate_id, p.state,
+                c.object_key
+         from cover_projection_heads h
+         join cover_projections p on p.id = h.projection_id
+         left join cover_candidates c on c.id = p.candidate_id
+         order by h.work_id`,
+      )
+      .all(),
+  });
 
 const assertExactSqliteRow = (
   raw: SqliteDatabase,
@@ -286,6 +354,227 @@ const persistAndRevalidateSqlite = (
   return rows;
 };
 
+const coverCatalogSqlite = (raw: SqliteDatabase) => ({
+  works: raw
+    .prepare(
+      `select id, preferred_title as "preferredTitle",
+              preferred_edition_id as "preferredEditionId"
+       from works
+       where id in (${APPROVED_COVER_PROMOTION_PROPOSALS.map(() => "?").join(",")})
+       order by id`,
+    )
+    .all(
+      ...APPROVED_COVER_PROMOTION_PROPOSALS.map((entry) => entry.workId),
+    ) as Array<Record<string, unknown>>,
+  editions: raw
+    .prepare(
+      `select id, work_id as "workId" from editions
+       where work_id in (${APPROVED_COVER_PROMOTION_PROPOSALS.map(() => "?").join(",")})
+       order by id`,
+    )
+    .all(
+      ...APPROVED_COVER_PROMOTION_PROPOSALS.map((entry) => entry.workId),
+    ) as Array<Record<string, unknown>>,
+  editionIdentifiers: raw
+    .prepare(
+      `select ei.edition_id as "editionId", ei.scheme,
+              ei.value_normalized as "valueNormalized"
+       from edition_identifiers ei
+       join editions e on e.id = ei.edition_id
+       where e.work_id in (${APPROVED_COVER_PROMOTION_PROPOSALS.map(() => "?").join(",")})
+       order by ei.id`,
+    )
+    .all(
+      ...APPROVED_COVER_PROMOTION_PROPOSALS.map((entry) => entry.workId),
+    ) as Array<Record<string, unknown>>,
+});
+
+const persistAndRevalidateCoversSqlite = (
+  raw: SqliteDatabase,
+  proposalIds: readonly string[],
+): { changed: boolean; projectionIds: string[] } => {
+  assertExactCoverProposalAllowlist(proposalIds);
+  const catalog = coverCatalogSqlite(raw);
+  const rows = diagnosticFiveCoverRows(catalog);
+  assertDiagnosticFiveCoverEligibility(catalog, rows);
+  raw
+    .prepare(
+      `insert into metadata_sources (
+         id, key, name, terms_url, attribution_url, reviewed_at,
+         approval_state, metadata_policy, asset_policy, payload_policy,
+         refresh_interval_ms
+       ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       on conflict(id) do nothing`,
+    )
+    .run(...Object.values(rows.metadataSource));
+
+  let changed = false;
+  const projectionIds: string[] = [];
+  for (const entry of rows.entries) {
+    raw
+      .prepare(
+        `insert into source_records (
+           id, source_id, record_key, source_revision, source_modified_at,
+           retrieved_at, payload_json, payload_hash, importer_version,
+           source_row_hash, state
+         ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         on conflict(id) do nothing`,
+      )
+      .run(...Object.values(entry.sourceRecord));
+    raw
+      .prepare(
+        `insert into source_record_links (
+           source_record_id, entity_type, entity_id, match_kind,
+           mapping_confidence, state, actor_ref, reason, created_at
+         ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+         on conflict(source_record_id, entity_type, entity_id) do nothing`,
+      )
+      .run(...Object.values(entry.sourceRecordLink));
+    raw
+      .prepare(
+        `insert into cover_assets (
+           id, object_key, media_type, width, height, bytes, checksum, state,
+           source_policy_id
+         ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+         on conflict(id) do nothing`,
+      )
+      .run(...Object.values(entry.coverAsset));
+    raw
+      .prepare(
+        `insert into cover_candidates (
+           id, work_id, edition_id, source_record_id, representation_type,
+           identity_match_kind, identity_evidence_json, permission_state,
+           rights_basis, attribution_text, attribution_url, source_url,
+           source_revision, source_policy_version, object_key,
+           transformation_history_json, created_at
+         ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         on conflict(id) do nothing`,
+      )
+      .run(...Object.values(entry.coverCandidate));
+    raw
+      .prepare(
+        `insert into cover_inspections (
+           id, candidate_id, media_type, byte_size, width, height,
+           aspect_ratio, checksum, decode_result, flags_json, quality_score,
+           duplicate_of_candidate_id, inspection_version, inspected_at
+         ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         on conflict(id) do nothing`,
+      )
+      .run(...Object.values(entry.coverInspection));
+    for (const decision of entry.coverDecisions) {
+      raw
+        .prepare(
+          `insert into cover_decisions (
+             id, candidate_id, inspection_id, state, gate_codes_json,
+             warning_codes_json, reviewer_ref, review_reason, purge_state,
+             previous_decision_id, policy_version, decided_at
+           ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           on conflict(id) do nothing`,
+        )
+        .run(...Object.values(decision));
+    }
+    const currentDecisionHead = raw
+      .prepare(
+        `select decision_id as id from cover_decision_heads
+         where candidate_id = ?`,
+      )
+      .get(entry.coverDecisionHead.candidateId) as { id: string } | undefined;
+    if (
+      currentDecisionHead &&
+      currentDecisionHead.id !== entry.coverDecisionHead.decisionId
+    ) {
+      throw new Error(
+        `Catalog cover promotion refused: review eligibility drifted for ${entry.proposal.title}`,
+      );
+    }
+    raw
+      .prepare(
+        `insert into cover_decision_heads (candidate_id, decision_id)
+         values (?, ?) on conflict(candidate_id) do nothing`,
+      )
+      .run(...Object.values(entry.coverDecisionHead));
+    for (const projection of entry.coverProjections) {
+      raw
+        .prepare(
+          `insert into cover_projections (
+             id, work_id, candidate_id, state, previous_projection_id,
+             reason_code, actor_ref, policy_version, projected_at
+           ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+           on conflict(id) do nothing`,
+        )
+        .run(...Object.values(projection));
+    }
+    const currentProjectionHead = raw
+      .prepare(
+        `select projection_id as id from cover_projection_heads
+         where work_id = ?`,
+      )
+      .get(entry.proposal.workId) as { id: string } | undefined;
+    if (
+      currentProjectionHead &&
+      currentProjectionHead.id !== entry.coverProjectionHead.projectionId
+    ) {
+      throw new Error(
+        `Catalog cover promotion refused: projection head drifted for ${entry.proposal.title}`,
+      );
+    }
+    raw
+      .prepare(
+        `insert into cover_projection_heads (work_id, projection_id)
+         values (?, ?) on conflict(work_id) do nothing`,
+      )
+      .run(...Object.values(entry.coverProjectionHead));
+    changed ||= !currentProjectionHead;
+    projectionIds.push(entry.coverProjectionHead.projectionId);
+
+    assertExactSqliteRow(
+      raw,
+      `select 1
+       from cover_projection_heads h
+       join cover_projections p on p.id = h.projection_id
+       join cover_candidates c on c.id = p.candidate_id
+       join cover_decision_heads dh on dh.candidate_id = c.id
+       join cover_decisions d on d.id = dh.decision_id
+       join cover_inspections i on i.id = d.inspection_id
+       join source_records sr on sr.id = c.source_record_id
+       join source_record_links sl on sl.source_record_id = sr.id
+         and sl.entity_type = ? and sl.entity_id = ?
+       join metadata_sources ms on ms.id = sr.source_id
+       join cover_assets ca on ca.object_key = c.object_key
+       where h.work_id = ? and h.projection_id = ?
+         and p.state = 'selected' and p.candidate_id = ?
+         and p.previous_projection_id = ?
+         and d.state = 'eligible' and d.reviewer_ref = ?
+         and d.previous_decision_id = ?
+         and d.gate_codes_json = '[]'
+         and i.checksum = ? and i.decode_result = 'decoded'
+         and i.quality_score >= 60
+         and c.permission_state = 'pending' and c.rights_basis is null
+         and c.source_revision = sr.source_revision
+         and sr.state = 'active' and sl.state = 'active'
+         and sl.mapping_confidence = 1
+         and ms.approval_state = 'approved'
+         and ms.asset_policy = ?
+         and ca.state = 'available' and ca.checksum = ?`,
+      [
+        entry.sourceRecordLink.entityType,
+        entry.sourceRecordLink.entityId,
+        entry.proposal.workId,
+        entry.coverProjectionHead.projectionId,
+        entry.coverCandidate.id,
+        entry.coverProjections[0].id,
+        entry.coverDecisions[1].reviewerRef,
+        entry.coverDecisions[0].id,
+        entry.coverInspection.checksum,
+        rows.metadataSource.assetPolicy,
+        entry.coverAsset.checksum,
+      ],
+      `source, identity, rights, withdrawal, quality, or review eligibility drifted for ${entry.proposal.title}`,
+    );
+  }
+  return { changed, projectionIds: projectionIds.sort() };
+};
+
 export const promoteDiagnosticFiveSqlite = (
   raw: SqliteDatabase,
   input: DiagnosticFivePromotionInput,
@@ -296,6 +585,7 @@ export const promoteDiagnosticFiveSqlite = (
     );
   }
   verifyApprovedPromotionReport(input.reportBytes, input);
+  assertExactCoverProposalAllowlist(input.coverProposalIds ?? []);
   if (!input.actorRef.trim()) {
     throw new Error("Catalog promotion refused: actor reference is required");
   }
@@ -304,14 +594,19 @@ export const promoteDiagnosticFiveSqlite = (
     // Approval and allow-list are deliberately checked again after the write
     // transaction begins so callers cannot swap mutable input between checks.
     verifyApprovedPromotionReport(input.reportBytes, input);
+    assertExactCoverProposalAllowlist(input.coverProposalIds ?? []);
     const rows = persistAndRevalidateSqlite(raw);
+    const coverResult = persistAndRevalidateCoversSqlite(
+      raw,
+      input.coverProposalIds ?? [],
+    );
     if (input.failAfter === "evidence") {
       throw new Error(
         "Forced diagnostic-five promotion failure after evidence",
       );
     }
     const resolutionIds: string[] = [];
-    let changed = false;
+    let changed = coverResult.changed;
     for (const entry of rows.entries) {
       const work = raw
         .prepare(
@@ -409,10 +704,93 @@ export const promoteDiagnosticFiveSqlite = (
     return {
       changed,
       resolutionIds: resolutionIds.sort(),
+      coverProjectionIds: coverResult.projectionIds,
       publicProjectionHash: publicProjectionSqliteHash(raw),
     };
   });
   return apply.immediate();
+};
+
+const rollbackDiagnosticCoversSqlite = (
+  raw: SqliteDatabase,
+  input: {
+    actorRef: string;
+    reason: string;
+    rolledBackAt: number;
+  },
+): { changed: boolean; projectionIds: string[] } => {
+  const rows = diagnosticFiveCoverRows(coverCatalogSqlite(raw));
+  let changed = false;
+  const projectionIds: string[] = [];
+  for (const entry of rows.entries) {
+    const current = raw
+      .prepare(
+        `select p.id, p.candidate_id as "candidateId", p.state,
+                p.policy_version as "policyVersion"
+         from cover_projection_heads h
+         join cover_projections p on p.id = h.projection_id
+         where h.work_id = ?`,
+      )
+      .get(entry.proposal.workId) as
+      | {
+          id: string;
+          candidateId: string | null;
+          state: string;
+          policyVersion: string;
+        }
+      | undefined;
+    if (
+      current?.state === "placeholder" &&
+      current.policyVersion === `${COVER_POLICY_VERSION}:rollback`
+    ) {
+      projectionIds.push(current.id);
+      continue;
+    }
+    if (
+      current?.state !== "selected" ||
+      current.candidateId !== entry.coverCandidate.id
+    ) {
+      throw new Error(
+        `Catalog cover rollback refused: current projection drifted for ${entry.proposal.title}`,
+      );
+    }
+    const id = deterministicCatalogId(
+      "cover_projection",
+      entry.proposal.workId,
+      hashCanonicalJson({
+        currentProjectionId: current.id,
+        policyVersion: `${COVER_POLICY_VERSION}:rollback`,
+        reason: input.reason,
+        state: "placeholder",
+      }),
+    );
+    raw
+      .prepare(
+        `insert into cover_projections (
+           id, work_id, candidate_id, state, previous_projection_id,
+           reason_code, actor_ref, policy_version, projected_at
+         ) values (?, ?, null, 'placeholder', ?, ?, ?, ?, ?)
+         on conflict(id) do nothing`,
+      )
+      .run(
+        id,
+        entry.proposal.workId,
+        current.id,
+        input.reason,
+        input.actorRef,
+        `${COVER_POLICY_VERSION}:rollback`,
+        input.rolledBackAt,
+      );
+    raw
+      .prepare(
+        `update cover_projection_heads set projection_id = ?
+         where work_id = ? and projection_id = ?`,
+      )
+      .run(id, entry.proposal.workId, current.id);
+    projectionIds.push(id);
+    changed = true;
+  }
+  return { changed, projectionIds: projectionIds.sort() };
 };
 
 export const rollbackDiagnosticFiveSqlite = (
@@ -526,6 +904,12 @@ export const rollbackDiagnosticFiveSqlite = (
         resolutionIds.push(resolutionId);
         changed = true;
       }
+      const coverRollback = rollbackDiagnosticCoversSqlite(raw, {
+        actorRef: input.actorRef,
+        reason: input.reason,
+        rolledBackAt: input.rolledBackAt ?? Date.now(),
+      });
+      changed ||= coverRollback.changed;
       if (input.failAfter === "resolution") {
         throw new Error(
           "Forced diagnostic-five rollback failure after resolution",
@@ -539,10 +923,224 @@ export const rollbackDiagnosticFiveSqlite = (
       return {
         changed,
         resolutionIds: resolutionIds.sort(),
+        coverProjectionIds: coverRollback.projectionIds,
         publicProjectionHash: publicProjectionSqliteHash(raw),
       };
     })
     .immediate();
+};
+
+const coverCatalogPostgres = async (sql: postgres.TransactionSql) => {
+  const workIds = APPROVED_COVER_PROMOTION_PROPOSALS.map(
+    (entry) => entry.workId,
+  );
+  const placeholders = workIds.map((_, index) => `$${index + 1}`).join(",");
+  return {
+    works: [
+      ...(await sql.unsafe(
+        `select id, preferred_title as "preferredTitle",
+                preferred_edition_id as "preferredEditionId"
+         from works where id in (${placeholders}) order by id for update`,
+        workIds,
+      )),
+    ] as Array<Record<string, unknown>>,
+    editions: [
+      ...(await sql.unsafe(
+        `select id, work_id as "workId" from editions
+         where work_id in (${placeholders}) order by id`,
+        workIds,
+      )),
+    ] as Array<Record<string, unknown>>,
+    editionIdentifiers: [
+      ...(await sql.unsafe(
+        `select ei.edition_id as "editionId", ei.scheme,
+                ei.value_normalized as "valueNormalized"
+         from edition_identifiers ei
+         join editions e on e.id = ei.edition_id
+         where e.work_id in (${placeholders}) order by ei.id`,
+        workIds,
+      )),
+    ] as Array<Record<string, unknown>>,
+  };
+};
+
+const persistAndRevalidateCoversPostgres = async (
+  sql: postgres.TransactionSql,
+  proposalIds: readonly string[],
+): Promise<{ changed: boolean; projectionIds: string[] }> => {
+  assertExactCoverProposalAllowlist(proposalIds);
+  const catalog = await coverCatalogPostgres(sql);
+  const rows = diagnosticFiveCoverRows(catalog);
+  assertDiagnosticFiveCoverEligibility(catalog, rows);
+  await sql.unsafe(
+    `insert into metadata_sources (
+       id, key, name, terms_url, attribution_url, reviewed_at,
+       approval_state, metadata_policy, asset_policy, payload_policy,
+       refresh_interval_ms
+     ) values ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11)
+     on conflict(id) do nothing`,
+    Object.values(rows.metadataSource),
+  );
+
+  let changed = false;
+  const projectionIds: string[] = [];
+  for (const entry of rows.entries) {
+    await sql.unsafe(
+      `insert into source_records (
+         id, source_id, record_key, source_revision, source_modified_at,
+         retrieved_at, payload_json, payload_hash, importer_version,
+         source_row_hash, state
+       ) values ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11)
+       on conflict(id) do nothing`,
+      Object.values(entry.sourceRecord),
+    );
+    await sql.unsafe(
+      `insert into source_record_links (
+         source_record_id, entity_type, entity_id, match_kind,
+         mapping_confidence, state, actor_ref, reason, created_at
+       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       on conflict(source_record_id, entity_type, entity_id) do nothing`,
+      Object.values(entry.sourceRecordLink),
+    );
+    await sql.unsafe(
+      `insert into cover_assets (
+         id, object_key, media_type, width, height, bytes, checksum, state,
+         source_policy_id
+       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       on conflict(id) do nothing`,
+      Object.values(entry.coverAsset),
+    );
+    await sql.unsafe(
+      `insert into cover_candidates (
+         id, work_id, edition_id, source_record_id, representation_type,
+         identity_match_kind, identity_evidence_json, permission_state,
+         rights_basis, attribution_text, attribution_url, source_url,
+         source_revision, source_policy_version, object_key,
+         transformation_history_json, created_at
+       ) values (
+         $1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,$12,$13,$14,$15,
+         $16::jsonb,$17
+       ) on conflict(id) do nothing`,
+      Object.values(entry.coverCandidate),
+    );
+    await sql.unsafe(
+      `insert into cover_inspections (
+         id, candidate_id, media_type, byte_size, width, height,
+         aspect_ratio, checksum, decode_result, flags_json, quality_score,
+         duplicate_of_candidate_id, inspection_version, inspected_at
+       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12,$13,$14)
+       on conflict(id) do nothing`,
+      Object.values(entry.coverInspection),
+    );
+    for (const decision of entry.coverDecisions) {
+      await sql.unsafe(
+        `insert into cover_decisions (
+           id, candidate_id, inspection_id, state, gate_codes_json,
+           warning_codes_json, reviewer_ref, review_reason, purge_state,
+           previous_decision_id, policy_version, decided_at
+         ) values (
+           $1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8,$9,$10,$11,$12
+         ) on conflict(id) do nothing`,
+        Object.values(decision),
+      );
+    }
+    const currentDecisionHeads = await sql.unsafe<Array<{ id: string }>>(
+      `select decision_id as id from cover_decision_heads
+       where candidate_id = $1 for update`,
+      [entry.coverDecisionHead.candidateId],
+    );
+    if (
+      currentDecisionHeads[0] &&
+      currentDecisionHeads[0].id !== entry.coverDecisionHead.decisionId
+    ) {
+      throw new Error(
+        `Catalog cover promotion refused: review eligibility drifted for ${entry.proposal.title}`,
+      );
+    }
+    await sql.unsafe(
+      `insert into cover_decision_heads (candidate_id, decision_id)
+       values ($1,$2) on conflict(candidate_id) do nothing`,
+      Object.values(entry.coverDecisionHead),
+    );
+    for (const projection of entry.coverProjections) {
+      await sql.unsafe(
+        `insert into cover_projections (
+           id, work_id, candidate_id, state, previous_projection_id,
+           reason_code, actor_ref, policy_version, projected_at
+         ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         on conflict(id) do nothing`,
+        Object.values(projection),
+      );
+    }
+    const currentProjectionHeads = await sql.unsafe<Array<{ id: string }>>(
+      `select projection_id as id from cover_projection_heads
+       where work_id = $1 for update`,
+      [entry.proposal.workId],
+    );
+    if (
+      currentProjectionHeads[0] &&
+      currentProjectionHeads[0].id !== entry.coverProjectionHead.projectionId
+    ) {
+      throw new Error(
+        `Catalog cover promotion refused: projection head drifted for ${entry.proposal.title}`,
+      );
+    }
+    await sql.unsafe(
+      `insert into cover_projection_heads (work_id, projection_id)
+       values ($1,$2) on conflict(work_id) do nothing`,
+      Object.values(entry.coverProjectionHead),
+    );
+    changed ||= !currentProjectionHeads[0];
+    projectionIds.push(entry.coverProjectionHead.projectionId);
+
+    const eligible = await sql.unsafe<Array<{ eligible: number }>>(
+      `select 1 as eligible
+       from cover_projection_heads h
+       join cover_projections p on p.id = h.projection_id
+       join cover_candidates c on c.id = p.candidate_id
+       join cover_decision_heads dh on dh.candidate_id = c.id
+       join cover_decisions d on d.id = dh.decision_id
+       join cover_inspections i on i.id = d.inspection_id
+       join source_records sr on sr.id = c.source_record_id
+       join source_record_links sl on sl.source_record_id = sr.id
+         and sl.entity_type = $1 and sl.entity_id = $2
+       join metadata_sources ms on ms.id = sr.source_id
+       join cover_assets ca on ca.object_key = c.object_key
+       where h.work_id = $3 and h.projection_id = $4
+         and p.state = 'selected' and p.candidate_id = $5
+         and p.previous_projection_id = $6
+         and d.state = 'eligible' and d.reviewer_ref = $7
+         and d.previous_decision_id = $8 and d.gate_codes_json = '[]'::jsonb
+         and i.checksum = $9 and i.decode_result = 'decoded'
+         and i.quality_score >= 60
+         and c.permission_state = 'pending' and c.rights_basis is null
+         and c.source_revision = sr.source_revision
+         and sr.state = 'active' and sl.state = 'active'
+         and sl.mapping_confidence = 1
+         and ms.approval_state = 'approved'
+         and ms.asset_policy = $10::jsonb
+         and ca.state = 'available' and ca.checksum = $11`,
+      [
+        entry.sourceRecordLink.entityType,
+        entry.sourceRecordLink.entityId,
+        entry.proposal.workId,
+        entry.coverProjectionHead.projectionId,
+        entry.coverCandidate.id,
+        entry.coverProjections[0].id,
+        entry.coverDecisions[1].reviewerRef,
+        entry.coverDecisions[0].id,
+        entry.coverInspection.checksum,
+        rows.metadataSource.assetPolicy,
+        entry.coverAsset.checksum,
+      ],
+    );
+    if (!eligible[0]) {
+      throw new Error(
+        `Catalog cover promotion refused: source, identity, rights, withdrawal, quality, or review eligibility drifted for ${entry.proposal.title}`,
+      );
+    }
+  }
+  return { changed, projectionIds: projectionIds.sort() };
 };
 
 const postgresProtectedHash = async (
@@ -554,7 +1152,8 @@ const postgresProtectedHash = async (
        from edition_covers order by edition_id, position, cover_asset_id`,
     ),
     sql.unsafe(
-      `select id, object_key, state, checksum from cover_assets order by id`,
+      `select id, object_key, state, checksum from cover_assets
+       where object_key not like '/covers/issue-143-%' order by id`,
     ),
     sql.unsafe(
       `select id, preferred_title, sort_title, description, preferred_edition_id
@@ -578,35 +1177,32 @@ const postgresProtectedHash = async (
 const postgresProjectionHash = async (
   sql: postgres.TransactionSql,
 ): Promise<string> =>
-  hashCanonicalJson([
-    ...(await sql.unsafe(
-      `select id, first_publication_date, first_publication_precision,
+  hashCanonicalJson({
+    works: [
+      ...(await sql.unsafe(
+        `select id, first_publication_date, first_publication_precision,
               first_publication_sort_date from works order by id`,
-    )),
-  ]);
+      )),
+    ],
+    covers: [
+      ...(await sql.unsafe(
+        `select h.work_id, h.projection_id, p.candidate_id, p.state,
+                c.object_key
+         from cover_projection_heads h
+         join cover_projections p on p.id = h.projection_id
+         left join cover_candidates c on c.id = p.candidate_id
+         order by h.work_id`,
+      )),
+    ],
+  });
 
 export const promoteDiagnosticFivePostgres = async (
   url: string,
   input: DiagnosticFivePromotionInput,
 ): Promise<DiagnosticFivePromotionResult> => {
-  if (input.executionTarget !== "disposable") {
-    throw new Error(
-      "Catalog promotion refused: production database execution is not approved",
-    );
-  }
-  const databaseName = decodeURIComponent(new URL(url).pathname)
-    .replace(/^\/+/u, "")
-    .toLowerCase();
-  if (
-    !/(?:^|[-_])(test|testing|isolated|disposable|issue[-_]?143)(?:$|[-_])/u.test(
-      databaseName,
-    )
-  ) {
-    throw new Error(
-      "Catalog promotion refused: production database execution is not approved",
-    );
-  }
+  assertPostgresExecutionTarget(url, input);
   verifyApprovedPromotionReport(input.reportBytes, input);
+  assertExactCoverProposalAllowlist(input.coverProposalIds ?? []);
   if (!input.actorRef.trim()) {
     throw new Error("Catalog promotion refused: actor reference is required");
   }
@@ -614,6 +1210,7 @@ export const promoteDiagnosticFivePostgres = async (
   try {
     return await client.begin(async (sql) => {
       verifyApprovedPromotionReport(input.reportBytes, input);
+      assertExactCoverProposalAllowlist(input.coverProposalIds ?? []);
       const rows = promotionEvidenceRows();
       assertPromotionEvidenceEligibility(rows);
       const protectedBefore = await postgresProtectedHash(sql);
@@ -744,13 +1341,17 @@ export const promoteDiagnosticFivePostgres = async (
           );
         }
       }
+      const coverResult = await persistAndRevalidateCoversPostgres(
+        sql,
+        input.coverProposalIds ?? [],
+      );
       if (input.failAfter === "evidence") {
         throw new Error(
           "Forced diagnostic-five promotion failure after evidence",
         );
       }
       const resolutionIds: string[] = [];
-      let changed = false;
+      let changed = coverResult.changed;
       for (const entry of rows.entries) {
         const workRows = await sql.unsafe<
           Array<{ title: string; firstPublicationDate: string | null }>
@@ -885,6 +1486,7 @@ export const promoteDiagnosticFivePostgres = async (
       return {
         changed,
         resolutionIds: resolutionIds.sort(),
+        coverProjectionIds: coverResult.projectionIds,
         publicProjectionHash: await postgresProjectionHash(sql),
       };
     });
@@ -893,33 +1495,98 @@ export const promoteDiagnosticFivePostgres = async (
   }
 };
 
+const rollbackDiagnosticCoversPostgres = async (
+  sql: postgres.TransactionSql,
+  input: {
+    actorRef: string;
+    reason: string;
+    rolledBackAt: number;
+  },
+): Promise<{ changed: boolean; projectionIds: string[] }> => {
+  const rows = diagnosticFiveCoverRows(await coverCatalogPostgres(sql));
+  let changed = false;
+  const projectionIds: string[] = [];
+  for (const entry of rows.entries) {
+    const currentRows = await sql.unsafe<
+      Array<{
+        id: string;
+        candidateId: string | null;
+        state: string;
+        policyVersion: string;
+      }>
+    >(
+      `select p.id, p.candidate_id as "candidateId", p.state,
+              p.policy_version as "policyVersion"
+       from cover_projection_heads h
+       join cover_projections p on p.id = h.projection_id
+       where h.work_id = $1 for update`,
+      [entry.proposal.workId],
+    );
+    const current = currentRows[0];
+    if (
+      current?.state === "placeholder" &&
+      current.policyVersion === `${COVER_POLICY_VERSION}:rollback`
+    ) {
+      projectionIds.push(current.id);
+      continue;
+    }
+    if (
+      current?.state !== "selected" ||
+      current.candidateId !== entry.coverCandidate.id
+    ) {
+      throw new Error(
+        `Catalog cover rollback refused: current projection drifted for ${entry.proposal.title}`,
+      );
+    }
+    const id = deterministicCatalogId(
+      "cover_projection",
+      entry.proposal.workId,
+      hashCanonicalJson({
+        currentProjectionId: current.id,
+        policyVersion: `${COVER_POLICY_VERSION}:rollback`,
+        reason: input.reason,
+        state: "placeholder",
+      }),
+    );
+    await sql.unsafe(
+      `insert into cover_projections (
+         id, work_id, candidate_id, state, previous_projection_id,
+         reason_code, actor_ref, policy_version, projected_at
+       ) values ($1,$2,null,'placeholder',$3,$4,$5,$6,$7)
+       on conflict(id) do nothing`,
+      [
+        id,
+        entry.proposal.workId,
+        current.id,
+        input.reason,
+        input.actorRef,
+        `${COVER_POLICY_VERSION}:rollback`,
+        input.rolledBackAt,
+      ],
+    );
+    await sql.unsafe(
+      `update cover_projection_heads set projection_id = $1
+       where work_id = $2 and projection_id = $3`,
+      [id, entry.proposal.workId, current.id],
+    );
+    projectionIds.push(id);
+    changed = true;
+  }
+  return { changed, projectionIds: projectionIds.sort() };
+};
+
 export const rollbackDiagnosticFivePostgres = async (
   url: string,
   input: {
     actorRef: string;
     reason: string;
-    executionTarget: "disposable";
+    executionTarget: "disposable" | "preview";
+    previewTarget?: DiagnosticFivePromotionInput["previewTarget"];
     rolledBackAt?: number;
     failAfter?: "resolution";
   },
 ): Promise<DiagnosticFivePromotionResult> => {
-  if (input.executionTarget !== "disposable") {
-    throw new Error(
-      "Catalog rollback refused: production database execution is not approved",
-    );
-  }
-  const databaseName = decodeURIComponent(new URL(url).pathname)
-    .replace(/^\/+/u, "")
-    .toLowerCase();
-  if (
-    !/(?:^|[-_])(test|testing|isolated|disposable|issue[-_]?143)(?:$|[-_])/u.test(
-      databaseName,
-    )
-  ) {
-    throw new Error(
-      "Catalog rollback refused: production database execution is not approved",
-    );
-  }
+  assertPostgresExecutionTarget(url, input);
   if (!input.actorRef.trim() || !input.reason.trim()) {
     throw new Error("Catalog rollback refused: actor and reason are required");
   }
@@ -1026,6 +1693,12 @@ export const rollbackDiagnosticFivePostgres = async (
         resolutionIds.push(resolutionId);
         changed = true;
       }
+      const coverRollback = await rollbackDiagnosticCoversPostgres(sql, {
+        actorRef: input.actorRef,
+        reason: input.reason,
+        rolledBackAt: input.rolledBackAt ?? Date.now(),
+      });
+      changed ||= coverRollback.changed;
       if (input.failAfter === "resolution") {
         throw new Error(
           "Forced diagnostic-five rollback failure after resolution",
@@ -1039,6 +1712,7 @@ export const rollbackDiagnosticFivePostgres = async (
       return {
         changed,
         resolutionIds: resolutionIds.sort(),
+        coverProjectionIds: coverRollback.projectionIds,
         publicProjectionHash: await postgresProjectionHash(sql),
       };
     });

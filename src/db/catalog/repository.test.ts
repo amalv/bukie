@@ -93,7 +93,7 @@ describe("normalized catalog repository", () => {
     );
     const beforeDetailQueries = queryCount;
     const detail = await repository.getWorkDetail(summary.id);
-    expect(queryCount - beforeDetailQueries).toBeLessThanOrEqual(10);
+    expect(queryCount - beforeDetailQueries).toBeLessThanOrEqual(11);
     expect(detail?.authors.map((author) => author.name)).toEqual([
       "Tomas Grey",
     ]);
