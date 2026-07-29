@@ -686,29 +686,18 @@ export const promoteDiagnosticFivePostgres = async (
           ],
         );
       }
-      const sourceRows = await sql.unsafe<
-        Array<{
-          approvalState: string;
-          metadataPolicy: Record<string, unknown>;
-          assetPolicy: Record<string, unknown>;
-        }>
-      >(
-        `select approval_state as "approvalState",
-                metadata_policy as "metadataPolicy",
-                asset_policy as "assetPolicy"
-         from metadata_sources where id = $1`,
-        [rows.metadataSource.id],
+      const sourceRows = await sql.unsafe<Array<{ eligible: number }>>(
+        `select 1 as eligible
+         from metadata_sources
+         where id = $1 and approval_state = 'approved'
+           and metadata_policy = $2::jsonb and asset_policy = $3::jsonb`,
+        [
+          rows.metadataSource.id,
+          rows.metadataSource.metadataPolicy,
+          rows.metadataSource.assetPolicy,
+        ],
       );
-      const source = sourceRows[0];
-      if (
-        source?.approvalState !== "approved" ||
-        canonicalJson(source.metadataPolicy) !==
-          canonicalJson(JSON.parse(rows.metadataSource.metadataPolicy)) ||
-        canonicalJson(source.assetPolicy) !==
-          canonicalJson(JSON.parse(rows.metadataSource.assetPolicy)) ||
-        !sourcePolicyAllowsFieldDisplay(source.metadataPolicy, FIELD_KEY) ||
-        sourcePolicyAllowsFieldDisplay(source.assetPolicy, "edition.covers")
-      ) {
+      if (!sourceRows[0]) {
         throw new Error(
           "Catalog promotion refused: source policy or rights eligibility drifted",
         );
