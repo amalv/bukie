@@ -40,11 +40,12 @@ describe("catalog dry-run target safety", () => {
     expect(() =>
       resolveCatalogDryRunTarget({
         rawTarget:
-          "postgres:postgresql://user:pass@localhost/bukie_issue_135_test",
+          "postgres:postgres://runner:different@localhost:5432/bukie_issue_135_test",
         confirmDisposable: true,
         cwd: process.cwd(),
         env: {
-          DATABASE_URL: "postgresql://user:pass@localhost/bukie_issue_135_test",
+          DATABASE_URL:
+            "postgresql://user:pass@LOCALHOST/bukie_issue_135_test?sslmode=disable",
         },
       }),
     ).toThrow(/active application database/);
