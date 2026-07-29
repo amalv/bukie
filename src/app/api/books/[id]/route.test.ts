@@ -16,6 +16,14 @@ describe("GET /api/books/[id]", () => {
     const { provenance: _provenance, ...expected } = workDetailFixture;
     const body = await response.json();
     expect(body).toEqual(expected);
+    expect(body.firstPublication).toEqual({
+      date: "1965-06",
+      precision: "month",
+    });
+    expect(body.preferredEdition.publication).toEqual({
+      date: "2020",
+      precision: "year",
+    });
     expect(body).not.toHaveProperty("provenance");
     expect(find).toHaveBeenCalledWith(workDetailFixture.id);
   });
@@ -26,6 +34,22 @@ describe("GET /api/books/[id]", () => {
       params: Promise.resolve({ id: "missing" }),
     });
     expect(response.status).toBe(404);
+  });
+
+  it("omits an ineligible work date without suppressing the edition date", async () => {
+    vi.spyOn(repo, "findWorkById").mockResolvedValue({
+      ...workDetailFixture,
+      firstPublication: undefined,
+    });
+    const response = await GET(new Request("https://test"), {
+      params: Promise.resolve({ id: workDetailFixture.id }),
+    });
+    const body = await response.json();
+    expect(body).not.toHaveProperty("firstPublication");
+    expect(body.preferredEdition.publication).toEqual({
+      date: "2020",
+      precision: "year",
+    });
   });
 
   it("advertises read-only methods", async () => {

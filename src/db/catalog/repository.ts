@@ -21,6 +21,7 @@ import type {
   WorkDetail,
   WorkSummary,
 } from "@/features/books/types";
+import { sourcePolicyAllowsFieldDisplay } from "./policy-eligibility";
 
 export type CatalogQueryExecutor = {
   dialect: "sqlite" | "postgres";
@@ -35,6 +36,10 @@ type WorkRow = {
   title: string;
   sortTitle: string;
   description: string | null;
+  firstPublicationDate: string | null;
+  firstPublicationPrecision:
+    | NonNullable<WorkDetail["firstPublication"]>["precision"]
+    | null;
   preferredEditionId: string | null;
   publicationSortDate: string | null;
   catalogedAt: number | string | Date | null;
@@ -145,6 +150,8 @@ const WORK_COLUMNS = `
     w.preferred_title as "title",
     w.sort_title as "sortTitle",
     w.description as "description",
+    w.first_publication_date as "firstPublicationDate",
+    w.first_publication_precision as "firstPublicationPrecision",
     w.preferred_edition_id as "preferredEditionId",
     preferred.publication_sort_date as "publicationSortDate",
     preferred.cataloged_at as "catalogedAt"
@@ -173,18 +180,6 @@ function epochMilliseconds(value: number | string | Date): number {
   const numeric = Number(value);
   if (Number.isFinite(numeric)) return numeric;
   return new Date(value).getTime();
-}
-
-function sourcePolicyAllowsDisplay(
-  policy: string | Record<string, unknown> | null,
-): boolean {
-  if (!policy) return false;
-  try {
-    const parsed = typeof policy === "string" ? JSON.parse(policy) : policy;
-    return parsed.display === true;
-  } catch {
-    return false;
-  }
 }
 
 export function isDetailFieldDisplayEligible(
@@ -490,10 +485,11 @@ export function createCatalogRepository(
                 row.sourceRecordState === "active" &&
                 row.sourceLinkState === "active" &&
                 row.provenanceKind !== "synthetic" &&
-                sourcePolicyAllowsDisplay(
+                sourcePolicyAllowsFieldDisplay(
                   row.field === "edition.covers"
                     ? row.assetPolicy
                     : row.metadataPolicy,
+                  row.field,
                 ),
             }
           : undefined,
@@ -569,6 +565,13 @@ export function createCatalogRepository(
       preferredEdition,
       description: eligible("work", detail.id, "work.description")
         ? detail.description
+        : undefined,
+      firstPublication: eligible(
+        "work",
+        detail.id,
+        "work.first_publication_date",
+      )
+        ? detail.firstPublication
         : undefined,
       categories,
       editions,
@@ -804,6 +807,13 @@ export function createCatalogRepository(
       return {
         ...summary,
         description: optional(row.description),
+        firstPublication:
+          row.firstPublicationDate && row.firstPublicationPrecision
+            ? {
+                date: row.firstPublicationDate,
+                precision: row.firstPublicationPrecision,
+              }
+            : undefined,
         categories,
         editions: allEditions,
       } satisfies Omit<WorkDetail, "provenance">;

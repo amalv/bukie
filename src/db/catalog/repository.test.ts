@@ -417,4 +417,45 @@ describe("normalized catalog repository", () => {
       false,
     );
   });
+
+  it("keeps publication sorting and period filters edition-based", async () => {
+    const beforeSort = await repository.listWorkSummaries(
+      query({ sort: "publication" }),
+    );
+    const beforePeriod = await repository.listWorkSummaries(
+      query({ period: "1950-1999", sort: "publication" }),
+    );
+    raw.exec("begin");
+    try {
+      for (const [index, work] of beforeSort.entries()) {
+        const year = String(1900 + (beforeSort.length - index)).padStart(
+          4,
+          "0",
+        );
+        raw
+          .prepare(
+            `update works
+             set first_publication_date = ?,
+                 first_publication_precision = 'year',
+                 first_publication_sort_date = ?
+             where id = ?`,
+          )
+          .run(year, `${year}-01-01`, work.id);
+      }
+      const afterSort = await repository.listWorkSummaries(
+        query({ sort: "publication" }),
+      );
+      const afterPeriod = await repository.listWorkSummaries(
+        query({ period: "1950-1999", sort: "publication" }),
+      );
+      expect(afterSort.map((work) => work.id)).toEqual(
+        beforeSort.map((work) => work.id),
+      );
+      expect(afterPeriod.map((work) => work.id)).toEqual(
+        beforePeriod.map((work) => work.id),
+      );
+    } finally {
+      raw.exec("rollback");
+    }
+  });
 });

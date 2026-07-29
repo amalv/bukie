@@ -56,6 +56,22 @@ describe("normalized catalog importer", () => {
     ).toBe(true);
   });
 
+  it("never infers work first publication from imported edition dates", () => {
+    expect(
+      graph.works.every(
+        (work) =>
+          work.firstPublicationDate === null &&
+          work.firstPublicationPrecision === null &&
+          work.firstPublicationSortDate === null,
+      ),
+    ).toBe(true);
+    expect(
+      graph.fieldObservations.some(
+        (observation) => observation.fieldKey === "work.first_publication_date",
+      ),
+    ).toBe(false);
+  });
+
   it("preserves cover object keys independently of target IDs", () => {
     expect(new Set(graph.coverAssets.map((row) => row.objectKey))).toEqual(
       new Set(baseCatalog.map((book) => book.cover)),

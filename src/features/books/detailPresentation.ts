@@ -76,6 +76,9 @@ export function buildBookStructuredData(
     "@context": "https://schema.org",
     "@type": "Book",
     name: work.title,
+    ...(work.firstPublication
+      ? { datePublished: work.firstPublication.date }
+      : {}),
     ...(work.description ? { description: work.description } : {}),
     ...(work.categories.length > 0
       ? { genre: work.categories.map((category) => category.label) }

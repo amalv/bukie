@@ -447,6 +447,9 @@ export function buildCatalogImportGraph(
         record.description && !record.generatedDescription
           ? record.description
           : null,
+      firstPublicationDate: null,
+      firstPublicationPrecision: null,
+      firstPublicationSortDate: null,
       preferredEditionId: null,
       createdAt: CATALOG_ARTIFACT_TIMESTAMP,
       updatedAt: CATALOG_ARTIFACT_TIMESTAMP,

@@ -109,7 +109,8 @@ describe("isolated five-work enrichment workflow", () => {
       ]),
     );
     expect(policyBySource.get("bukie_editorial")?.display).toBe(true);
-    expect(policyBySource.get("wikidata")?.display).toBe(false);
+    expect(policyBySource.get("wikidata")?.display).toBe(true);
+    expect(policyBySource.get("wikidata")?.proposedEvidenceOnly).toBe(true);
     expect(
       run.metadataSources.every(
         (source) => JSON.parse(String(source.assetPolicy)).display === false,

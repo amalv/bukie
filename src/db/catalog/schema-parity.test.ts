@@ -156,4 +156,25 @@ describe("SQLite/Postgres normalized catalog schema parity", () => {
       );
     }
   });
+
+  it("adds nullable work first-publication fields and vocabulary in both providers", () => {
+    const sqliteMigration = readFileSync(
+      path.resolve("drizzle/0005_cuddly_bloodscream.sql"),
+      "utf8",
+    );
+    const postgresMigration = readFileSync(
+      path.resolve("drizzle/pg/0007_third_blizzard.sql"),
+      "utf8",
+    );
+    for (const migration of [sqliteMigration, postgresMigration]) {
+      expect(migration).toContain("work.first_publication_date");
+      expect(migration).toContain("first_publication_date");
+      expect(migration).toContain("first_publication_precision");
+      expect(migration).toContain("first_publication_sort_date");
+      expect(migration).toContain("works_first_publication_date_ck");
+      expect(migration).not.toMatch(
+        /update\s+works[\s\S]*editions|from\s+editions[\s\S]*first_publication/i,
+      );
+    }
+  });
 });

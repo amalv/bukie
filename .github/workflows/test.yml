@@ -52,6 +52,7 @@ jobs:
         run: >-
           bun run test --
           src/db/catalog/enrichment/persistence.pg.test.ts
+          src/db/catalog/work-first-publication.pg.test.ts
           --no-file-parallelism
         env:
           CATALOG_TEST_POSTGRES_URL: postgresql://bukie_test:bukie_test@127.0.0.1:5432/bukie_catalog_test

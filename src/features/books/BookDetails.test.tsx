@@ -28,6 +28,9 @@ describe("BookDetails", () => {
     ]);
     expect(screen.getByText("First Author, Second Author")).toBeInTheDocument();
     expect(screen.getByText("Stored catalog description.")).toBeInTheDocument();
+    expect(screen.getByText("First published 1965-06")).toBeInTheDocument();
+    expect(screen.getByText("2020")).toBeInTheDocument();
+    expect(screen.getByText("Published")).toBeInTheDocument();
     expect(screen.getByText("Example Press")).toBeInTheDocument();
     expect(screen.getByText("978-0-441-17271-9")).toBeInTheDocument();
     expect(

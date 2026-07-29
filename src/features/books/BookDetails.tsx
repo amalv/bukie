@@ -206,6 +206,12 @@ export function BookDetails({ work }: BookDetailsProps) {
                   ))}
                 </ul>
               ) : null}
+              {work.firstPublication ? (
+                <p className="m-0 inline-flex items-center gap-[var(--spacing-1)] text-[var(--type-sm)] text-[var(--color-on-surface)] opacity-80">
+                  <Calendar className="h-4 w-4" aria-hidden="true" />
+                  <span>First published {work.firstPublication.date}</span>
+                </p>
+              ) : null}
             </header>
 
             {work.description ? (
