@@ -34,6 +34,14 @@ export const CATALOG_TARGET_TABLE_NAMES = [
   "catalog_change_events",
   "categories",
   "cover_assets",
+  "description_candidates",
+  "description_claim_evidence",
+  "description_claims",
+  "description_decision_heads",
+  "description_decisions",
+  "description_projection_heads",
+  "description_projections",
+  "description_review_queue",
   "edition_covers",
   "edition_identifiers",
   "edition_languages",
@@ -54,6 +62,14 @@ export const CATALOG_TARGET_TABLE_NAMES = [
 ] as const;
 
 const CLEAR_SQL = `
+  delete from description_projection_heads;
+  delete from description_projections;
+  delete from description_review_queue;
+  delete from description_decision_heads;
+  delete from description_decisions;
+  delete from description_claim_evidence;
+  delete from description_claims;
+  delete from description_candidates;
   delete from field_resolution_heads;
   delete from field_resolutions;
   delete from field_observations;
@@ -256,6 +272,7 @@ export function rebuildCatalogSqlite(input: {
   try {
     migrateCatalogSqlite(raw);
     const rebuild = raw.transaction(() => {
+      raw.pragma("defer_foreign_keys = ON");
       raw.exec(CLEAR_SQL);
       importCatalogGraphSqlite(raw, input.graph, {
         failAfterTable: input.failAfterTable,

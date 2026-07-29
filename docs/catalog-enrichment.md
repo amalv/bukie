@@ -178,3 +178,59 @@ SQLite/Postgres persistence adapters serialize the recorded fixture to
 equivalent logical rows. Live Postgres rebuild coverage remains gated by the
 existing explicitly isolated `CATALOG_TEST_POSTGRES_URL`; no application or
 preview database is used by this workflow.
+
+## Evidence-gated descriptions
+
+Issue #133 implements the three description classes approved by the research:
+
+| Class | Required immutable provenance | Eligibility path |
+|---|---|---|
+| `licensed_verbatim` | exact source revision, license URL/name, attribution decision, derivative permission, source policy version | automated gates may pass exact licensed text; any warning requires review |
+| `bukie_editorial` | approved parent observations, editor, editorial reason and revision | independent reviewer approval is required |
+| `model_assisted_candidate` | every parent and claim mapping, provider-neutral model/version, prompt version, input hash, generation time/duration, tokens, cost, and policy version | every initial candidate requires human approval |
+
+No model provider is selected or called. Tests and the diagnostic command use
+deterministic recorded fixtures under the same provider-neutral contract.
+Wikidata structured facts may be parent evidence only when their source/link
+and field policy are currently eligible; they are never treated as prose.
+Wikipedia, publisher, retailer, competitor, and search-result prose remain
+disabled by the source-policy matrix above.
+
+Automated gates use stable reason codes for parent support, identity,
+unresolved evidence conflicts, length, readability, specificity, neutral tone,
+spoilers, copying similarity, licensing, source revision, and source policy.
+An exact eight-word source match is only
+`copying_exact_eight_word_match`, a review warning. It is not a legal
+determination and cannot approve or reject text on its own. A distinct high
+similarity rule can reject a candidate as `copying_similarity_high`.
+Ambiguous and sensitive cases also enter human review. The advisory quality
+score is stored and reported but is never read by an eligibility decision.
+
+The review queue has a transactionally enforced capacity and one operational
+row per candidate. SQLite uses an immediate transaction; Postgres combines a
+row lock with an advisory transaction lock around the active-count check.
+Retries deduplicate deterministically. At capacity, a candidate becomes
+`paused` and no queue row or eligibility is created. It can be queued only
+after capacity becomes available.
+
+Description decision and internal projection histories are immutable linked
+events. Human decisions, withdrawal, source-policy revocation, policy/model/
+prompt invalidation, re-review, selection, and rollback advance their heads in
+one transaction. Read-time checks still apply current source, record, identity
+link, parent evidence, conflict, model, prompt, and policy state. These
+description heads are diagnostic only: they do not update `works.description`
+or public field-resolution heads.
+
+Run the reproducible five-work SQLite proof only against an explicitly
+disposable target:
+
+```powershell
+bun run db:catalog:description-sample --target=sqlite:.data/catalog-targets/issue-133-description-test.sqlite --confirm-disposable
+```
+
+The recorded proof creates five model candidates, exercises approved, rejected,
+withdrawn, and queued states, retries every candidate, and reports exact
+coverage, queue, token, cost, and linearly scaled 500-work estimates. It also
+hashes public resolution heads and work description values before and after
+the run and refuses to finish if either changes. Rebuilding and rerunning the
+same manifest produces the same candidate IDs, snapshot hash, and metrics.

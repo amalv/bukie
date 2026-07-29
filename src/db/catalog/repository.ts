@@ -128,6 +128,16 @@ type ProvenanceRow = {
   sourceLinkState: "active" | "candidate" | "rejected" | null;
   metadataPolicy: string | Record<string, unknown> | null;
   assetPolicy: string | Record<string, unknown> | null;
+  descriptionCandidateId: string | null;
+  descriptionDecisionState:
+    | "candidate"
+    | "review_required"
+    | "paused"
+    | "rejected"
+    | "eligible"
+    | "withdrawn"
+    | "invalidated"
+    | null;
 };
 
 type ProjectedWork = WorkSummary | Omit<WorkDetail, "provenance">;
@@ -441,7 +451,9 @@ export function createCatalogRepository(
           sr.state as "sourceRecordState",
           sl.state as "sourceLinkState",
           s.metadata_policy as "metadataPolicy",
-          s.asset_policy as "assetPolicy"
+          s.asset_policy as "assetPolicy",
+          dc.id as "descriptionCandidateId",
+          dd.state as "descriptionDecisionState"
         from field_resolution_heads h
         join field_resolutions r on r.id = h.resolution_id
         left join field_observations o on o.id = r.selected_observation_id
@@ -451,6 +463,12 @@ export function createCatalogRepository(
           on sl.source_record_id = sr.id
          and sl.entity_type = r.entity_type
          and sl.entity_id = r.entity_id
+        left join description_candidates dc
+          on dc.observation_id = o.id
+        left join description_decision_heads ddh
+          on ddh.candidate_id = dc.id
+        left join description_decisions dd
+          on dd.id = ddh.decision_id
         where h.entity_type = '${entityType}'
           and h.entity_id in (${values})
         order by h.entity_id asc, h.field_key asc
@@ -485,6 +503,9 @@ export function createCatalogRepository(
                 row.sourceRecordState === "active" &&
                 row.sourceLinkState === "active" &&
                 row.provenanceKind !== "synthetic" &&
+                (row.field !== "work.description" ||
+                  row.descriptionCandidateId === null ||
+                  row.descriptionDecisionState === "eligible") &&
                 sourcePolicyAllowsFieldDisplay(
                   row.field === "edition.covers"
                     ? row.assetPolicy
