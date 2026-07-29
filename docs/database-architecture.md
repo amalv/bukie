@@ -97,6 +97,23 @@ resolution heads, and the existing display-eligibility checks. Dry runs write
 to an isolated disposable target and cannot update current heads, projections,
 or cover pointers.
 
+Issue #143 adds one narrow exception to the dry-run-only boundary: four
+explicitly reviewed first-publication observations from the pinned #135
+report. Their exact report, manifest, run, approval, and proposal identities
+are fixed in repository input. Dune, description candidates, cover candidates,
+and redundant title observations remain unresolved. The batch transaction
+locks all four work/head pairs, revalidates current source, identity, rights,
+withdrawal, quality, and review eligibility, and then appends resolution
+history plus matching work projections atomically. Rollback also appends
+history and restores the retained missing state. SQLite and PostgreSQL use the
+same logical rows and deterministic IDs.
+
+Clean rebuilds contain the same reviewed evidence and resolution chain.
+The historical #135 dry-run explicitly requests the pre-promotion import graph
+to retain its exact byte-stable report. Existing production databases are not
+updated automatically; the recorded issue #143 approval explicitly leaves
+production database execution unauthorized.
+
 Issue #133 adds a description-specific evidence and review layer without
 changing that public boundary. Immutable description candidates identify one
 of `licensed_verbatim`, `bukie_editorial`, or `model_assisted_candidate` and

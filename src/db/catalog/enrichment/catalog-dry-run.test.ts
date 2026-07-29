@@ -16,7 +16,12 @@ import { ENRICHMENT_SAMPLE_MANIFEST } from "./sample-manifest";
 
 const inputs = () => {
   const records = legacyBooksToImportRecords(baseCatalog);
-  return { records, graph: buildCatalogImportGraph(records) };
+  return {
+    records,
+    graph: buildCatalogImportGraph(records, {
+      includeApprovedPromotions: false,
+    }),
+  };
 };
 
 describe("catalog-wide enrichment dry run", () => {

@@ -18,7 +18,7 @@ describe("normalized catalog importer", () => {
     expect(catalogGraphCounts(graph)).toMatchObject({
       works: 500,
       editions: 500,
-      sourceRecords: 1005,
+      sourceRecords: 1009,
       editionCovers: 500,
       coverAssets: 500,
     });
@@ -56,20 +56,37 @@ describe("normalized catalog importer", () => {
     ).toBe(true);
   });
 
-  it("never infers work first publication from imported edition dates", () => {
+  it("projects only the four explicitly approved first-publication observations", () => {
+    const projected = graph.works
+      .filter((work) => work.firstPublicationDate !== null)
+      .map((work) => [work.preferredTitle, work.firstPublicationDate])
+      .sort();
     expect(
       graph.works.every(
         (work) =>
-          work.firstPublicationDate === null &&
-          work.firstPublicationPrecision === null &&
-          work.firstPublicationSortDate === null,
+          work.firstPublicationDate === null ||
+          (work.firstPublicationPrecision === "year" &&
+            work.firstPublicationSortDate ===
+              `${String(work.firstPublicationDate)}-01-01`),
       ),
     ).toBe(true);
     expect(
-      graph.fieldObservations.some(
+      graph.fieldObservations.filter(
         (observation) => observation.fieldKey === "work.first_publication_date",
       ),
-    ).toBe(false);
+    ).toHaveLength(4);
+    expect(projected).toEqual(
+      [
+        ["Born a Crime", "2016"],
+        ["Faithful Place", "2010"],
+        ["Moby-Dick", "1851"],
+        ["The City and the Stars", "1956"],
+      ].sort(),
+    );
+    expect(
+      graph.works.find((work) => work.preferredTitle === "Dune")
+        ?.firstPublicationDate,
+    ).toBeNull();
   });
 
   it("preserves cover object keys independently of target IDs", () => {

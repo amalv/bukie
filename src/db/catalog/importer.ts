@@ -1,4 +1,5 @@
 import type { LegacyCatalogArtifactRecord } from "@/../artifacts/catalog/types";
+import { applyDiagnosticFivePromotionToGraph } from "./enrichment/diagnostic-five-promotion";
 import {
   canonicalJson,
   deterministicCatalogId,
@@ -210,6 +211,7 @@ export function legacyBooksToImportRecords(
 
 export function buildCatalogImportGraph(
   inputRecords: CatalogImportRecord[],
+  options: { includeApprovedPromotions?: boolean } = {},
 ): CatalogImportGraph {
   const records = [...inputRecords].sort((left, right) =>
     left.recordKey.localeCompare(right.recordKey),
@@ -924,6 +926,10 @@ export function buildCatalogImportGraph(
         parentIds: [],
       },
     });
+  }
+
+  if (options.includeApprovedPromotions !== false) {
+    applyDiagnosticFivePromotionToGraph(graph);
   }
 
   for (const key of Object.keys(graph) as Array<keyof CatalogImportGraph>) {

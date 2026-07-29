@@ -61,7 +61,9 @@ const main = async () => {
   });
   const reportPath = resolveReportPath(readArg("report"));
   const records = legacyBooksToImportRecords(baseCatalog);
-  const graph = buildCatalogImportGraph(records);
+  const graph = buildCatalogImportGraph(records, {
+    includeApprovedPromotions: false,
+  });
   console.info("[catalog:enrichment-dry-run] validated target:", target.description);
   console.info("[catalog:enrichment-dry-run] report path:", reportPath);
   const report =

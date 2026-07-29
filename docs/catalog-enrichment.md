@@ -375,7 +375,33 @@ and retry, fallback, and rollback are rehearsed only in the internal disposable
 cover proposal history. They never update public cover relations, public
 resolution heads, or reader-facing work projections.
 
-Promotion is not implemented. The separately reviewed
-[promotion proposal](./catalog-enrichment-promotion-proposal.md) describes the
-prerequisites and rollback boundary that maintainers would need to approve
-after a future report has sufficient eligible evidence.
+Issue #135 did not implement promotion. The separately reviewed
+[promotion proposal](./catalog-enrichment-promotion-proposal.md) supplied the
+prerequisites and rollback boundary used by the narrow issue #143 slice below.
+
+## Diagnostic-five promotion slice
+
+Issue #143 reviews the dry-run output without treating coverage as a target.
+Exactly four first-publication proposals are accepted: Moby-Dick, The City and
+the Stars, Born a Crime, and Faithful Place. Dune remains unresolved. No title,
+description, or cover proposal is promoted.
+
+The slice pins the exact committed report SHA-256, manifest hash, run hash,
+approval ID, and four deterministic proposal IDs. SQLite and PostgreSQL
+transactions recheck the source policy, retained record revision and hashes,
+active work relation, observation value and state, withdrawal state, mapping
+confidence, and field-level display permission while the affected work and
+head rows are locked. Any drift aborts the complete transaction.
+
+Promotion appends a resolution whose `previous_resolution_id` retains the
+explicit prior missing state. Retry is idempotent. Rollback appends another
+missing resolution rather than moving a head backward or deleting evidence.
+Isolation hashes ensure that preferred titles, descriptions, preferred
+editions, cover assets/relations, and every unrelated resolution head remain
+unchanged.
+
+The same four reviewed observations and resolution histories are part of the
+deterministic full-catalog import graph. The #135 command explicitly builds
+the pre-promotion graph so the pinned dry-run report remains reproducible and
+byte-stable. Production database execution is not approved by issue #143 and
+is recorded as disabled in the approval manifest.

@@ -27,7 +27,9 @@ describe.skipIf(!isolatedUrl)("catalog dry-run SQLite/Postgres parity", () => {
       throw new Error("Expected an isolated Postgres target");
     }
     const records = legacyBooksToImportRecords(baseCatalog);
-    const graph = buildCatalogImportGraph(records);
+    const graph = buildCatalogImportGraph(records, {
+      includeApprovedPromotions: false,
+    });
     const sqlite = await executeCatalogDryRunSqlite({
       sqlitePath: path.join(
         mkdtempSync(path.join(tmpdir(), "bukie-catalog-dry-run-parity-")),
