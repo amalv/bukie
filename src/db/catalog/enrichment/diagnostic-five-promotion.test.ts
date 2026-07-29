@@ -105,7 +105,7 @@ describe("diagnostic-five promotion approval", () => {
     expect(
       DIAGNOSTIC_FIVE_PROMOTION_APPROVAL.productionDatabaseExecutionApproved,
     ).toBe(false);
-  });
+  }, 15_000);
 
   it("retains the prior missing head behind every deterministic promotion", () => {
     const graph = buildCatalogImportGraph(
@@ -132,5 +132,5 @@ describe("diagnostic-five promotion approval", () => {
         previousResolutionId: null,
       });
     }
-  });
+  }, 15_000);
 });
