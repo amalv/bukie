@@ -52,6 +52,7 @@ jobs:
         run: >-
           bun run test --
           src/db/catalog/enrichment/persistence.pg.test.ts
+          src/db/catalog/enrichment/covers/repository.pg.test.ts
           src/db/catalog/enrichment/descriptions/repository.pg.test.ts
           src/db/catalog/work-first-publication.pg.test.ts
           --no-file-parallelism

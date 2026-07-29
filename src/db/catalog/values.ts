@@ -124,6 +124,47 @@ export const DESCRIPTION_PROJECTION_STATES = [
   "invalidated",
   "rolled_back",
 ] as const;
+export const COVER_REPRESENTATION_TYPES = [
+  "selected_edition",
+  "work_representative",
+] as const;
+export const COVER_IDENTITY_MATCH_KINDS = [
+  "exact_isbn",
+  "provider_edition_relation",
+  "approved_strong_edition_tuple",
+  "provider_work_relation",
+  "curated_work_relation",
+  "title_creator_candidate",
+  "conflicting",
+] as const;
+export const COVER_PERMISSION_STATES = [
+  "approved",
+  "pending",
+  "denied",
+] as const;
+export const COVER_DECODE_RESULTS = [
+  "decoded",
+  "corrupt",
+  "unsupported",
+] as const;
+export const COVER_DECISION_STATES = [
+  "review_required",
+  "eligible",
+  "rejected",
+  "withdrawn",
+] as const;
+export const COVER_PURGE_STATES = [
+  "not_required",
+  "pending",
+  "completed",
+  "failed",
+] as const;
+export const COVER_PROJECTION_STATES = [
+  "selected",
+  "placeholder",
+  "withdrawn",
+  "rolled_back",
+] as const;
 
 export type CatalogEntityType = (typeof CATALOG_ENTITY_TYPES)[number];
 export type CatalogFieldKey = (typeof CATALOG_FIELD_KEYS)[number];
@@ -136,6 +177,15 @@ export type DescriptionDecisionState =
 export type DescriptionQueueState = (typeof DESCRIPTION_QUEUE_STATES)[number];
 export type DescriptionProjectionState =
   (typeof DESCRIPTION_PROJECTION_STATES)[number];
+export type CoverRepresentationType =
+  (typeof COVER_REPRESENTATION_TYPES)[number];
+export type CoverIdentityMatchKind =
+  (typeof COVER_IDENTITY_MATCH_KINDS)[number];
+export type CoverPermissionState = (typeof COVER_PERMISSION_STATES)[number];
+export type CoverDecodeResult = (typeof COVER_DECODE_RESULTS)[number];
+export type CoverDecisionState = (typeof COVER_DECISION_STATES)[number];
+export type CoverPurgeState = (typeof COVER_PURGE_STATES)[number];
+export type CoverProjectionState = (typeof COVER_PROJECTION_STATES)[number];
 
 export function sqlList(values: readonly string[]): string {
   return values.map((value) => `'${value.replaceAll("'", "''")}'`).join(", ");

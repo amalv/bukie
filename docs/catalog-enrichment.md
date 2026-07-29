@@ -246,3 +246,51 @@ coverage, queue, token, cost, and linearly scaled 500-work estimates. It also
 hashes public resolution heads and work description values before and after
 the run and refuses to finish if either changes. Rebuilding and rerunning the
 same manifest produces the same candidate IDs, snapshot hash, and metrics.
+
+## Edition-matched cover inspection
+
+Issue #134 adds an internal cover-candidate path without changing
+`edition_covers`, `cover_assets`, `field_resolution_heads`, or reader-facing
+cover values. A candidate is explicitly either:
+
+- a selected-edition cover, which requires an exact ISBN, a provider edition
+  relation, or a policy-approved strong edition tuple; or
+- a work-representative cover, which has no edition ID and requires an approved
+  work relation.
+
+Every inspection records media type, bytes, dimensions, aspect ratio, SHA-256
+checksum, decode result, source revision, object key, representation type, and
+transformation history. Stable flags cover corruption, tiny dimensions,
+square canvases, sidebars, extreme aspect/crop, blur or upscaling risk,
+duplicates, and locale/adaptation conflicts. The quality score is advisory;
+it cannot override source policy, rights, attribution, identity, or review.
+Cached candidates require fetch, cache, and display permission, while any
+recorded transformation also requires transformation permission. A strong
+edition tuple is eligible only when its approval is backed by a persisted
+curated source relation.
+
+Selection is deterministic and internal. Exact selected-edition evidence is
+preferred over a work-representative candidate, then identity strength and
+technical quality break ties with stable checksum/ID ordering. Missing,
+rejected, or uncertain candidates resolve to `/covers/placeholder.svg`.
+Checksum duplicates use the lowest stable candidate ID as their canonical
+member; every noncanonical member receives the same review flag regardless of
+arrival order.
+Withdrawal creates a tombstone, executes the policy-required purge callback,
+and recomputes the next candidate or placeholder. Review, idempotent
+withdrawal, purge retry, and selection rollback have matching SQLite and
+PostgreSQL operations. Selection rollback appends a new history event and
+never rewrites public heads.
+
+Run the deterministic five-work audit only against an explicitly disposable
+SQLite target:
+
+```powershell
+bun run db:catalog:cover-sample --target=sqlite:.data/catalog-targets/issue-134-cover-test.sqlite --confirm-disposable
+```
+
+The proof makes no provider calls. It records the audited Dune square/sidebar
+and edition-conflict signals, the Moby-Dick French adaptation/locale conflict,
+and the weak identity/upscaling signals for The City and the Stars, Born a
+Crime, and Faithful Place. It retries every inspection and refuses to finish
+if any public cover relation, asset row, or resolution head changes.

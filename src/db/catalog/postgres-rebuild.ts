@@ -30,6 +30,12 @@ import {
 import { CATALOG_TARGET_TABLE_NAMES } from "./sqlite-rebuild";
 
 const CLEAR_TABLES = [
+  "cover_projection_heads",
+  "cover_projections",
+  "cover_decision_heads",
+  "cover_decisions",
+  "cover_inspections",
+  "cover_candidates",
   "description_projection_heads",
   "description_projections",
   "description_review_queue",

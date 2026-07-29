@@ -28,41 +28,40 @@ responsible for mutating production data.
    credential. Vercel itself should keep using a separate **Object Read only**
    credential.
 
-## Recommended: fetch and publish one cover
+## Inspect an exact-edition candidate
 
 Run this from the repository root:
 
 ```powershell
-bun run covers:fetch:r2 -- --id=<work-id> --concurrency=1 --force
+bun run covers:fetch -- --id=<legacy-record-id> --concurrency=1 --force
 ```
 
 This command:
 
-1. finds a candidate through Open Library;
+1. finds a candidate through the selected edition's exact ISBN;
 2. optimizes it to WebP;
-3. writes the ignored staging file to
-   `public/covers/<work-id>.webp`;
-4. uploads it to `R2_BUCKET/covers/<work-id>.webp`.
+3. decodes it and records deterministic technical/review signals in the
+   command output;
+4. writes the ignored staging file to
+   `public/covers/<legacy-record-id>.webp`.
 
-The command never mutates a runtime database. Catalog rebuild/import derives
-the normalized cover relation from the reviewed artifact. If any publishing
-job fails, the command finishes the remaining queue and exits nonzero.
+The command never mutates a runtime database or a public cover projection.
+Works without an exact selected-edition ISBN remain review candidates instead
+of falling back to title/author search. Inspection flags are advisory; identity
+and permission remain hard gates.
 
-Upload the object before deploying catalog or database changes that reference
-it. Until the object exists, the app deliberately displays the placeholder.
+`covers:fetch:r2` is deliberately blocked while the recorded Open Library
+asset policy is pending. Publishing resumes only after a reviewed dry run and
+an approved policy permit caching, transformation, and display. Until then,
+missing or rejected candidates use the accessible placeholder.
 
 ## Review before publishing
 
-To inspect a new image locally before uploading:
+After dry-run approval, open the staged image and publish exactly that reviewed
+file with the approved versioned object key:
 
 ```powershell
-bun run covers:fetch -- --id=<work-id> --concurrency=1 --force
-```
-
-Open `public/covers/<work-id>.webp`, then publish exactly that file:
-
-```powershell
-bunx wrangler r2 object put "<bucket>/covers/<work-id>.webp" `
+bunx wrangler r2 object put "<bucket>/covers/<approved-versioned-key>.webp" `
   --file="public/covers/<work-id>.webp" `
   --content-type="image/webp" `
   --cache-control="public, max-age=31536000, immutable" `

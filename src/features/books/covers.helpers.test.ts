@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   buildOpenLibraryCandidates,
   extractOpenLibrarySearchCandidates,
+  findEditionMatchedOpenLibraryCandidates,
   findOpenLibraryCandidates,
 } from "@/../scripts/covers/helpers";
+import { assertOpenLibraryCoverPublishingAllowed } from "@/../scripts/covers/policy";
 
 describe("covers helpers", () => {
   it("prefers ISBN-based candidates when isbn present", () => {
@@ -22,6 +24,29 @@ describe("covers helpers", () => {
       isbn: undefined,
     });
     expect(urls).toEqual([]);
+  });
+
+  it("keeps selected-edition inspection candidates exact-ISBN only", () => {
+    expect(
+      findEditionMatchedOpenLibraryCandidates({
+        title: "Moby-Dick",
+        author: "Herman Melville",
+        isbn: undefined,
+      }),
+    ).toEqual([]);
+    expect(
+      findEditionMatchedOpenLibraryCandidates({
+        title: "Dune",
+        author: "Frank Herbert",
+        isbn: "9780441172719",
+      })[0],
+    ).toMatch(/isbn\/9780441172719-L\.jpg/);
+  });
+
+  it("blocks publishing while the recorded cover asset policy is pending", () => {
+    expect(() => assertOpenLibraryCoverPublishingAllowed()).toThrow(
+      /open-library\.covers is pending/i,
+    );
   });
 
   it("extracts cover-id and OLID candidates from search results", () => {

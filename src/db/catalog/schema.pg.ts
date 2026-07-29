@@ -19,6 +19,13 @@ import {
   CATALOG_FIELD_KEYS,
   CATEGORY_STATUSES,
   CHANGE_TYPES,
+  COVER_DECISION_STATES,
+  COVER_DECODE_RESULTS,
+  COVER_IDENTITY_MATCH_KINDS,
+  COVER_PERMISSION_STATES,
+  COVER_PROJECTION_STATES,
+  COVER_PURGE_STATES,
+  COVER_REPRESENTATION_TYPES,
   COVER_STATES,
   DESCRIPTION_CLASSES,
   DESCRIPTION_DECISION_STATES,
@@ -764,6 +771,246 @@ export const fieldResolutionHeadsPg = pgTable(
   ],
 );
 
+export const coverCandidatesPg = pgTable(
+  "cover_candidates",
+  {
+    id: text("id").primaryKey(),
+    workId: text("work_id")
+      .notNull()
+      .references(() => worksPg.id, { onDelete: "restrict" }),
+    editionId: text("edition_id").references(() => editionsPg.id, {
+      onDelete: "restrict",
+    }),
+    sourceRecordId: text("source_record_id")
+      .notNull()
+      .references(() => sourceRecordsPg.id, { onDelete: "restrict" }),
+    representationType: text("representation_type").notNull(),
+    identityMatchKind: text("identity_match_kind").notNull(),
+    identityEvidenceJson: jsonb("identity_evidence_json").notNull(),
+    permissionState: text("permission_state").notNull(),
+    rightsBasis: text("rights_basis"),
+    attributionText: text("attribution_text"),
+    attributionUrl: text("attribution_url"),
+    sourceUrl: text("source_url").notNull(),
+    sourceRevision: text("source_revision").notNull(),
+    sourcePolicyVersion: text("source_policy_version").notNull(),
+    objectKey: text("object_key").notNull(),
+    transformationHistoryJson: jsonb("transformation_history_json").notNull(),
+    createdAt: timestamp("created_at").notNull(),
+  },
+  (table) => [
+    check(
+      "cover_candidates_representation_ck",
+      sql`${table.representationType} in (${sql.raw(sqlList(COVER_REPRESENTATION_TYPES))})
+        and (
+          (${table.representationType} = 'selected_edition' and ${table.editionId} is not null)
+          or (${table.representationType} = 'work_representative' and ${table.editionId} is null)
+        )`,
+    ),
+    check(
+      "cover_candidates_identity_ck",
+      sql`${table.identityMatchKind} in (${sql.raw(sqlList(COVER_IDENTITY_MATCH_KINDS))})`,
+    ),
+    check(
+      "cover_candidates_permission_ck",
+      sql`${table.permissionState} in (${sql.raw(sqlList(COVER_PERMISSION_STATES))})`,
+    ),
+    check(
+      "cover_candidates_nonempty_ck",
+      sql`length(trim(${table.sourceUrl})) > 0
+        and length(trim(${table.sourceRevision})) > 0
+        and length(trim(${table.sourcePolicyVersion})) > 0
+        and length(trim(${table.objectKey})) > 0
+        and substring(${table.objectKey} from 1 for 8) = '/covers/'`,
+    ),
+    index("cover_candidates_work_created_idx").on(
+      table.workId,
+      table.createdAt,
+    ),
+    index("cover_candidates_source_record_idx").on(table.sourceRecordId),
+  ],
+);
+
+export const coverInspectionsPg = pgTable(
+  "cover_inspections",
+  {
+    id: text("id").primaryKey(),
+    candidateId: text("candidate_id")
+      .notNull()
+      .references(() => coverCandidatesPg.id, { onDelete: "restrict" }),
+    mediaType: text("media_type"),
+    byteSize: bigint("byte_size", { mode: "number" }).notNull(),
+    width: integer("width"),
+    height: integer("height"),
+    aspectRatio: doublePrecision("aspect_ratio"),
+    checksum: text("checksum").notNull(),
+    decodeResult: text("decode_result").notNull(),
+    flagsJson: jsonb("flags_json").notNull(),
+    qualityScore: doublePrecision("quality_score").notNull(),
+    duplicateOfCandidateId: text("duplicate_of_candidate_id").references(
+      () => coverCandidatesPg.id,
+      { onDelete: "restrict" },
+    ),
+    inspectionVersion: text("inspection_version").notNull(),
+    inspectedAt: timestamp("inspected_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("cover_inspections_identity_uq").on(
+      table.candidateId,
+      table.checksum,
+      table.inspectionVersion,
+    ),
+    check(
+      "cover_inspections_decode_ck",
+      sql`${table.decodeResult} in (${sql.raw(sqlList(COVER_DECODE_RESULTS))})
+        and (
+          (${table.decodeResult} = 'decoded'
+            and ${table.mediaType} is not null
+            and ${table.width} > 0
+            and ${table.height} > 0
+            and ${table.aspectRatio} > 0)
+          or (${table.decodeResult} <> 'decoded'
+            and ${table.width} is null
+            and ${table.height} is null
+            and ${table.aspectRatio} is null)
+        )`,
+    ),
+    check(
+      "cover_inspections_values_ck",
+      sql`${table.byteSize} > 0
+        and length(${table.checksum}) = 64
+        and ${table.qualityScore} between 0 and 100
+        and length(trim(${table.inspectionVersion})) > 0`,
+    ),
+    index("cover_inspections_checksum_idx").on(table.checksum),
+    index("cover_inspections_candidate_idx").on(table.candidateId),
+  ],
+);
+
+export const coverDecisionsPg = pgTable(
+  "cover_decisions",
+  {
+    id: text("id").primaryKey(),
+    candidateId: text("candidate_id")
+      .notNull()
+      .references(() => coverCandidatesPg.id, { onDelete: "restrict" }),
+    inspectionId: text("inspection_id")
+      .notNull()
+      .references(() => coverInspectionsPg.id, { onDelete: "restrict" }),
+    state: text("state").notNull(),
+    gateCodesJson: jsonb("gate_codes_json").notNull(),
+    warningCodesJson: jsonb("warning_codes_json").notNull(),
+    reviewerRef: text("reviewer_ref"),
+    reviewReason: text("review_reason"),
+    purgeState: text("purge_state").notNull(),
+    previousDecisionId: text("previous_decision_id").references(
+      (): AnyPgColumn => coverDecisionsPg.id,
+      { onDelete: "restrict" },
+    ),
+    policyVersion: text("policy_version").notNull(),
+    decidedAt: timestamp("decided_at").notNull(),
+  },
+  (table) => [
+    check(
+      "cover_decisions_state_ck",
+      sql`${table.state} in (${sql.raw(sqlList(COVER_DECISION_STATES))})`,
+    ),
+    check(
+      "cover_decisions_purge_ck",
+      sql`${table.purgeState} in (${sql.raw(sqlList(COVER_PURGE_STATES))})`,
+    ),
+    check(
+      "cover_decisions_review_ck",
+      sql`(${table.reviewerRef} is null and ${table.reviewReason} is null)
+        or (
+          length(trim(${table.reviewerRef})) > 0
+          and length(trim(${table.reviewReason})) > 0
+        )`,
+    ),
+    check(
+      "cover_decisions_policy_ck",
+      sql`length(trim(${table.policyVersion})) > 0`,
+    ),
+    index("cover_decisions_candidate_history_idx").on(
+      table.candidateId,
+      table.decidedAt,
+    ),
+  ],
+);
+
+export const coverDecisionHeadsPg = pgTable(
+  "cover_decision_heads",
+  {
+    candidateId: text("candidate_id")
+      .primaryKey()
+      .references(() => coverCandidatesPg.id, { onDelete: "restrict" }),
+    decisionId: text("decision_id")
+      .notNull()
+      .references(() => coverDecisionsPg.id, { onDelete: "restrict" }),
+  },
+  (table) => [
+    uniqueIndex("cover_decision_heads_decision_uq").on(table.decisionId),
+  ],
+);
+
+export const coverProjectionsPg = pgTable(
+  "cover_projections",
+  {
+    id: text("id").primaryKey(),
+    workId: text("work_id")
+      .notNull()
+      .references(() => worksPg.id, { onDelete: "restrict" }),
+    candidateId: text("candidate_id").references(() => coverCandidatesPg.id, {
+      onDelete: "restrict",
+    }),
+    state: text("state").notNull(),
+    previousProjectionId: text("previous_projection_id").references(
+      (): AnyPgColumn => coverProjectionsPg.id,
+      { onDelete: "restrict" },
+    ),
+    reasonCode: text("reason_code").notNull(),
+    actorRef: text("actor_ref").notNull(),
+    policyVersion: text("policy_version").notNull(),
+    projectedAt: timestamp("projected_at").notNull(),
+  },
+  (table) => [
+    check(
+      "cover_projections_state_ck",
+      sql`${table.state} in (${sql.raw(sqlList(COVER_PROJECTION_STATES))})`,
+    ),
+    check(
+      "cover_projections_selection_ck",
+      sql`(${table.state} in ('selected', 'rolled_back') and ${table.candidateId} is not null)
+        or (${table.state} in ('placeholder', 'withdrawn') and ${table.candidateId} is null)`,
+    ),
+    check(
+      "cover_projections_nonempty_ck",
+      sql`length(trim(${table.reasonCode})) > 0
+        and length(trim(${table.actorRef})) > 0
+        and length(trim(${table.policyVersion})) > 0`,
+    ),
+    index("cover_projections_work_history_idx").on(
+      table.workId,
+      table.projectedAt,
+    ),
+  ],
+);
+
+export const coverProjectionHeadsPg = pgTable(
+  "cover_projection_heads",
+  {
+    workId: text("work_id")
+      .primaryKey()
+      .references(() => worksPg.id, { onDelete: "restrict" }),
+    projectionId: text("projection_id")
+      .notNull()
+      .references(() => coverProjectionsPg.id, { onDelete: "restrict" }),
+  },
+  (table) => [
+    uniqueIndex("cover_projection_heads_projection_uq").on(table.projectionId),
+  ],
+);
+
 export const descriptionCandidatesPg = pgTable(
   "description_candidates",
   {
@@ -1156,6 +1403,12 @@ export const catalogPostgresTables = {
   fieldObservations: fieldObservationsPg,
   fieldResolutions: fieldResolutionsPg,
   fieldResolutionHeads: fieldResolutionHeadsPg,
+  coverCandidates: coverCandidatesPg,
+  coverInspections: coverInspectionsPg,
+  coverDecisions: coverDecisionsPg,
+  coverDecisionHeads: coverDecisionHeadsPg,
+  coverProjections: coverProjectionsPg,
+  coverProjectionHeads: coverProjectionHeadsPg,
   descriptionCandidates: descriptionCandidatesPg,
   descriptionClaims: descriptionClaimsPg,
   descriptionClaimEvidence: descriptionClaimEvidencePg,

@@ -144,6 +144,18 @@ export function buildOpenLibraryCandidates(book: CoverLookupBook): string[] {
   return urls;
 }
 
+/**
+ * Candidates safe enough for byte inspection without pretending a fuzzy work
+ * search proves the selected edition. The Covers API ISBN relation is still
+ * candidate evidence; rights policy and decoded-byte inspection remain
+ * separate hard gates before any promotion.
+ */
+export function findEditionMatchedOpenLibraryCandidates(
+  book: CoverLookupBook,
+): string[] {
+  return buildOpenLibraryCandidates(book);
+}
+
 export function extractOpenLibrarySearchCandidates(
   book: CoverLookupBook,
   payload: OpenLibrarySearchResponse,
