@@ -1,3 +1,16 @@
+# [0.40.0](https://github.com/amalv/bukie/compare/v0.39.0...v0.40.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* **catalog:** close description review gaps ([89abd6f](https://github.com/amalv/bukie/commit/89abd6fcb13d2b81b3520eba2744213fd1e0ba8f))
+* **catalog:** normalize description postgres results ([5e0dfb5](https://github.com/amalv/bukie/commit/5e0dfb5e960266866215214c339fe2bd113c1353))
+
+
+### Features
+
+* **catalog:** gate description enrichment ([758f656](https://github.com/amalv/bukie/commit/758f6561bca5484147eb1d2780573165a9926777))
+
 # [0.39.0](https://github.com/amalv/bukie/compare/v0.38.0...v0.39.0) (2026-07-29)
 
 
