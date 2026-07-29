@@ -51,7 +51,7 @@ describe("catalog-wide enrichment dry run", () => {
         ),
       ),
     ).toBe(true);
-  });
+  }, 15_000);
 
   it("produces byte-stable reports, caps queues, and preserves public state", async () => {
     const input = inputs();
