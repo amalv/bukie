@@ -275,7 +275,10 @@ const identityEvidenceVerified = (
     return source?.sourceLinkMatchKind === "source_relationship";
   }
   if (candidate.identityMatchKind === "approved_strong_edition_tuple") {
-    return candidate.identityEvidence.policyApproved === true;
+    return (
+      candidate.identityEvidence.policyApproved === true &&
+      source?.sourceLinkMatchKind === "curated"
+    );
   }
   if (candidate.identityMatchKind === "curated_work_relation") {
     return source?.sourceLinkMatchKind === "curated";
@@ -388,6 +391,127 @@ const appendDecision = (
   return { id, changed: true };
 };
 
+const decisionStateForValidation = (validation: {
+  hardRejected: boolean;
+  gateCodes: readonly CoverGateCode[];
+  warningCodes: readonly CoverFlagCode[];
+}): CoverCandidateResult["state"] =>
+  validation.hardRejected
+    ? "rejected"
+    : validation.gateCodes.length > 0 || validation.warningCodes.length > 0
+      ? "review_required"
+      : "eligible";
+
+const normalizeDuplicateGroup = (
+  raw: SqliteDatabase,
+  input: {
+    candidateId: string;
+    checksum: string;
+    decidedAt: number;
+    inspectionId: string;
+  },
+): { inspection: CoverInspection; affectedWorkIds: string[] } => {
+  const group = raw
+    .prepare(
+      `select
+         i.id, i.candidate_id as "candidateId", i.media_type as "mediaType",
+         i.byte_size as "byteSize", i.width, i.height,
+         i.aspect_ratio as "aspectRatio", i.checksum,
+         i.decode_result as "decodeResult", i.flags_json as "flagsJson",
+         i.quality_score as "qualityScore",
+         i.inspection_version as "inspectionVersion",
+         i.inspected_at as "inspectedAt", c.work_id as "workId"
+       from cover_inspections i
+       join cover_candidates c on c.id = i.candidate_id
+       left join cover_decision_heads h on h.candidate_id = i.candidate_id
+       left join cover_decisions d on d.id = h.decision_id
+       where i.checksum = ?
+         and (
+           (i.candidate_id = ? and i.id = ?)
+           or (i.candidate_id <> ? and d.inspection_id = i.id)
+         )
+       order by i.candidate_id asc, i.id asc`,
+    )
+    .all(
+      input.checksum,
+      input.candidateId,
+      input.inspectionId,
+      input.candidateId,
+    ) as Array<InspectionRow & { workId: string }>;
+  const canonicalCandidateId = group[0]?.candidateId;
+  const affectedWorkIds = new Set<string>();
+
+  for (const row of group) {
+    const baseFlags = parseJson<CoverFlagCode[]>(row.flagsJson).filter(
+      (flag) => flag !== "duplicate",
+    );
+    const isDuplicate = row.candidateId !== canonicalCandidateId;
+    const flags = uniqueSorted([
+      ...baseFlags,
+      ...(isDuplicate ? (["duplicate"] as const) : []),
+    ]);
+    raw
+      .prepare(
+        `update cover_inspections
+         set flags_json = ?, duplicate_of_candidate_id = ?
+         where id = ?`,
+      )
+      .run(
+        canonicalJson(flags),
+        isDuplicate ? canonicalCandidateId : null,
+        row.id,
+      );
+
+    if (row.candidateId === input.candidateId) continue;
+    const previous = loadDecision(raw, row.candidateId);
+    const candidateRow = loadCandidate(raw, row.candidateId);
+    if (
+      !previous ||
+      !candidateRow ||
+      !["eligible", "review_required"].includes(previous.state)
+    ) {
+      continue;
+    }
+    const inspection = inspectionFromRow({
+      ...row,
+      flagsJson: canonicalJson(flags),
+    });
+    const validation = currentValidation(
+      raw,
+      candidateFromRow(candidateRow),
+      inspection,
+    );
+    appendDecision(raw, {
+      candidateId: row.candidateId,
+      inspectionId: row.id,
+      state: decisionStateForValidation(validation),
+      gateCodes: validation.gateCodes,
+      warningCodes: validation.warningCodes,
+      decidedAt: input.decidedAt,
+    });
+    affectedWorkIds.add(row.workId);
+  }
+
+  const current = group.find((row) => row.id === input.inspectionId);
+  if (!current) throw new Error("Cover inspection not found after insert");
+  return {
+    inspection: inspectionFromRow({
+      ...current,
+      flagsJson: canonicalJson(
+        uniqueSorted([
+          ...parseJson<CoverFlagCode[]>(current.flagsJson).filter(
+            (flag) => flag !== "duplicate",
+          ),
+          ...(current.candidateId !== canonicalCandidateId
+            ? (["duplicate"] as const)
+            : []),
+        ]),
+      ),
+    }),
+    affectedWorkIds: [...affectedWorkIds],
+  };
+};
+
 const identityPriority = (
   kind: CoverCandidateInput["identityMatchKind"],
 ): number =>
@@ -481,22 +605,8 @@ const eligibleCandidates = (
       identityPriority(right.candidate.identityMatchKind) -
       identityPriority(left.candidate.identityMatchKind);
     if (identity !== 0) return identity;
-    const normalizedRightScore =
-      right.inspection.qualityScore +
-      (parseJson<CoverFlagCode[]>(right.inspection.flagsJson).includes(
-        "duplicate",
-      )
-        ? 4
-        : 0);
-    const normalizedLeftScore =
-      left.inspection.qualityScore +
-      (parseJson<CoverFlagCode[]>(left.inspection.flagsJson).includes(
-        "duplicate",
-      )
-        ? 4
-        : 0);
-    if (normalizedRightScore !== normalizedLeftScore) {
-      return normalizedRightScore - normalizedLeftScore;
+    if (right.inspection.qualityScore !== left.inspection.qualityScore) {
+      return right.inspection.qualityScore - left.inspection.qualityScore;
     }
     const area =
       (right.inspection.width ?? 0) * (right.inspection.height ?? 0) -
@@ -679,26 +789,11 @@ export const createCoverCandidateSqlite = (
     if (input.failAfter === "candidate") {
       throw new Error("Forced SQLite cover candidate failure");
     }
-    const duplicate = raw
-      .prepare(
-        `select candidate_id as "candidateId"
-         from cover_inspections
-         where checksum = ? and candidate_id <> ?
-         order by candidate_id asc limit 1`,
-      )
-      .get(input.inspection.checksum, candidateId) as
-      | { candidateId: string }
-      | undefined;
-    const flags = uniqueSorted([
-      ...input.inspection.flags,
-      ...(duplicate ? (["duplicate"] as const) : []),
-    ]);
-    const inspection = {
+    const inspectionToStore = {
       ...input.inspection,
-      flags,
-      qualityScore: duplicate
-        ? Math.max(0, input.inspection.qualityScore - 4)
-        : input.inspection.qualityScore,
+      flags: uniqueSorted(
+        input.inspection.flags.filter((flag) => flag !== "duplicate"),
+      ),
     };
     raw
       .prepare(
@@ -712,29 +807,31 @@ export const createCoverCandidateSqlite = (
       .run(
         inspectionId,
         candidateId,
-        inspection.mediaType,
-        inspection.byteSize,
-        inspection.width,
-        inspection.height,
-        inspection.aspectRatio,
-        inspection.checksum,
-        inspection.decodeResult,
-        canonicalJson(inspection.flags),
-        inspection.qualityScore,
-        duplicate?.candidateId ?? null,
-        inspection.inspectionVersion,
-        inspection.inspectedAt,
+        inspectionToStore.mediaType,
+        inspectionToStore.byteSize,
+        inspectionToStore.width,
+        inspectionToStore.height,
+        inspectionToStore.aspectRatio,
+        inspectionToStore.checksum,
+        inspectionToStore.decodeResult,
+        canonicalJson(inspectionToStore.flags),
+        inspectionToStore.qualityScore,
+        null,
+        inspectionToStore.inspectionVersion,
+        inspectionToStore.inspectedAt,
       );
     if (input.failAfter === "inspection") {
       throw new Error("Forced SQLite cover inspection failure");
     }
+    const duplicateNormalization = normalizeDuplicateGroup(raw, {
+      candidateId,
+      checksum: input.inspection.checksum,
+      decidedAt: input.inspection.inspectedAt,
+      inspectionId,
+    });
+    const inspection = duplicateNormalization.inspection;
     const validation = currentValidation(raw, input.candidate, inspection);
-    const state: CoverCandidateResult["state"] = validation.hardRejected
-      ? "rejected"
-      : validation.gateCodes.length > 0 ||
-          validation.warningCodes.some((warning) => warning !== "duplicate")
-        ? "review_required"
-        : "eligible";
+    const state = decisionStateForValidation(validation);
     const decision = appendDecision(raw, {
       candidateId,
       inspectionId,
@@ -746,12 +843,17 @@ export const createCoverCandidateSqlite = (
     if (input.failAfter === "decision") {
       throw new Error("Forced SQLite cover decision failure");
     }
-    recomputeCoverSelectionSqlite(raw, {
-      workId: input.candidate.workId,
-      actorRef: input.actorRef ?? "system:cover-inspection",
-      reasonCode: "candidate_inspected",
-      projectedAt: input.inspection.inspectedAt,
-    });
+    for (const workId of uniqueSorted([
+      input.candidate.workId,
+      ...duplicateNormalization.affectedWorkIds,
+    ])) {
+      recomputeCoverSelectionSqlite(raw, {
+        workId,
+        actorRef: input.actorRef ?? "system:cover-inspection",
+        reasonCode: "candidate_inspected",
+        projectedAt: input.inspection.inspectedAt,
+      });
+    }
     if (input.failAfter === "projection") {
       throw new Error("Forced SQLite cover projection failure");
     }
@@ -805,13 +907,7 @@ export const reviewCoverCandidateSqlite = (
       candidateId: input.candidateId,
       inspectionId: previous.inspectionId,
       state,
-      gateCodes:
-        input.decision === "approve"
-          ? []
-          : uniqueSorted([
-              ...validation.gateCodes,
-              "identity_evidence_ineligible",
-            ]),
+      gateCodes: input.decision === "approve" ? [] : validation.gateCodes,
       warningCodes: validation.warningCodes,
       reviewerRef: input.reviewerRef,
       reason: input.reason,
@@ -828,13 +924,7 @@ export const reviewCoverCandidateSqlite = (
       inspectionId: previous.inspectionId,
       decisionId: decision.id,
       state,
-      gateCodes:
-        input.decision === "approve"
-          ? []
-          : uniqueSorted([
-              ...validation.gateCodes,
-              "identity_evidence_ineligible",
-            ]),
+      gateCodes: input.decision === "approve" ? [] : validation.gateCodes,
       warningCodes: validation.warningCodes,
       changed: decision.changed,
     };

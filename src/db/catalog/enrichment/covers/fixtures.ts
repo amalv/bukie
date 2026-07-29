@@ -195,12 +195,14 @@ const assetPolicy = canonicalJson({
   fieldPermission: {
     allowedFields: ["edition.covers"],
     cache: true,
+    display: true,
     fetch: true,
     transform: true,
   },
   proposedEvidenceOnly: true,
   purgeOnWithdrawal: true,
   sourcePolicyVersion: COVER_FIXTURE_SOURCE_POLICY_VERSION,
+  transform: true,
 });
 
 export const seedCoverFixturesSqlite = (

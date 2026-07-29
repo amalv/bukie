@@ -79,7 +79,7 @@ const advisoryScore = (flags: readonly CoverFlagCode[]): number => {
     extreme_crop: 16,
     blur_risk: 18,
     upscaling_risk: 10,
-    duplicate: 4,
+    duplicate: 0,
     locale_conflict: 30,
     adaptation_conflict: 40,
   };

@@ -196,6 +196,109 @@ describe("SQLite edition-matched cover lifecycle", () => {
       editionId: editionIds[work.workId],
       publicDisplayEligible: false,
     });
+    const rejected = reviewCoverCandidateSqlite(raw, {
+      candidateId: created.candidateId,
+      reviewerRef: "user:cover-reviewer",
+      decision: "reject",
+      reason: "Square canvas is not suitable after visual review",
+      acknowledgedWarningCodes: [],
+      reviewedAt: NOW + 2,
+    });
+    expect(rejected).toMatchObject({
+      state: "rejected",
+      gateCodes: [],
+      warningCodes: ["square_canvas"],
+    });
+  });
+
+  it("enforces cache, transformation, and curated tuple approval gates", () => {
+    const work = ENRICHMENT_SAMPLE_MANIFEST.works[0];
+    const source = raw
+      .prepare(
+        `select asset_policy as policy from metadata_sources
+         where key = 'cover_recorded_fixtures'`,
+      )
+      .get() as { policy: string };
+    const policy = JSON.parse(source.policy) as {
+      cache: boolean;
+      transform: boolean;
+      fieldPermission: { cache: boolean; transform: boolean };
+    };
+    policy.cache = false;
+    policy.transform = false;
+    policy.fieldPermission.cache = false;
+    policy.fieldPermission.transform = false;
+    raw
+      .prepare(
+        `update metadata_sources set asset_policy = ?
+         where key = 'cover_recorded_fixtures'`,
+      )
+      .run(JSON.stringify(policy));
+    const deniedPolicy = approvedCoverFixture({
+      workId: work.workId,
+      editionId: editionIds[work.workId],
+      suffix: "denied-cache-transform",
+    });
+    deniedPolicy.candidate.transformationHistory = [
+      {
+        operation: "webp",
+        version: "1",
+        parameters: { quality: 80 },
+      },
+    ];
+    expect(createCoverCandidateSqlite(raw, deniedPolicy)).toMatchObject({
+      state: "rejected",
+      gateCodes: expect.arrayContaining(["source_policy_ineligible"]),
+    });
+
+    policy.cache = true;
+    policy.transform = true;
+    policy.fieldPermission.cache = true;
+    policy.fieldPermission.transform = true;
+    raw
+      .prepare(
+        `update metadata_sources set asset_policy = ?
+         where key = 'cover_recorded_fixtures'`,
+      )
+      .run(JSON.stringify(policy));
+    const approvedTuple = approvedCoverFixture({
+      workId: work.workId,
+      editionId: editionIds[work.workId],
+      suffix: "curated-tuple",
+    });
+    approvedTuple.candidate.identityMatchKind = "approved_strong_edition_tuple";
+    approvedTuple.candidate.identityEvidence = {
+      policyApproved: true,
+      title: "Dune",
+      publisher: "Ace",
+    };
+    expect(createCoverCandidateSqlite(raw, approvedTuple).state).toBe(
+      "eligible",
+    );
+
+    raw
+      .prepare(
+        `update source_record_links set match_kind = 'candidate'
+         where source_record_id = ? and entity_type = 'edition'
+           and entity_id = ?`,
+      )
+      .run(approvedTuple.candidate.sourceRecordId, editionIds[work.workId]);
+    const selfApprovedTuple = approvedCoverFixture({
+      workId: work.workId,
+      editionId: editionIds[work.workId],
+      suffix: "self-approved-tuple",
+    });
+    selfApprovedTuple.candidate.identityMatchKind =
+      "approved_strong_edition_tuple";
+    selfApprovedTuple.candidate.identityEvidence = {
+      policyApproved: true,
+      title: "Unverified title",
+      publisher: "Unverified publisher",
+    };
+    expect(createCoverCandidateSqlite(raw, selfApprovedTuple)).toMatchObject({
+      state: "review_required",
+      gateCodes: expect.arrayContaining(["identity_evidence_ineligible"]),
+    });
   });
 
   it("chooses deterministically and prefers exact selected-edition evidence", () => {
@@ -242,6 +345,7 @@ describe("SQLite edition-matched cover lifecycle", () => {
     createCoverCandidateSqlite(raw, first);
     const duplicate = createCoverCandidateSqlite(raw, second);
 
+    expect(duplicate.state).toBe("review_required");
     expect(duplicate.warningCodes).toContain("duplicate");
     expect(
       raw
@@ -266,6 +370,35 @@ describe("SQLite edition-matched cover lifecycle", () => {
       expect(getCoverSelectionSqlite(reverse, work.workId).candidateId).toBe(
         forwardWinner,
       );
+      const flagsByCandidate = (database: typeof raw) =>
+        Object.fromEntries(
+          (
+            database
+              .prepare(
+                `select candidate_id as "candidateId", flags_json as "flagsJson"
+                 from cover_inspections where checksum = ?
+                 order by candidate_id`,
+              )
+              .all(first.inspection.checksum) as Array<{
+              candidateId: string;
+              flagsJson: string;
+            }>
+          ).map((row) => [row.candidateId, JSON.parse(row.flagsJson)]),
+        );
+      expect(flagsByCandidate(reverse)).toEqual(flagsByCandidate(raw));
+      expect(
+        reverse
+          .prepare(
+            `select d.state, d.warning_codes_json as "warningCodesJson"
+             from cover_decision_heads h
+             join cover_decisions d on d.id = h.decision_id
+             where h.candidate_id = ?`,
+          )
+          .get(duplicate.candidateId),
+      ).toEqual({
+        state: "review_required",
+        warningCodesJson: '["duplicate"]',
+      });
     } finally {
       reverse.close();
     }
@@ -302,6 +435,17 @@ describe("SQLite edition-matched cover lifecycle", () => {
       purgeAsset: purge,
     });
     expect(purge).toHaveBeenCalledWith(preferred.candidate.objectKey);
+    const repeatedPurge = vi.fn();
+    await expect(
+      withdrawCoverCandidateSqlite(raw, {
+        candidateId: preferredResult.candidateId,
+        actorRef: "user:cover-withdrawal",
+        reason: "Repeated fixture rights withdrawal",
+        withdrawnAt: NOW + 1,
+        purgeAsset: repeatedPurge,
+      }),
+    ).resolves.toMatchObject({ changed: false, state: "withdrawn" });
+    expect(repeatedPurge).not.toHaveBeenCalled();
     expect(getCoverSelectionSqlite(raw, work.workId).candidateId).toBe(
       fallbackResult.candidateId,
     );

@@ -21,8 +21,10 @@ export type CoverSourceContext = {
 };
 
 type AssetPolicy = {
+  cache?: unknown;
   display?: unknown;
   sourcePolicyVersion?: unknown;
+  transform?: unknown;
   purgeOnWithdrawal?: unknown;
   attribution?: {
     required?: unknown;
@@ -30,6 +32,8 @@ type AssetPolicy = {
   fieldPermission?: {
     allowedFields?: unknown;
     cache?: unknown;
+    display?: unknown;
+    fetch?: unknown;
     transform?: unknown;
   };
 };
@@ -82,9 +86,16 @@ export const validateCoverCandidate = (input: {
       sourcePolicyVersion(source.metadataPolicy) ===
         candidate.sourcePolicyVersion &&
       assetPolicy.sourcePolicyVersion === candidate.sourcePolicyVersion &&
+      assetPolicy.cache === true &&
       assetPolicy.display === true &&
       Array.isArray(allowedFields) &&
-      allowedFields.includes("edition.covers"),
+      allowedFields.includes("edition.covers") &&
+      assetPolicy.fieldPermission?.fetch === true &&
+      assetPolicy.fieldPermission.cache === true &&
+      assetPolicy.fieldPermission.display === true &&
+      (candidate.transformationHistory.length === 0 ||
+        (assetPolicy.transform === true &&
+          assetPolicy.fieldPermission.transform === true)),
   );
 
   const gateCodes: CoverGateCode[] = [];

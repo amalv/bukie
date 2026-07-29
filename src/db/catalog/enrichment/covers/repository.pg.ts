@@ -260,7 +260,9 @@ const currentValidation = async (
   ) {
     identityVerified = source?.sourceLinkMatchKind === "source_relationship";
   } else if (candidate.identityMatchKind === "approved_strong_edition_tuple") {
-    identityVerified = candidate.identityEvidence.policyApproved === true;
+    identityVerified =
+      candidate.identityEvidence.policyApproved === true &&
+      source?.sourceLinkMatchKind === "curated";
   } else if (candidate.identityMatchKind === "curated_work_relation") {
     identityVerified = source?.sourceLinkMatchKind === "curated";
   }
@@ -346,6 +348,112 @@ const appendDecision = async (
   return { id, changed: true };
 };
 
+const decisionStateForValidation = (validation: {
+  hardRejected: boolean;
+  gateCodes: readonly CoverGateCode[];
+  warningCodes: readonly CoverFlagCode[];
+}): CoverCandidateResult["state"] =>
+  validation.hardRejected
+    ? "rejected"
+    : validation.gateCodes.length > 0 || validation.warningCodes.length > 0
+      ? "review_required"
+      : "eligible";
+
+const normalizeDuplicateGroup = async (
+  sql: PgSql,
+  input: {
+    candidateId: string;
+    checksum: string;
+    decidedAt: number;
+    inspectionId: string;
+  },
+): Promise<{ inspection: CoverInspection; affectedWorkIds: string[] }> => {
+  const group = rows<InspectionRow & { workId: string }>(
+    await sql.unsafe(
+      `select
+         i.id, i.candidate_id as "candidateId", i.media_type as "mediaType",
+         i.byte_size as "byteSize", i.width, i.height,
+         i.aspect_ratio as "aspectRatio", i.checksum,
+         i.decode_result as "decodeResult", i.flags_json as flags,
+         i.quality_score as "qualityScore",
+         i.inspection_version as "inspectionVersion",
+         i.inspected_at as "inspectedAt", c.work_id as "workId"
+       from cover_inspections i
+       join cover_candidates c on c.id = i.candidate_id
+       left join cover_decision_heads h on h.candidate_id = i.candidate_id
+       left join cover_decisions d on d.id = h.decision_id
+       where i.checksum = $1
+         and (
+           (i.candidate_id = $2 and i.id = $3)
+           or (i.candidate_id <> $2 and d.inspection_id = i.id)
+         )
+       order by i.candidate_id asc, i.id asc`,
+      [input.checksum, input.candidateId, input.inspectionId],
+    ),
+  ).map((row) => ({
+    ...row,
+    flags: jsonValue<CoverFlagCode[]>(row.flags),
+  }));
+  const canonicalCandidateId = group[0]?.candidateId;
+  const affectedWorkIds = new Set<string>();
+
+  for (const row of group) {
+    const baseFlags = row.flags.filter((flag) => flag !== "duplicate");
+    const isDuplicate = row.candidateId !== canonicalCandidateId;
+    const flags = uniqueSorted([
+      ...baseFlags,
+      ...(isDuplicate ? (["duplicate"] as const) : []),
+    ]);
+    await sql.unsafe(
+      `update cover_inspections
+       set flags_json = $1::jsonb, duplicate_of_candidate_id = $2
+       where id = $3`,
+      [flags, isDuplicate ? canonicalCandidateId : null, row.id],
+    );
+
+    if (row.candidateId === input.candidateId) continue;
+    const previous = await loadDecision(sql, row.candidateId);
+    const candidate = await loadCandidate(sql, row.candidateId);
+    if (
+      !previous ||
+      !candidate ||
+      !["eligible", "review_required"].includes(previous.state)
+    ) {
+      continue;
+    }
+    const inspection = inspectionInput({ ...row, flags });
+    const validation = await currentValidation(
+      sql,
+      candidateInput(candidate),
+      inspection,
+    );
+    await appendDecision(sql, {
+      candidateId: row.candidateId,
+      inspectionId: row.id,
+      state: decisionStateForValidation(validation),
+      gateCodes: validation.gateCodes,
+      warningCodes: validation.warningCodes,
+      decidedAt: input.decidedAt,
+    });
+    affectedWorkIds.add(row.workId);
+  }
+
+  const current = group.find((row) => row.id === input.inspectionId);
+  if (!current) throw new Error("Cover inspection not found after insert");
+  return {
+    inspection: inspectionInput({
+      ...current,
+      flags: uniqueSorted([
+        ...current.flags.filter((flag) => flag !== "duplicate"),
+        ...(current.candidateId !== canonicalCandidateId
+          ? (["duplicate"] as const)
+          : []),
+      ]),
+    }),
+    affectedWorkIds: [...affectedWorkIds],
+  };
+};
+
 const identityPriority = (
   kind: CoverCandidateInput["identityMatchKind"],
 ): number =>
@@ -416,14 +524,9 @@ const eligibleCandidates = async (
       identityPriority(right.candidate.identityMatchKind) -
       identityPriority(left.candidate.identityMatchKind);
     if (identity !== 0) return identity;
-    const normalizedRight =
-      right.inspection.qualityScore +
-      (right.inspection.flags.includes("duplicate") ? 4 : 0);
-    const normalizedLeft =
-      left.inspection.qualityScore +
-      (left.inspection.flags.includes("duplicate") ? 4 : 0);
-    if (normalizedRight !== normalizedLeft)
-      return normalizedRight - normalizedLeft;
+    if (right.inspection.qualityScore !== left.inspection.qualityScore) {
+      return right.inspection.qualityScore - left.inspection.qualityScore;
+    }
     const area =
       (right.inspection.width ?? 0) * (right.inspection.height ?? 0) -
       (left.inspection.width ?? 0) * (left.inspection.height ?? 0);
@@ -598,25 +701,11 @@ export const createCoverCandidatePostgres = async (input: {
       if (input.failAfter === "candidate") {
         throw new Error("Forced Postgres cover candidate failure");
       }
-      const duplicate = rows<{ candidateId: string }>(
-        await sql.unsafe(
-          `select candidate_id as "candidateId"
-           from cover_inspections
-           where checksum = $1 and candidate_id <> $2
-           order by candidate_id asc limit 1`,
-          [input.inspection.checksum, candidateId],
-        ),
-      )[0];
-      const flags = uniqueSorted([
-        ...input.inspection.flags,
-        ...(duplicate ? (["duplicate"] as const) : []),
-      ]);
-      const inspection = {
+      const inspectionToStore = {
         ...input.inspection,
-        flags,
-        qualityScore: duplicate
-          ? Math.max(0, input.inspection.qualityScore - 4)
-          : input.inspection.qualityScore,
+        flags: uniqueSorted(
+          input.inspection.flags.filter((flag) => flag !== "duplicate"),
+        ),
       };
       await sql.unsafe(
         `insert into cover_inspections (
@@ -629,34 +718,36 @@ export const createCoverCandidatePostgres = async (input: {
         [
           inspectionId,
           candidateId,
-          inspection.mediaType,
-          inspection.byteSize,
-          inspection.width,
-          inspection.height,
-          inspection.aspectRatio,
-          inspection.checksum,
-          inspection.decodeResult,
-          inspection.flags,
-          inspection.qualityScore,
-          duplicate?.candidateId ?? null,
-          inspection.inspectionVersion,
-          inspection.inspectedAt,
+          inspectionToStore.mediaType,
+          inspectionToStore.byteSize,
+          inspectionToStore.width,
+          inspectionToStore.height,
+          inspectionToStore.aspectRatio,
+          inspectionToStore.checksum,
+          inspectionToStore.decodeResult,
+          inspectionToStore.flags,
+          inspectionToStore.qualityScore,
+          null,
+          inspectionToStore.inspectionVersion,
+          inspectionToStore.inspectedAt,
         ],
       );
       if (input.failAfter === "inspection") {
         throw new Error("Forced Postgres cover inspection failure");
       }
+      const duplicateNormalization = await normalizeDuplicateGroup(sql, {
+        candidateId,
+        checksum: input.inspection.checksum,
+        decidedAt: input.inspection.inspectedAt,
+        inspectionId,
+      });
+      const inspection = duplicateNormalization.inspection;
       const validation = await currentValidation(
         sql,
         input.candidate,
         inspection,
       );
-      const state: CoverCandidateResult["state"] = validation.hardRejected
-        ? "rejected"
-        : validation.gateCodes.length > 0 ||
-            validation.warningCodes.some((warning) => warning !== "duplicate")
-          ? "review_required"
-          : "eligible";
+      const state = decisionStateForValidation(validation);
       const decision = await appendDecision(sql, {
         candidateId,
         inspectionId,
@@ -668,12 +759,17 @@ export const createCoverCandidatePostgres = async (input: {
       if (input.failAfter === "decision") {
         throw new Error("Forced Postgres cover decision failure");
       }
-      await recompute(sql, {
-        workId: input.candidate.workId,
-        actorRef: input.actorRef ?? "system:cover-inspection",
-        reasonCode: "candidate_inspected",
-        projectedAt: inspection.inspectedAt,
-      });
+      for (const workId of uniqueSorted([
+        input.candidate.workId,
+        ...duplicateNormalization.affectedWorkIds,
+      ])) {
+        await recompute(sql, {
+          workId,
+          actorRef: input.actorRef ?? "system:cover-inspection",
+          reasonCode: "candidate_inspected",
+          projectedAt: inspection.inspectedAt,
+        });
+      }
       if (input.failAfter === "projection") {
         throw new Error("Forced Postgres cover projection failure");
       }
@@ -685,6 +781,77 @@ export const createCoverCandidatePostgres = async (input: {
         gateCodes: validation.gateCodes,
         warningCodes: validation.warningCodes,
         changed: true,
+      };
+    });
+  } finally {
+    await client.end({ timeout: 5_000 });
+  }
+};
+
+export const reviewCoverCandidatePostgres = async (input: {
+  url: string;
+  candidateId: string;
+  reviewerRef: string;
+  decision: "approve" | "reject";
+  reason: string;
+  acknowledgedWarningCodes: readonly CoverFlagCode[];
+  reviewedAt: number;
+}): Promise<CoverCandidateResult> => {
+  const client = postgres(input.url, { max: 1 });
+  try {
+    const candidateRow = await loadCandidate(client, input.candidateId);
+    const previous = await loadDecision(client, input.candidateId);
+    if (!candidateRow || !previous)
+      throw new Error("Cover candidate not found");
+    const candidate = candidateInput(candidateRow);
+    const inspection = inspectionInput(
+      await loadInspection(client, previous.inspectionId),
+    );
+    const validation = await currentValidation(client, candidate, inspection);
+    if (input.decision === "approve") {
+      if (validation.gateCodes.length > 0) {
+        throw new Error(
+          `Cover hard gates cannot be overridden: ${validation.gateCodes.join(", ")}`,
+        );
+      }
+      const missing = validation.warningCodes.filter(
+        (warning) => !input.acknowledgedWarningCodes.includes(warning),
+      );
+      if (missing.length > 0) {
+        throw new Error(
+          `Cover warnings not acknowledged: ${missing.join(", ")}`,
+        );
+      }
+    }
+    return await client.begin(async (sql) => {
+      const state: CoverCandidateResult["state"] =
+        input.decision === "approve" ? "eligible" : "rejected";
+      const gateCodes =
+        input.decision === "approve" ? [] : validation.gateCodes;
+      const decision = await appendDecision(sql, {
+        candidateId: input.candidateId,
+        inspectionId: previous.inspectionId,
+        state,
+        gateCodes,
+        warningCodes: validation.warningCodes,
+        reviewerRef: input.reviewerRef,
+        reason: input.reason,
+        decidedAt: input.reviewedAt,
+      });
+      await recompute(sql, {
+        workId: candidate.workId,
+        actorRef: input.reviewerRef,
+        reasonCode: `review_${input.decision}`,
+        projectedAt: input.reviewedAt,
+      });
+      return {
+        candidateId: input.candidateId,
+        inspectionId: previous.inspectionId,
+        decisionId: decision.id,
+        state,
+        gateCodes,
+        warningCodes: validation.warningCodes,
+        changed: decision.changed,
       };
     });
   } finally {
@@ -761,6 +928,17 @@ export const withdrawCoverCandidatePostgres = async (input: {
     const previous = await loadDecision(client, input.candidateId);
     if (!candidateRow || !previous)
       throw new Error("Cover candidate not found");
+    if (previous.state === "withdrawn" && previous.purgeState !== "failed") {
+      return {
+        candidateId: input.candidateId,
+        inspectionId: previous.inspectionId,
+        decisionId: previous.id,
+        state: "withdrawn",
+        gateCodes: previous.gateCodes,
+        warningCodes: previous.warningCodes,
+        changed: false,
+      };
+    }
     const candidate = candidateInput(candidateRow);
     const context = await sourceContext(client, candidate);
     const purgeRequired = coverPolicyRequiresPurge(context?.assetPolicy);
@@ -818,6 +996,43 @@ export const withdrawCoverCandidatePostgres = async (input: {
   }
 };
 
+export const retryCoverWithdrawalPurgePostgres = async (input: {
+  url: string;
+  candidateId: string;
+  purgeAsset: (objectKey: string) => void | Promise<void>;
+}): Promise<boolean> => {
+  const client = postgres(input.url, { max: 1 });
+  try {
+    const candidate = await loadCandidate(client, input.candidateId);
+    const decision = await loadDecision(client, input.candidateId);
+    if (!candidate || !decision || decision.state !== "withdrawn") {
+      throw new Error("Withdrawn cover candidate not found");
+    }
+    if (
+      decision.purgeState === "completed" ||
+      decision.purgeState === "not_required"
+    ) {
+      return false;
+    }
+    try {
+      await input.purgeAsset(candidate.objectKey);
+      await client.unsafe(
+        "update cover_decisions set purge_state = 'completed' where id = $1",
+        [decision.id],
+      );
+      return true;
+    } catch (error) {
+      await client.unsafe(
+        "update cover_decisions set purge_state = 'failed' where id = $1",
+        [decision.id],
+      );
+      throw error;
+    }
+  } finally {
+    await client.end({ timeout: 5_000 });
+  }
+};
+
 export const rollbackCoverProjectionPostgres = async (input: {
   url: string;
   workId: string;
@@ -843,6 +1058,23 @@ export const rollbackCoverProjectionPostgres = async (input: {
         (row) => row.candidate.id === target.candidateId,
       );
       if (!eligible) throw new Error("Rollback target is no longer eligible");
+      const current = await loadProjection(sql, input.workId);
+      if (current?.candidateId === target.candidateId) {
+        const candidate = await loadCandidate(sql, target.candidateId);
+        if (!candidate) throw new Error("Rollback candidate not found");
+        return {
+          selection: {
+            workId: input.workId,
+            candidateId: candidate.id,
+            objectKey: candidate.objectKey,
+            representationType: candidate.representationType,
+            editionId: candidate.editionId,
+            publicDisplayEligible: false,
+            state: current.state,
+          },
+          changed: false,
+        };
+      }
       const projection = await appendProjection(sql, {
         workId: input.workId,
         candidateId: target.candidateId,
