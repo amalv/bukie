@@ -629,12 +629,23 @@ export const promoteDiagnosticFivePostgres = async (
       for (const entry of rows.entries) {
         await sql.unsafe(
           `insert into source_records (
-             id, source_id, record_key, source_revision, source_modified_at,
-             retrieved_at, payload_json, payload_hash, importer_version,
-             source_row_hash, state
-           ) values ($1,$2,$3,$4,null,$6,$7::jsonb,$8,$9,$10,$11)
+           id, source_id, record_key, source_revision, source_modified_at,
+           retrieved_at, payload_json, payload_hash, importer_version,
+           source_row_hash, state
+           ) values ($1,$2,$3,$4,null,$5,$6::jsonb,$7,$8,$9,$10)
            on conflict(id) do nothing`,
-          Object.values(entry.sourceRecord),
+          [
+            entry.sourceRecord.id,
+            entry.sourceRecord.sourceId,
+            entry.sourceRecord.recordKey,
+            entry.sourceRecord.sourceRevision,
+            entry.sourceRecord.retrievedAt,
+            entry.sourceRecord.payloadJson,
+            entry.sourceRecord.payloadHash,
+            entry.sourceRecord.importerVersion,
+            entry.sourceRecord.sourceRowHash,
+            entry.sourceRecord.state,
+          ],
         );
         await sql.unsafe(
           `insert into source_record_links (
@@ -644,7 +655,6 @@ export const promoteDiagnosticFivePostgres = async (
            on conflict(source_record_id, entity_type, entity_id) do nothing`,
           Object.values(entry.sourceRecordLink),
         );
-        const observation = Object.values(entry.fieldObservation);
         await sql.unsafe(
           `insert into field_observations (
              id, source_record_id, entity_type, entity_id, field_key,
@@ -654,9 +664,26 @@ export const promoteDiagnosticFivePostgres = async (
              parent_ids_json
            ) values (
              $1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,null,
-             $11,$12,$13,$14,$15,$16,$17,$18::jsonb
+             $10,$11,$12,$13,$14,$15,$16,null
            ) on conflict(id) do nothing`,
-          observation,
+          [
+            entry.fieldObservation.id,
+            entry.fieldObservation.sourceRecordId,
+            entry.fieldObservation.entityType,
+            entry.fieldObservation.entityId,
+            entry.fieldObservation.fieldKey,
+            entry.fieldObservation.valueJson,
+            entry.fieldObservation.comparisonHash,
+            entry.fieldObservation.provenanceKind,
+            entry.fieldObservation.sourcePath,
+            entry.fieldObservation.retrievedAt,
+            entry.fieldObservation.mappingConfidence,
+            entry.fieldObservation.state,
+            entry.fieldObservation.actorRef,
+            entry.fieldObservation.reason,
+            entry.fieldObservation.derivationName,
+            entry.fieldObservation.derivationVersion,
+          ],
         );
       }
       const sourceRows = await sql.unsafe<
