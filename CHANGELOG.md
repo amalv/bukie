@@ -1,3 +1,16 @@
+# [0.42.0](https://github.com/amalv/bukie/compare/v0.41.0...v0.42.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* **catalog:** normalize active postgres targets ([f340a56](https://github.com/amalv/bukie/commit/f340a560ab28fdfd0051da17eae552f32fad36c9))
+* **catalog:** normalize dry-run publication evidence ([e89ed4e](https://github.com/amalv/bukie/commit/e89ed4e48a1fdcf9406d03b28d30f81179b6ddb1))
+
+
+### Features
+
+* **catalog:** add isolated enrichment dry run ([296411e](https://github.com/amalv/bukie/commit/296411e704ceab0a5865fe648a91190c05e3952f))
+
 # [0.41.0](https://github.com/amalv/bukie/compare/v0.40.0...v0.41.0) (2026-07-29)
 
 
