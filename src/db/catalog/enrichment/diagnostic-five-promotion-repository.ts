@@ -12,6 +12,7 @@ import {
   assertDiagnosticFiveCoverEligibility,
   assertExactCoverProposalAllowlist,
   diagnosticFiveCoverRows,
+  POC_COVER_SOURCE_POLICY_VERSION,
 } from "./diagnostic-five-cover-promotion";
 import {
   APPROVED_PROMOTION_PROPOSALS,
@@ -1093,8 +1094,65 @@ const persistAndRevalidateCoversPostgres = async (
     changed ||= !currentProjectionHeads[0];
     projectionIds.push(entry.coverProjectionHead.projectionId);
 
-    const eligible = await sql.unsafe<Array<{ eligible: number }>>(
-      `select 1 as eligible
+    const auditRows = await sql.unsafe<
+      Array<{
+        projectionState: string;
+        projectedCandidateId: string | null;
+        previousProjectionId: string | null;
+        projectionPolicyVersion: string;
+        decisionState: string;
+        reviewerRef: string | null;
+        previousDecisionId: string | null;
+        gateCodes: unknown;
+        decisionPolicyVersion: string;
+        checksum: string;
+        decodeResult: string;
+        qualityScore: number;
+        candidateWorkId: string;
+        candidateEditionId: string | null;
+        representationType: string;
+        permissionState: string;
+        rightsBasis: string | null;
+        candidateSourceRevision: string;
+        sourcePolicyVersion: string;
+        sourceRevision: string | null;
+        sourceState: string;
+        linkState: string;
+        mappingConfidence: number;
+        sourceApproval: string;
+        assetPolicy: unknown;
+        assetState: string;
+        assetChecksum: string | null;
+      }>
+    >(
+      `select
+         p.state as "projectionState",
+         p.candidate_id as "projectedCandidateId",
+         p.previous_projection_id as "previousProjectionId",
+         p.policy_version as "projectionPolicyVersion",
+         d.state as "decisionState",
+         d.reviewer_ref as "reviewerRef",
+         d.previous_decision_id as "previousDecisionId",
+         d.gate_codes_json as "gateCodes",
+         d.policy_version as "decisionPolicyVersion",
+         i.checksum,
+         i.decode_result as "decodeResult",
+         i.quality_score as "qualityScore",
+         c.work_id as "candidateWorkId",
+         c.edition_id as "candidateEditionId",
+         c.representation_type as "representationType",
+         c.permission_state as "permissionState",
+         c.rights_basis as "rightsBasis",
+         c.source_revision as "candidateSourceRevision",
+         c.source_policy_version as "sourcePolicyVersion",
+         sr.source_revision as "sourceRevision",
+         sr.state as "sourceState",
+         sl.state as "linkState",
+         sl.mapping_confidence as "mappingConfidence",
+         ms.approval_state as "sourceApproval",
+         ms.asset_policy as "assetPolicy",
+         ca.state as "assetState",
+         ca.checksum as "assetChecksum"
        from cover_projection_heads h
        join cover_projections p on p.id = h.projection_id
        join cover_candidates c on c.id = p.candidate_id
@@ -1106,35 +1164,55 @@ const persistAndRevalidateCoversPostgres = async (
          and sl.entity_type = $1 and sl.entity_id = $2
        join metadata_sources ms on ms.id = sr.source_id
        join cover_assets ca on ca.object_key = c.object_key
-       where h.work_id = $3 and h.projection_id = $4
-         and p.state = 'selected' and p.candidate_id = $5
-         and p.previous_projection_id = $6
-         and d.state = 'eligible' and d.reviewer_ref = $7
-         and d.previous_decision_id = $8 and d.gate_codes_json = '[]'::jsonb
-         and i.checksum = $9 and i.decode_result = 'decoded'
-         and i.quality_score >= 60
-         and c.permission_state = 'pending' and c.rights_basis is null
-         and c.source_revision = sr.source_revision
-         and sr.state = 'active' and sl.state = 'active'
-         and sl.mapping_confidence = 1
-         and ms.approval_state = 'approved'
-         and ms.asset_policy = $10::jsonb
-         and ca.state = 'available' and ca.checksum = $11`,
+       where h.work_id = $3 and h.projection_id = $4`,
       [
         entry.sourceRecordLink.entityType,
         entry.sourceRecordLink.entityId,
         entry.proposal.workId,
         entry.coverProjectionHead.projectionId,
-        entry.coverCandidate.id,
-        entry.coverProjections[0].id,
-        entry.coverDecisions[1].reviewerRef,
-        entry.coverDecisions[0].id,
-        entry.coverInspection.checksum,
-        rows.metadataSource.assetPolicy,
-        entry.coverAsset.checksum,
       ],
     );
-    if (!eligible[0]) {
+    const audit = auditRows[0];
+    const persistedAssetPolicy =
+      typeof audit?.assetPolicy === "string"
+        ? JSON.parse(audit.assetPolicy)
+        : audit?.assetPolicy;
+    const requiredField =
+      entry.proposal.representationType === "selected_edition"
+        ? "edition.covers"
+        : "work.covers";
+    if (
+      !audit ||
+      auditRows.length !== 1 ||
+      audit.projectionState !== "selected" ||
+      audit.projectedCandidateId !== entry.coverCandidate.id ||
+      audit.previousProjectionId !== entry.coverProjections[0].id ||
+      audit.projectionPolicyVersion !== COVER_POLICY_VERSION ||
+      audit.decisionState !== "eligible" ||
+      audit.reviewerRef !== entry.coverDecisions[1].reviewerRef ||
+      audit.previousDecisionId !== entry.coverDecisions[0].id ||
+      canonicalJson(audit.gateCodes) !== canonicalJson([]) ||
+      audit.decisionPolicyVersion !== COVER_POLICY_VERSION ||
+      audit.checksum !== entry.coverInspection.checksum ||
+      audit.decodeResult !== "decoded" ||
+      Number(audit.qualityScore) < 60 ||
+      audit.candidateWorkId !== entry.proposal.workId ||
+      audit.candidateEditionId !== entry.coverCandidate.editionId ||
+      audit.representationType !== entry.proposal.representationType ||
+      audit.permissionState !== "pending" ||
+      audit.rightsBasis !== null ||
+      audit.candidateSourceRevision !== entry.sourceRecord.sourceRevision ||
+      audit.sourcePolicyVersion !== POC_COVER_SOURCE_POLICY_VERSION ||
+      audit.sourceRevision !== entry.sourceRecord.sourceRevision ||
+      audit.sourceState !== "active" ||
+      audit.linkState !== "active" ||
+      Number(audit.mappingConfidence) !== 1 ||
+      audit.sourceApproval !== "approved" ||
+      canonicalJson(persistedAssetPolicy) !== rows.metadataSource.assetPolicy ||
+      !sourcePolicyAllowsFieldDisplay(persistedAssetPolicy, requiredField) ||
+      audit.assetState !== "available" ||
+      audit.assetChecksum !== entry.coverAsset.checksum
+    ) {
       throw new Error(
         `Catalog cover promotion refused: source, identity, rights, withdrawal, quality, or review eligibility drifted for ${entry.proposal.title}`,
       );
