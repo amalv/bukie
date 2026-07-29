@@ -73,6 +73,17 @@ type CandidateRow = {
 const uniqueSorted = <T extends string>(values: readonly T[]): T[] =>
   [...new Set(values)].sort();
 
+const jsonStringArray = <T extends string>(value: unknown): T[] => {
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value !== "string") return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? (parsed as T[]) : [];
+  } catch {
+    return [];
+  }
+};
+
 const policyObject = (
   value: unknown,
 ): {
@@ -146,8 +157,8 @@ const parentEvidence = (
 const decisionFromRow = (row: Record<string, unknown>): DecisionRow => ({
   id: String(row.id),
   state: row.state as DescriptionDecisionState,
-  rejectionCodes: row.rejectionCodes as DescriptionRejectionCode[],
-  warningCodes: row.warningCodes as DescriptionWarningCode[],
+  rejectionCodes: jsonStringArray<DescriptionRejectionCode>(row.rejectionCodes),
+  warningCodes: jsonStringArray<DescriptionWarningCode>(row.warningCodes),
   reviewerRef: row.reviewerRef ? String(row.reviewerRef) : null,
   reviewReason: row.reviewReason ? String(row.reviewReason) : null,
   policyVersion: String(row.policyVersion),
@@ -204,8 +215,12 @@ export const createDescriptionCandidatePostgres = async (input: {
           decisionId: String(row.decisionId),
           state,
           validation: {
-            rejectionCodes: row.rejectionCodes as DescriptionRejectionCode[],
-            warningCodes: row.warningCodes as DescriptionWarningCode[],
+            rejectionCodes: jsonStringArray<DescriptionRejectionCode>(
+              row.rejectionCodes,
+            ),
+            warningCodes: jsonStringArray<DescriptionWarningCode>(
+              row.warningCodes,
+            ),
             requiresHumanReview:
               state === "review_required" || state === "paused",
             wordCount: String(row.textContent)
@@ -285,6 +300,9 @@ export const createDescriptionCandidatePostgres = async (input: {
                order by o.id`,
               [parentIds],
             );
+      const loadedParentIds = new Set(
+        (parentRows as unknown as ParentRow[]).map((row) => row.id),
+      );
       const validation = validateDescriptionCandidate({
         candidate: input.candidate,
         parents: parentEvidence(parentRows as unknown as ParentRow[]),
@@ -456,7 +474,7 @@ export const createDescriptionCandidatePostgres = async (input: {
           [claimId, candidateId, position, claim.text, claimHash],
         );
         for (const parentId of uniqueSorted(claim.parentObservationIds)) {
-          if (!parentIds.includes(parentId)) continue;
+          if (!loadedParentIds.has(parentId)) continue;
           await sql.unsafe(
             `insert into description_claim_evidence (claim_id, observation_id)
              values ($1, $2)`,

@@ -56,6 +56,29 @@ describe.skipIf(!isolatedUrl)(
       expect(model.queue).toBe("queued");
       expect(retry.changed).toBe(false);
       expect(retry.queue).toBe("deduplicated");
+      expect(retry.validation.warningCodes).toEqual(
+        model.validation.warningCodes,
+      );
+      const unsupported = await createDescriptionCandidatePostgres({
+        url: target.url,
+        candidate: modelDescriptionFixture(undefined, {
+          claims: [
+            {
+              text: "Unsupported fixture claim",
+              parentObservationIds: ["missing"],
+            },
+          ],
+          createdAt: NOW + 7,
+        }),
+        queueCapacity: 3,
+      });
+      expect(unsupported.state).toBe("rejected");
+      expect(unsupported.validation.rejectionCodes).toEqual(
+        expect.arrayContaining([
+          "claim_unsupported",
+          "specificity_insufficient",
+        ]),
+      );
       await expect(
         reviewDescriptionCandidatePostgres({
           url: target.url,
@@ -176,8 +199,8 @@ describe.skipIf(!isolatedUrl)(
         scopeWorks: 5,
       });
       expect(metrics).toMatchObject({
-        candidates: 4,
-        rejected: 1,
+        candidates: 5,
+        rejected: 2,
         eligible: 0,
         withdrawn: 1,
         invalidated: 1,
@@ -185,15 +208,15 @@ describe.skipIf(!isolatedUrl)(
         byClass: {
           licensed_verbatim: 2,
           bukie_editorial: 1,
-          model_assisted_candidate: 1,
+          model_assisted_candidate: 2,
         },
       });
       expect(metrics.tokens).toEqual({
-        input: 320,
-        output: 112,
-        total: 432,
+        input: 640,
+        output: 224,
+        total: 864,
       });
-      expect(metrics.estimate500.costMicrousd).toBe(420_000);
+      expect(metrics.estimate500.costMicrousd).toBe(840_000);
     }, 120_000);
   },
 );
