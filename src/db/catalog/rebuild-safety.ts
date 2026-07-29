@@ -38,14 +38,41 @@ function assertNonProductionEnvironment(env: SafetyEnvironment) {
   }
 }
 
-function activeDatabaseUrls(env: SafetyEnvironment): Set<string> {
+function postgresDatabaseIdentity(rawUrl: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    return null;
+  }
+  if (!["postgres:", "postgresql:"].includes(url.protocol)) return null;
+  const hostname = url.hostname.toLowerCase().replace(/\.$/u, "");
+  const normalizedHostname = ["localhost", "127.0.0.1", "[::1]"].includes(
+    hostname,
+  )
+    ? "localhost"
+    : hostname;
+  let database: string;
+  try {
+    database = decodeURIComponent(url.pathname.replace(/^\//u, ""));
+  } catch {
+    return null;
+  }
+  if (!normalizedHostname || !database) return null;
+  return JSON.stringify([normalizedHostname, url.port || "5432", database]);
+}
+
+function activeDatabaseIdentities(env: SafetyEnvironment): Set<string> {
   return new Set(
     [
       env.DATABASE_URL,
       env.DATABASE_URL_UNPOOLED,
       env.POSTGRES_URL,
       env.POSTGRES_URL_NON_POOLING,
-    ].filter((value): value is string => Boolean(value)),
+    ]
+      .filter((value): value is string => Boolean(value))
+      .map(postgresDatabaseIdentity)
+      .filter((value): value is string => value !== null),
   );
 }
 
@@ -120,7 +147,8 @@ export function resolveRebuildTarget(input: {
         "Catalog rebuild refused: Postgres target must use postgres:// or postgresql://",
       );
     }
-    if (activeDatabaseUrls(env).has(rawUrl)) {
+    const targetIdentity = postgresDatabaseIdentity(rawUrl);
+    if (targetIdentity && activeDatabaseIdentities(env).has(targetIdentity)) {
       throw new Error(
         "Catalog rebuild refused: target matches an active application database URL",
       );

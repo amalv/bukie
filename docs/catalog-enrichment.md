@@ -294,3 +294,88 @@ and edition-conflict signals, the Moby-Dick French adaptation/locale conflict,
 and the weak identity/upscaling signals for The City and the Stars, Born a
 Crime, and Faithful Place. It retries every inspection and refuses to finish
 if any public cover relation, asset row, or resolution head changes.
+
+## Catalog-wide dry run
+
+Issue #135 adds one catalog-scale command without adding a general scheduler or
+promotion engine. It rebuilds the complete 500-work artifact in a disposable
+target, scans every work, and consumes only the retained diagnostic-five
+snapshots already permitted by the enabled Bukie editorial and Wikidata
+policies:
+
+```powershell
+bun run db:catalog:enrichment-dry-run --target=sqlite:.data/catalog-targets/issue-135-catalog-test.sqlite --confirm-disposable --report=.data/catalog-reports/issue-135-report.json
+```
+
+For PostgreSQL, `--target=postgres:<url>` must name a dedicated database whose
+name explicitly contains `dry-run`, `issue-135`, `test`, `isolated`, or
+`disposable`. The command rejects active application URLs, production-like
+targets, preview/branch/current-development targets, ambiguous local database
+names, the active SQLite development database, missing targets, missing
+confirmation, and report paths outside `docs/reports`,
+`.data/catalog-reports`, or the operating-system temporary directory. There is
+no override.
+
+The immutable, content-addressed manifest records:
+
+- all catalog record and work IDs plus catalog, graph, and work-scope hashes;
+- every retained source snapshot and revision;
+- enabled and disabled adapter state, adapter versions, and source-policy
+  versions;
+- importer, matcher, resolver, proposal, description, cover, and cover
+  inspection versions;
+- review caps and match thresholds; and
+- the canonical JSON and report-ordering contract.
+
+The report uses canonical JSON, stable title/work-ID case ordering, and one LF
+terminator. Rebuilding and rerunning the SQLite proof produced the same
+253,787 bytes and SHA-256
+`a85538c057e0b65696644e372f09f18a6da0daf0cefec0d42d641ee4ca6a1b0d`.
+The normalized PostgreSQL parity test is gated by the same isolated
+`CATALOG_TEST_POSTGRES_URL` used by the existing catalog database tests.
+
+### Recorded result
+
+The committed
+[catalog-wide report](./reports/catalog-enrichment-dry-run-2026-07-29.json)
+is intentionally conservative:
+
+| Measure | Result |
+|---|---:|
+| Works scanned | 500 |
+| Matched / ambiguous / unmatched | 4 / 1 / 495 |
+| Observations / proposed resolutions | 13 / 9 |
+| Work first-publication proposals | 4 (0.8%); 0 promoted |
+| Description candidates | 5 (1.0%); 0 eligible |
+| Description queue / cap / overflow | 3 / 3 / 2 paused |
+| Verified cover candidates | 0; all 5 diagnostic covers remained blocked |
+| Provider requests / cache hits | 10 recorded / 5 |
+| Live provider network calls | 0 |
+| 429 / 5xx / retries | 0 / 0 / 0 |
+| Recorded latency / bytes | 110 ms / 510 bytes |
+| Recorded model runtime / estimated cost | 625 ms / $0.021 |
+
+The 90–98% first-publication, 45–70% verified-cover, and 35–55%
+publishable-description planning ranges from #130 were not approached. That is
+an expected and material variance: 495 works have no approved retained
+snapshot, no external asset feed is approved, and no model or text provider
+was called. The run reports those omissions rather than treating pending
+adapters or public pages as permission.
+
+The report preserves Dune, Moby-Dick, The City and the Stars, Born a Crime,
+and Faithful Place as explicit diagnostic cases. Dune remains ambiguous;
+description overflow remains paused; and all uncertain or rights-blocked cover
+candidates remain unresolved.
+
+Before and after every run, the command hashes and compares current resolution
+heads, first-publication projections, description projections, public cover
+assets and relations, cover pointers, and reader-facing catalog tables. Any
+change fails the run before the report is written. Withdrawal, purge failure
+and retry, fallback, and rollback are rehearsed only in the internal disposable
+cover proposal history. They never update public cover relations, public
+resolution heads, or reader-facing work projections.
+
+Promotion is not implemented. The separately reviewed
+[promotion proposal](./catalog-enrichment-promotion-proposal.md) describes the
+prerequisites and rollback boundary that maintainers would need to approve
+after a future report has sufficient eligible evidence.

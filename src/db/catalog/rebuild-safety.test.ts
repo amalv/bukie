@@ -104,6 +104,24 @@ describe("catalog rebuild target safety", () => {
     ).toThrow("not explicitly isolated");
   });
 
+  it("refuses equivalent active Postgres URLs with different URL spelling", () => {
+    const active =
+      "postgresql://app:secret@LOCALHOST/issue_135_test?sslmode=disable";
+    for (const target of [
+      "postgres://runner:different@localhost:5432/issue_135_test",
+      "postgresql://runner:different@127.0.0.1/issue_135_test?sslmode=require",
+    ]) {
+      expect(() =>
+        resolveRebuildTarget({
+          rawTarget: `postgres:${target}`,
+          confirmDisposable: true,
+          cwd,
+          env: { NODE_ENV: "test", DATABASE_URL: active },
+        }),
+      ).toThrow("matches an active application database");
+    }
+  });
+
   it("accepts an explicitly isolated Postgres target without exposing credentials", () => {
     const target = resolveRebuildTarget({
       rawTarget:
