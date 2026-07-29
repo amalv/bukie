@@ -5,7 +5,7 @@ by [ADR 0016](./decisions/0016-catalog-metadata-provenance.md).
 
 - SQLite is the local-development provider.
 - Postgres is the preview and production provider.
-- `src/db/catalog/schema.ts` and `schema.pg.ts` define the same 21 logical
+- `src/db/catalog/schema.ts` and `schema.pg.ts` define the same 29 logical
   tables and constraints.
 - `src/db/catalog/repository.ts` implements provider-neutral work-first reads.
 - `src/features/books/types.ts` defines the public `WorkSummary`,
@@ -96,6 +96,23 @@ All other enrichment continues through source records, immutable observations,
 resolution heads, and the existing display-eligibility checks. Dry runs write
 to an isolated disposable target and cannot update current heads, projections,
 or cover pointers.
+
+Issue #133 adds a description-specific evidence and review layer without
+changing that public boundary. Immutable description candidates identify one
+of `licensed_verbatim`, `bukie_editorial`, or `model_assisted_candidate` and
+retain the class-specific rights, revision, editor, model, prompt, token, cost,
+and policy metadata. Relational claim rows map every asserted generated fact to
+eligible parent observations. Immutable decision history, a bounded
+deduplicated queue, and internal projection history support review,
+withdrawal, invalidation, re-review, rollback, and dry-run metrics.
+
+The description projection tables are internal dry-run selections. They are
+not `field_resolution_heads`, are not read by the catalog repository, and
+never update `works.description`. A selected internal candidate therefore
+remains non-public while its source policy is `proposedEvidenceOnly`. The
+internal proposal reader also reapplies source, link, observation, parent,
+policy, model, and prompt eligibility at read time so a revocation fails closed
+before reconciliation runs.
 
 The issue #131
 [policy-gated adapter foundation](./catalog-enrichment.md) implements that

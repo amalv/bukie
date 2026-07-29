@@ -177,4 +177,45 @@ describe("SQLite/Postgres normalized catalog schema parity", () => {
       );
     }
   });
+
+  it("adds evidence-gated description lifecycle tables in both providers", () => {
+    const sqliteMigration = readFileSync(
+      path.resolve("drizzle/0006_legal_trish_tilby.sql"),
+      "utf8",
+    );
+    const postgresMigration = readFileSync(
+      path.resolve("drizzle/pg/0008_gifted_typhoid_mary.sql"),
+      "utf8",
+    );
+    for (const migration of [sqliteMigration, postgresMigration]) {
+      expect(migration.match(/^CREATE TABLE/gm)).toHaveLength(8);
+      expect(migration).toContain("description_candidates");
+      expect(migration).toContain("description_claim_evidence");
+      expect(migration).toContain("description_decisions");
+      expect(migration).toContain("description_review_queue");
+      expect(migration).toContain("description_projections");
+      expect(migration).not.toMatch(
+        /update\s+works[\s\S]*description|insert\s+into\s+field_resolution_heads/i,
+      );
+    }
+  });
+
+  it("adds licensed transformation proof with deterministic legacy backfill", () => {
+    const sqliteMigration = readFileSync(
+      path.resolve("drizzle/0007_milky_omega_red.sql"),
+      "utf8",
+    );
+    const postgresMigration = readFileSync(
+      path.resolve("drizzle/pg/0009_moaning_catseye.sql"),
+      "utf8",
+    );
+    for (const migration of [sqliteMigration, postgresMigration]) {
+      expect(migration).toContain("licensed_source_text_hash");
+      expect(migration).toContain("licensed_text_transformed");
+      expect(migration).toContain("text_hash");
+      expect(migration).not.toMatch(
+        /update\s+works|insert\s+into\s+field_resolution_heads/i,
+      );
+    }
+  });
 });

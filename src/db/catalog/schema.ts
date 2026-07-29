@@ -17,6 +17,10 @@ import {
   CATEGORY_STATUSES,
   CHANGE_TYPES,
   COVER_STATES,
+  DESCRIPTION_CLASSES,
+  DESCRIPTION_DECISION_STATES,
+  DESCRIPTION_PROJECTION_STATES,
+  DESCRIPTION_QUEUE_STATES,
   EDITION_FORMATS,
   IDENTIFIER_SCHEMES,
   OBSERVATION_STATES,
@@ -774,6 +778,340 @@ export const fieldResolutionHeads = sqliteTable(
   ],
 );
 
+export const descriptionCandidates = sqliteTable(
+  "description_candidates",
+  {
+    id: text("id").primaryKey(),
+    workId: text("work_id")
+      .notNull()
+      .references(() => works.id, { onDelete: "restrict" }),
+    observationId: text("observation_id")
+      .notNull()
+      .references(() => fieldObservations.id, { onDelete: "restrict" }),
+    descriptionClass: text("description_class").notNull(),
+    textContent: text("text_content").notNull(),
+    textHash: text("text_hash").notNull(),
+    sourceRevision: text("source_revision").notNull(),
+    sourcePolicyVersion: text("source_policy_version").notNull(),
+    descriptionPolicyVersion: text("description_policy_version").notNull(),
+    licenseName: text("license_name"),
+    licenseUrl: text("license_url"),
+    attributionText: text("attribution_text"),
+    derivativesPermitted: integer("derivatives_permitted", { mode: "boolean" }),
+    licensedSourceTextHash: text("licensed_source_text_hash"),
+    licensedTextTransformed: integer("licensed_text_transformed", {
+      mode: "boolean",
+    }),
+    editorRef: text("editor_ref"),
+    editorialReason: text("editorial_reason"),
+    editorialRevision: text("editorial_revision"),
+    modelId: text("model_id"),
+    modelVersion: text("model_version"),
+    promptVersion: text("prompt_version"),
+    generationInputHash: text("generation_input_hash"),
+    generatedAt: integer("generated_at"),
+    generationDurationMs: integer("generation_duration_ms"),
+    inputTokens: integer("input_tokens"),
+    outputTokens: integer("output_tokens"),
+    costMicrousd: integer("cost_microusd"),
+    qualityScore: real("quality_score"),
+    ambiguousIdentity: integer("ambiguous_identity", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    sensitiveContent: integer("sensitive_content", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("description_candidates_observation_uq").on(
+      table.observationId,
+    ),
+    check(
+      "description_candidates_class_ck",
+      sql`${table.descriptionClass} in (${sql.raw(sqlList(DESCRIPTION_CLASSES))})`,
+    ),
+    check(
+      "description_candidates_text_ck",
+      sql`length(trim(${table.textContent})) > 0 and length(${table.textHash}) = 64`,
+    ),
+    check(
+      "description_candidates_versions_ck",
+      sql`length(trim(${table.sourceRevision})) > 0
+        and length(trim(${table.sourcePolicyVersion})) > 0
+        and length(trim(${table.descriptionPolicyVersion})) > 0`,
+    ),
+    check(
+      "description_candidates_license_ck",
+      sql`(
+        ${table.descriptionClass} = 'licensed_verbatim'
+        and length(trim(${table.licenseName})) > 0
+        and length(trim(${table.licenseUrl})) > 0
+        and ${table.derivativesPermitted} is not null
+        and length(${table.licensedSourceTextHash}) = 64
+        and ${table.licensedTextTransformed} is not null
+      ) or (
+        ${table.descriptionClass} <> 'licensed_verbatim'
+        and ${table.licenseName} is null
+        and ${table.licenseUrl} is null
+        and ${table.attributionText} is null
+        and ${table.derivativesPermitted} is null
+        and ${table.licensedSourceTextHash} is null
+        and ${table.licensedTextTransformed} is null
+      )`,
+    ),
+    check(
+      "description_candidates_editorial_ck",
+      sql`(
+        ${table.descriptionClass} = 'bukie_editorial'
+        and length(trim(${table.editorRef})) > 0
+        and length(trim(${table.editorialReason})) > 0
+        and length(trim(${table.editorialRevision})) > 0
+      ) or (
+        ${table.descriptionClass} <> 'bukie_editorial'
+        and ${table.editorRef} is null
+        and ${table.editorialReason} is null
+        and ${table.editorialRevision} is null
+      )`,
+    ),
+    check(
+      "description_candidates_model_ck",
+      sql`(
+        ${table.descriptionClass} = 'model_assisted_candidate'
+        and length(trim(${table.modelId})) > 0
+        and length(trim(${table.modelVersion})) > 0
+        and length(trim(${table.promptVersion})) > 0
+        and length(${table.generationInputHash}) = 64
+        and ${table.generatedAt} is not null
+        and ${table.generationDurationMs} >= 0
+        and ${table.inputTokens} >= 0
+        and ${table.outputTokens} >= 0
+        and ${table.costMicrousd} >= 0
+      ) or (
+        ${table.descriptionClass} <> 'model_assisted_candidate'
+        and ${table.modelId} is null
+        and ${table.modelVersion} is null
+        and ${table.promptVersion} is null
+        and ${table.generationInputHash} is null
+        and ${table.generatedAt} is null
+        and ${table.generationDurationMs} is null
+        and ${table.inputTokens} is null
+        and ${table.outputTokens} is null
+        and ${table.costMicrousd} is null
+      )`,
+    ),
+    check(
+      "description_candidates_quality_ck",
+      sql`${table.qualityScore} is null or ${table.qualityScore} between 0 and 100`,
+    ),
+    index("description_candidates_work_created_idx").on(
+      table.workId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const descriptionClaims = sqliteTable(
+  "description_claims",
+  {
+    id: text("id").primaryKey(),
+    candidateId: text("candidate_id")
+      .notNull()
+      .references(() => descriptionCandidates.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    claimText: text("claim_text").notNull(),
+    claimHash: text("claim_hash").notNull(),
+  },
+  (table) => [
+    uniqueIndex("description_claims_position_uq").on(
+      table.candidateId,
+      table.position,
+    ),
+    check(
+      "description_claims_content_ck",
+      sql`${table.position} >= 0
+        and length(trim(${table.claimText})) > 0
+        and length(${table.claimHash}) = 64`,
+    ),
+    index("description_claims_candidate_idx").on(table.candidateId),
+  ],
+);
+
+export const descriptionClaimEvidence = sqliteTable(
+  "description_claim_evidence",
+  {
+    claimId: text("claim_id")
+      .notNull()
+      .references(() => descriptionClaims.id, { onDelete: "cascade" }),
+    observationId: text("observation_id")
+      .notNull()
+      .references(() => fieldObservations.id, { onDelete: "restrict" }),
+  },
+  (table) => [
+    primaryKey({
+      name: "description_claim_evidence_pk",
+      columns: [table.claimId, table.observationId],
+    }),
+    index("description_claim_evidence_observation_idx").on(table.observationId),
+  ],
+);
+
+export const descriptionDecisions = sqliteTable(
+  "description_decisions",
+  {
+    id: text("id").primaryKey(),
+    candidateId: text("candidate_id")
+      .notNull()
+      .references(() => descriptionCandidates.id, { onDelete: "restrict" }),
+    state: text("state").notNull(),
+    rejectionCodesJson: text("rejection_codes_json").notNull(),
+    warningCodesJson: text("warning_codes_json").notNull(),
+    reviewerRef: text("reviewer_ref"),
+    reviewReason: text("review_reason"),
+    previousDecisionId: text("previous_decision_id").references(
+      (): AnySQLiteColumn => descriptionDecisions.id,
+      { onDelete: "restrict" },
+    ),
+    policyVersion: text("policy_version").notNull(),
+    decidedAt: integer("decided_at").notNull(),
+  },
+  (table) => [
+    check(
+      "description_decisions_state_ck",
+      sql`${table.state} in (${sql.raw(sqlList(DESCRIPTION_DECISION_STATES))})`,
+    ),
+    check(
+      "description_decisions_json_ck",
+      sql`json_valid(${table.rejectionCodesJson})
+        and json_valid(${table.warningCodesJson})`,
+    ),
+    check(
+      "description_decisions_review_ck",
+      sql`(${table.reviewerRef} is null and ${table.reviewReason} is null)
+        or (
+          length(trim(${table.reviewerRef})) > 0
+          and length(trim(${table.reviewReason})) > 0
+        )`,
+    ),
+    check(
+      "description_decisions_policy_ck",
+      sql`length(trim(${table.policyVersion})) > 0`,
+    ),
+    index("description_decisions_candidate_history_idx").on(
+      table.candidateId,
+      table.decidedAt,
+    ),
+  ],
+);
+
+export const descriptionDecisionHeads = sqliteTable(
+  "description_decision_heads",
+  {
+    candidateId: text("candidate_id")
+      .primaryKey()
+      .references(() => descriptionCandidates.id, { onDelete: "restrict" }),
+    decisionId: text("decision_id")
+      .notNull()
+      .references(() => descriptionDecisions.id, { onDelete: "restrict" }),
+  },
+  (table) => [
+    uniqueIndex("description_decision_heads_decision_uq").on(table.decisionId),
+  ],
+);
+
+export const descriptionReviewQueue = sqliteTable(
+  "description_review_queue",
+  {
+    candidateId: text("candidate_id")
+      .primaryKey()
+      .references(() => descriptionCandidates.id, { onDelete: "restrict" }),
+    state: text("state").notNull(),
+    priority: integer("priority").notNull(),
+    reasonCodesJson: text("reason_codes_json").notNull(),
+    queuedAt: integer("queued_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+    reviewerRef: text("reviewer_ref"),
+  },
+  (table) => [
+    check(
+      "description_review_queue_state_ck",
+      sql`${table.state} in (${sql.raw(sqlList(DESCRIPTION_QUEUE_STATES))})`,
+    ),
+    check(
+      "description_review_queue_values_ck",
+      sql`${table.priority} >= 0
+        and json_valid(${table.reasonCodesJson})
+        and (${table.reviewerRef} is null or length(trim(${table.reviewerRef})) > 0)`,
+    ),
+    index("description_review_queue_active_idx").on(
+      table.state,
+      table.priority,
+      table.queuedAt,
+    ),
+  ],
+);
+
+export const descriptionProjections = sqliteTable(
+  "description_projections",
+  {
+    id: text("id").primaryKey(),
+    workId: text("work_id")
+      .notNull()
+      .references(() => works.id, { onDelete: "restrict" }),
+    candidateId: text("candidate_id").references(
+      () => descriptionCandidates.id,
+      { onDelete: "restrict" },
+    ),
+    state: text("state").notNull(),
+    previousProjectionId: text("previous_projection_id").references(
+      (): AnySQLiteColumn => descriptionProjections.id,
+      { onDelete: "restrict" },
+    ),
+    reasonCode: text("reason_code").notNull(),
+    actorRef: text("actor_ref").notNull(),
+    policyVersion: text("policy_version").notNull(),
+    projectedAt: integer("projected_at").notNull(),
+  },
+  (table) => [
+    check(
+      "description_projections_state_ck",
+      sql`${table.state} in (${sql.raw(sqlList(DESCRIPTION_PROJECTION_STATES))})`,
+    ),
+    check(
+      "description_projections_selection_ck",
+      sql`(${table.state} in ('selected', 'rolled_back') and ${table.candidateId} is not null)
+        or (${table.state} in ('withdrawn', 'invalidated') and ${table.candidateId} is null)`,
+    ),
+    check(
+      "description_projections_nonempty_ck",
+      sql`length(trim(${table.reasonCode})) > 0
+        and length(trim(${table.actorRef})) > 0
+        and length(trim(${table.policyVersion})) > 0`,
+    ),
+    index("description_projections_work_history_idx").on(
+      table.workId,
+      table.projectedAt,
+    ),
+  ],
+);
+
+export const descriptionProjectionHeads = sqliteTable(
+  "description_projection_heads",
+  {
+    workId: text("work_id")
+      .primaryKey()
+      .references(() => works.id, { onDelete: "restrict" }),
+    projectionId: text("projection_id")
+      .notNull()
+      .references(() => descriptionProjections.id, { onDelete: "restrict" }),
+  },
+  (table) => [
+    uniqueIndex("description_projection_heads_projection_uq").on(
+      table.projectionId,
+    ),
+  ],
+);
+
 export const entityAliases = sqliteTable(
   "entity_aliases",
   {
@@ -848,6 +1186,14 @@ export const catalogSqliteTables = {
   fieldObservations,
   fieldResolutions,
   fieldResolutionHeads,
+  descriptionCandidates,
+  descriptionClaims,
+  descriptionClaimEvidence,
+  descriptionDecisions,
+  descriptionDecisionHeads,
+  descriptionReviewQueue,
+  descriptionProjections,
+  descriptionProjectionHeads,
   entityAliases,
   catalogChangeEvents,
 };

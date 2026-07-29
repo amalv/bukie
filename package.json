@@ -16,6 +16,7 @@
     "db:reseed": "bun run db:reset && bun run db:init",
     "db:catalog:rebuild": "bunx tsx ./scripts/db/rebuild-catalog.ts",
     "db:catalog:enrichment-sample": "bunx tsx ./scripts/db/run-enrichment-sample.ts",
+    "db:catalog:description-sample": "bunx tsx ./scripts/db/run-description-enrichment-sample.ts",
     "lint": "bunx @biomejs/biome check --no-errors-on-unmatched .",
     "lint:fix": "bunx @biomejs/biome check --write --no-errors-on-unmatched .",
     "release": "semantic-release",

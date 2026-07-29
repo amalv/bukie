@@ -98,12 +98,44 @@ export const CHANGE_TYPES = [
   "work_split",
   "edition_reassignment",
 ] as const;
+export const DESCRIPTION_CLASSES = [
+  "licensed_verbatim",
+  "bukie_editorial",
+  "model_assisted_candidate",
+] as const;
+export const DESCRIPTION_DECISION_STATES = [
+  "candidate",
+  "review_required",
+  "paused",
+  "rejected",
+  "eligible",
+  "withdrawn",
+  "invalidated",
+] as const;
+export const DESCRIPTION_QUEUE_STATES = [
+  "queued",
+  "claimed",
+  "completed",
+  "cancelled",
+] as const;
+export const DESCRIPTION_PROJECTION_STATES = [
+  "selected",
+  "withdrawn",
+  "invalidated",
+  "rolled_back",
+] as const;
 
 export type CatalogEntityType = (typeof CATALOG_ENTITY_TYPES)[number];
 export type CatalogFieldKey = (typeof CATALOG_FIELD_KEYS)[number];
 export type ProvenanceKind = (typeof PROVENANCE_KINDS)[number];
 export type ObservationState = (typeof OBSERVATION_STATES)[number];
 export type ResolutionState = (typeof RESOLUTION_STATES)[number];
+export type DescriptionClass = (typeof DESCRIPTION_CLASSES)[number];
+export type DescriptionDecisionState =
+  (typeof DESCRIPTION_DECISION_STATES)[number];
+export type DescriptionQueueState = (typeof DESCRIPTION_QUEUE_STATES)[number];
+export type DescriptionProjectionState =
+  (typeof DESCRIPTION_PROJECTION_STATES)[number];
 
 export function sqlList(values: readonly string[]): string {
   return values.map((value) => `'${value.replaceAll("'", "''")}'`).join(", ");

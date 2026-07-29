@@ -30,6 +30,14 @@ import {
 import { CATALOG_TARGET_TABLE_NAMES } from "./sqlite-rebuild";
 
 const CLEAR_TABLES = [
+  "description_projection_heads",
+  "description_projections",
+  "description_review_queue",
+  "description_decision_heads",
+  "description_decisions",
+  "description_claim_evidence",
+  "description_claims",
+  "description_candidates",
   "field_resolution_heads",
   "field_resolutions",
   "field_observations",
@@ -89,9 +97,11 @@ export async function rebuildCatalogPostgres(input: {
           .limit(1);
         if (existing.length > 0) return;
       } else {
-        for (const table of CLEAR_TABLES) {
-          await tx.execute(drizzleSql.raw(`delete from "${table}"`));
-        }
+        await tx.execute(
+          drizzleSql.raw(
+            `truncate table ${CLEAR_TABLES.map((table) => `"${table}"`).join(", ")} cascade`,
+          ),
+        );
       }
       const maybeFail = (table: keyof CatalogImportGraph) => {
         if (input.failAfterTable === table) {

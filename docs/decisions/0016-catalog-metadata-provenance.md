@@ -277,6 +277,49 @@ claim correctly. It is not a probability that the underlying fact is true.
 Synthetic observations must always carry `synthetic` provenance and may never
 win resolution for bibliographic facts outside explicit development fixtures.
 
+#### 2026-07-29 amendment: description evidence and review
+
+Descriptions have one explicit class: licensed verbatim, Bukie editorial, or
+model-assisted candidate. Each is still a `work.description` observation, but
+text requires additional immutable provenance and review state before it can
+be considered for a resolution.
+
+- Licensed verbatim text retains its license, attribution decision, source
+  revision, source-text hash, transformed flag, policy version, and derivative
+  permission. It is not summarized, translated, or otherwise transformed
+  unless both the rights record and source policy explicitly permit
+  derivatives.
+- Bukie editorial text retains every approved parent observation, its editor,
+  an independent reviewer before eligibility, reason, and editorial revision.
+- A model-assisted candidate retains every claim-to-parent mapping, a
+  provider-neutral model identifier and version, prompt version, generation
+  input hash and time, token/cost telemetry, and policy version. It remains a
+  candidate until deterministic gates and required human review pass.
+
+The deterministic gates cover parent eligibility, claim support, identity,
+unresolved conflicts, length, readability, specificity, tone, spoilers,
+copying similarity, ambiguity, and sensitivity. Exact eight-word overlap is a
+review warning, not a legal conclusion or an automatic eligibility decision.
+Quality scores are advisory and never select a candidate.
+Every editorial or model-assisted candidate sentence has an exact claim row
+and eligible parent mapping. Re-review preserves hard rejection codes and is
+unavailable to rejected or withdrawn candidates.
+
+Description candidates, claims, claim evidence, decisions, decision heads,
+review queue rows, internal projection events, and projection heads are
+separate normalized tables with SQLite/Postgres parity. The queue is bounded
+and deduplicated; overflow pauses or omits work. Decisions and internal
+projections advance transactionally and retain withdrawal, invalidation,
+re-review, and rollback history.
+
+This internal projection is for the diagnostic proof and planned dry run. It
+does not advance `field_resolution_heads` or update `works.description`.
+`proposedEvidenceOnly`, field text permission, source approval, active identity
+links, observation/source lifecycle, current parent eligibility, and current
+policy/model/prompt versions are reapplied at read time. Public promotion
+remains subject to the separate dry-run approval, so existing catalog reads
+exclude all description-candidate observations even after internal approval.
+
 ### Field resolution
 
 A resolution is an immutable event storing the selected observation for a
