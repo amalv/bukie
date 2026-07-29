@@ -1,3 +1,15 @@
+# [0.41.0](https://github.com/amalv/bukie/compare/v0.40.0...v0.41.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* **catalog:** close cover lifecycle review gaps ([65527af](https://github.com/amalv/bukie/commit/65527af6bb69651b5f165e82473f4fddaa6b17b3))
+
+
+### Features
+
+* **catalog:** verify edition-matched cover assets ([4d5fa17](https://github.com/amalv/bukie/commit/4d5fa17a99d5934b68dbe6496a3a3eb440da6ab0))
+
 # [0.40.0](https://github.com/amalv/bukie/compare/v0.39.0...v0.40.0) (2026-07-29)
 
 
