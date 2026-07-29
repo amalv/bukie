@@ -57,6 +57,9 @@ type CandidateRow = {
   sourceRevision: string;
   sourcePolicyVersion: string;
   descriptionPolicyVersion: string;
+  attributionText: string | null;
+  licensedSourceTextHash: string | null;
+  licensedTextTransformed: boolean | number | null;
   editorRef: string | null;
   modelId: string | null;
   modelVersion: string | null;
@@ -574,6 +577,9 @@ const existingCandidateResult = (
          source_revision as "sourceRevision",
          source_policy_version as "sourcePolicyVersion",
          description_policy_version as "descriptionPolicyVersion",
+         attribution_text as "attributionText",
+         licensed_source_text_hash as "licensedSourceTextHash",
+         licensed_text_transformed as "licensedTextTransformed",
          editor_ref as "editorRef",
          model_id as "modelId",
          model_version as "modelVersion",
@@ -719,14 +725,15 @@ export const createDescriptionCandidateSqlite = (
            id, work_id, observation_id, description_class, text_content,
            text_hash, source_revision, source_policy_version,
            description_policy_version, license_name, license_url,
-           attribution_text, derivatives_permitted, editor_ref,
+           attribution_text, derivatives_permitted, licensed_source_text_hash,
+           licensed_text_transformed, editor_ref,
            editorial_reason, editorial_revision, model_id, model_version,
            prompt_version, generation_input_hash, generated_at,
            generation_duration_ms, input_tokens, output_tokens, cost_microusd,
            quality_score, ambiguous_identity, sensitive_content, created_at
          ) values (
            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-           ?, ?, ?, ?, ?, ?, ?, ?
+           ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
          )`,
       )
       .run(
@@ -750,6 +757,12 @@ export const createDescriptionCandidateSqlite = (
           : null,
         input.candidate.descriptionClass === "licensed_verbatim"
           ? Number(input.candidate.license.derivativesPermitted)
+          : null,
+        input.candidate.descriptionClass === "licensed_verbatim"
+          ? hashCanonicalJson(input.candidate.license.sourceText)
+          : null,
+        input.candidate.descriptionClass === "licensed_verbatim"
+          ? Number(input.candidate.license.transformed)
           : null,
         input.candidate.descriptionClass === "bukie_editorial"
           ? input.candidate.editorial.editorRef
@@ -912,6 +925,99 @@ export const retryDescriptionQueueSqlite = (
   return apply.immediate();
 };
 
+const candidateParentIds = (
+  raw: SqliteDatabase,
+  candidateId: string,
+): string[] =>
+  (
+    raw
+      .prepare(
+        `select distinct e.observation_id as id
+         from description_claims c
+         join description_claim_evidence e on e.claim_id = c.id
+         where c.candidate_id = ?
+         order by e.observation_id`,
+      )
+      .all(candidateId) as Array<{ id: string }>
+  ).map((row) => row.id);
+
+const candidateEvidenceIsCurrentlyUsable = (
+  raw: SqliteDatabase,
+  candidate: CandidateRow,
+  input: {
+    descriptionPolicyVersion: string;
+    currentModelVersion?: string;
+    currentPromptVersion?: string;
+  },
+): boolean => {
+  const observation = raw
+    .prepare(
+      `select source_record_id as "sourceRecordId", state
+       from field_observations where id = ?`,
+    )
+    .get(candidate.observationId) as
+    | { sourceRecordId: string; state: string }
+    | undefined;
+  if (!observation || observation.state !== "active") return false;
+  const source = sourceContext(
+    raw,
+    observation.sourceRecordId,
+    candidate.workId,
+  );
+  if (
+    source?.sourceRevision !== candidate.sourceRevision ||
+    !candidateSourceIsCurrentlyUsable(source, candidate.sourcePolicyVersion)
+  ) {
+    return false;
+  }
+  const policy = source ? sourcePolicy(source.metadataPolicy) : {};
+  if (
+    candidate.descriptionClass === "licensed_verbatim" &&
+    ((Boolean(candidate.licensedTextTransformed) &&
+      policy.textPermission?.transform !== true) ||
+      (policy.attribution?.required === true &&
+        !candidate.attributionText?.trim()))
+  ) {
+    return false;
+  }
+  if (
+    candidate.descriptionClass === "model_assisted_candidate" &&
+    (!input.currentModelVersion ||
+      !input.currentPromptVersion ||
+      candidate.modelVersion !== input.currentModelVersion ||
+      candidate.promptVersion !== input.currentPromptVersion)
+  ) {
+    return false;
+  }
+  if (candidate.descriptionClass !== "licensed_verbatim") {
+    const claimCoverage = raw
+      .prepare(
+        `select
+           count(*) as claims,
+           sum(case when exists (
+             select 1 from description_claim_evidence evidence
+             where evidence.claim_id = claims.id
+           ) then 1 else 0 end) as covered
+         from description_claims claims
+         where claims.candidate_id = ?`,
+      )
+      .get(candidate.id) as { claims: number; covered: number | null };
+    if (
+      Number(claimCoverage.claims) === 0 ||
+      Number(claimCoverage.covered ?? 0) !== Number(claimCoverage.claims)
+    ) {
+      return false;
+    }
+  }
+  const parents = loadParents(raw, candidateParentIds(raw, candidate.id));
+  return !parents.some(
+    (parent) =>
+      !parent.eligible ||
+      parent.unresolvedConflict ||
+      parent.workId !== candidate.workId,
+  );
+};
+
 export const reviewDescriptionCandidateSqlite = (
   raw: SqliteDatabase,
   input: {
@@ -920,6 +1026,9 @@ export const reviewDescriptionCandidateSqlite = (
     decision: "approve" | "reject";
     reason: string;
     acknowledgedWarningCodes?: readonly DescriptionWarningCode[];
+    descriptionPolicyVersion: string;
+    currentModelVersion?: string;
+    currentPromptVersion?: string;
     reviewedAt: number;
     failAfter?: "decision" | "queue" | "projection";
   },
@@ -937,6 +1046,9 @@ export const reviewDescriptionCandidateSqlite = (
            source_revision as "sourceRevision",
            source_policy_version as "sourcePolicyVersion",
            description_policy_version as "descriptionPolicyVersion",
+           attribution_text as "attributionText",
+           licensed_source_text_hash as "licensedSourceTextHash",
+           licensed_text_transformed as "licensedTextTransformed",
            editor_ref as "editorRef",
            model_id as "modelId",
            model_version as "modelVersion",
@@ -950,6 +1062,15 @@ export const reviewDescriptionCandidateSqlite = (
     if (!current) throw new Error("Description candidate decision not found");
     const finalState: "eligible" | "rejected" =
       input.decision === "approve" ? "eligible" : "rejected";
+    if (
+      input.decision === "approve" &&
+      (current.policyVersion !== input.descriptionPolicyVersion ||
+        !candidateEvidenceIsCurrentlyUsable(raw, candidate, input))
+    ) {
+      throw new Error(
+        "Description review refused: current evidence or policy is ineligible",
+      );
+    }
     if (
       current.state === finalState &&
       current.reviewerRef === input.reviewerRef &&
@@ -1072,6 +1193,9 @@ const candidateRow = (
          source_revision as "sourceRevision",
          source_policy_version as "sourcePolicyVersion",
          description_policy_version as "descriptionPolicyVersion",
+         attribution_text as "attributionText",
+         licensed_source_text_hash as "licensedSourceTextHash",
+         licensed_text_transformed as "licensedTextTransformed",
          editor_ref as "editorRef",
          model_id as "modelId",
          model_version as "modelVersion",
@@ -1187,6 +1311,8 @@ export const requestDescriptionRereviewSqlite = (
   input: {
     candidateId: string;
     policyVersion: string;
+    currentModelVersion?: string;
+    currentPromptVersion?: string;
     queueCapacity: number;
     requestedAt: number;
   },
@@ -1196,6 +1322,29 @@ export const requestDescriptionRereviewSqlite = (
     if (!candidate) throw new Error("Description candidate not found");
     const current = currentDecision(raw, input.candidateId);
     if (!current) throw new Error("Description candidate decision not found");
+    const rejectionCodes = parseJson<DescriptionRejectionCode[]>(
+      current.rejectionCodesJson,
+    );
+    if (
+      current.state === "rejected" ||
+      current.state === "withdrawn" ||
+      rejectionCodes.length > 0
+    ) {
+      throw new Error(
+        "Description re-review refused: hard rejection or withdrawal is not reviewable",
+      );
+    }
+    if (
+      !candidateEvidenceIsCurrentlyUsable(raw, candidate, {
+        descriptionPolicyVersion: input.policyVersion,
+        currentModelVersion: input.currentModelVersion,
+        currentPromptVersion: input.currentPromptVersion,
+      })
+    ) {
+      throw new Error(
+        "Description re-review refused: current evidence or model policy is ineligible",
+      );
+    }
     const warningCodes = uniqueSorted([
       ...parseJson<DescriptionWarningCode[]>(current.warningCodesJson),
       "policy_version_review",
@@ -1211,7 +1360,7 @@ export const requestDescriptionRereviewSqlite = (
     writeDecision(raw, {
       candidateId: input.candidateId,
       state,
-      rejectionCodes: [],
+      rejectionCodes,
       warningCodes,
       policyVersion: input.policyVersion,
       decidedAt: input.requestedAt,
@@ -1237,6 +1386,8 @@ export const rollbackDescriptionProjectionSqlite = (
     actorRef: string;
     reason: string;
     policyVersion: string;
+    currentModelVersion?: string;
+    currentPromptVersion?: string;
     rolledBackAt: number;
     failAfter?: "event" | "head";
   },
@@ -1259,9 +1410,19 @@ export const rollbackDescriptionProjectionSqlite = (
       throw new Error("Description rollback refused: target is not selectable");
     }
     const decision = currentDecision(raw, target.candidateId);
-    if (decision?.state !== "eligible") {
+    const candidate = candidateRow(raw, target.candidateId);
+    if (
+      decision?.state !== "eligible" ||
+      decision.policyVersion !== input.policyVersion ||
+      !candidate ||
+      !candidateEvidenceIsCurrentlyUsable(raw, candidate, {
+        descriptionPolicyVersion: input.policyVersion,
+        currentModelVersion: input.currentModelVersion,
+        currentPromptVersion: input.currentPromptVersion,
+      })
+    ) {
       throw new Error(
-        "Description rollback refused: target candidate is not eligible",
+        "Description rollback refused: target candidate is not currently eligible",
       );
     }
     const previous = currentProjection(raw, input.workId);
@@ -1308,22 +1469,6 @@ export const rollbackDescriptionProjectionSqlite = (
   return apply.immediate();
 };
 
-const candidateParentIds = (
-  raw: SqliteDatabase,
-  candidateId: string,
-): string[] =>
-  (
-    raw
-      .prepare(
-        `select distinct e.observation_id as id
-         from description_claims c
-         join description_claim_evidence e on e.claim_id = c.id
-         where c.candidate_id = ?
-         order by e.observation_id`,
-      )
-      .all(candidateId) as Array<{ id: string }>
-  ).map((row) => row.id);
-
 export const getDescriptionProposalSqlite = (
   raw: SqliteDatabase,
   input: {
@@ -1353,46 +1498,8 @@ export const getDescriptionProposalSqlite = (
   if (
     !candidate ||
     decision?.state !== "eligible" ||
-    decision.policyVersion !== input.descriptionPolicyVersion
-  ) {
-    return undefined;
-  }
-  if (
-    candidate.descriptionClass === "model_assisted_candidate" &&
-    ((input.currentModelVersion &&
-      candidate.modelVersion !== input.currentModelVersion) ||
-      (input.currentPromptVersion &&
-        candidate.promptVersion !== input.currentPromptVersion))
-  ) {
-    return undefined;
-  }
-  const observation = raw
-    .prepare(
-      `select source_record_id as "sourceRecordId", state
-       from field_observations where id = ?`,
-    )
-    .get(candidate.observationId) as
-    | { sourceRecordId: string; state: string }
-    | undefined;
-  if (!observation || observation.state !== "active") return undefined;
-  const source = sourceContext(
-    raw,
-    observation.sourceRecordId,
-    candidate.workId,
-  );
-  if (
-    !candidateSourceIsCurrentlyUsable(source, candidate.sourcePolicyVersion)
-  ) {
-    return undefined;
-  }
-  const parents = loadParents(raw, candidateParentIds(raw, candidate.id));
-  if (
-    parents.some(
-      (parent) =>
-        !parent.eligible ||
-        parent.unresolvedConflict ||
-        parent.workId !== candidate.workId,
-    )
+    decision.policyVersion !== input.descriptionPolicyVersion ||
+    !candidateEvidenceIsCurrentlyUsable(raw, candidate, input)
   ) {
     return undefined;
   }
@@ -1449,15 +1556,13 @@ export const reconcileDescriptionCandidateSqlite = (
     });
     return "withdrawn";
   }
-  const parents = loadParents(raw, candidateParentIds(raw, candidate.id));
   if (
-    !candidateSourceIsCurrentlyUsable(source, candidate.sourcePolicyVersion) ||
-    parents.some(
-      (parent) =>
-        !parent.eligible ||
-        parent.unresolvedConflict ||
-        parent.workId !== candidate.workId,
-    )
+    !candidateEvidenceIsCurrentlyUsable(raw, candidate, {
+      descriptionPolicyVersion: input.descriptionPolicyVersion,
+      currentModelVersion: candidate.modelVersion ?? input.currentModelVersion,
+      currentPromptVersion:
+        candidate.promptVersion ?? input.currentPromptVersion,
+    })
   ) {
     invalidateDescriptionCandidateSqlite(raw, {
       candidateId: candidate.id,
@@ -1498,6 +1603,8 @@ export const reconcileDescriptionCandidateSqlite = (
     const rereview = requestDescriptionRereviewSqlite(raw, {
       candidateId: candidate.id,
       policyVersion: input.descriptionPolicyVersion,
+      currentModelVersion: input.currentModelVersion,
+      currentPromptVersion: input.currentPromptVersion,
       queueCapacity: input.queueCapacity,
       requestedAt: input.reconciledAt,
     });
@@ -1521,7 +1628,12 @@ export const descriptionMetricsSqlite = (
          count(*) as candidates,
          count(distinct c.work_id) as candidateWorks,
          sum(case when d.state = 'rejected' then 1 else 0 end) as rejected,
-         sum(case when d.reviewer_ref is not null then 1 else 0 end) as reviewed,
+         sum(case when exists (
+           select 1 from description_decisions reviewed
+           where reviewed.candidate_id = c.id
+             and reviewed.reviewer_ref is not null
+             and reviewed.state in ('eligible', 'rejected')
+         ) then 1 else 0 end) as reviewed,
          sum(case when d.state = 'eligible' then 1 else 0 end) as eligible,
          count(distinct case when d.state = 'eligible' then c.work_id end) as eligibleWorks,
          sum(case when d.state = 'withdrawn' then 1 else 0 end) as withdrawn,

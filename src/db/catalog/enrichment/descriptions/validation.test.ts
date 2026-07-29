@@ -18,10 +18,12 @@ const eligibleParents = modelDescriptionFixture().claims.map(
 
 describe("deterministic description validation", () => {
   it("keeps the exact eight-word rule as a review warning", () => {
+    const sourceExcerpt = modelDescriptionFixture()
+      .text.split(/\s+/u)
+      .slice(0, 8)
+      .join(" ");
     const candidate = modelDescriptionFixture(undefined, {
-      comparisonTexts: [
-        "This recorded evaluation fixture follows a central figure",
-      ],
+      comparisonTexts: [sourceExcerpt],
     });
     const result = validateDescriptionCandidate({
       candidate,
@@ -95,5 +97,20 @@ describe("deterministic description validation", () => {
       ]),
     );
     expect(result.requiresHumanReview).toBe(true);
+  });
+
+  it("rejects candidate sentences that are not mapped verbatim to evidence claims", () => {
+    const candidate = modelDescriptionFixture();
+    const result = validateDescriptionCandidate({
+      candidate: {
+        ...candidate,
+        text: `${candidate.text} An unsupported factual sentence was added.`,
+      },
+      parents: eligibleParents,
+    });
+
+    expect(result.rejectionCodes).toContain(
+      "candidate_claim_coverage_incomplete",
+    );
   });
 });

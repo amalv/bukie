@@ -8,6 +8,7 @@ import {
   reviewDescriptionCandidateSqlite,
   withdrawDescriptionCandidateSqlite,
 } from "@/db/catalog/enrichment/descriptions/repository";
+import { DESCRIPTION_POLICY_VERSION } from "@/db/catalog/enrichment/descriptions/types";
 import { SAMPLE_BASELINE_IMPORT_RECORDS } from "@/db/catalog/enrichment/fixtures";
 import { ENRICHMENT_SAMPLE_MANIFEST } from "@/db/catalog/enrichment/sample-manifest";
 import { canonicalJson, hashCanonicalJson } from "@/db/catalog/identity";
@@ -69,6 +70,9 @@ try {
   });
   for (let index = 0; index < 2; index += 1) {
     reviewDescriptionCandidateSqlite(raw, {
+      descriptionPolicyVersion: DESCRIPTION_POLICY_VERSION,
+      currentModelVersion: "fixture-model-v1",
+      currentPromptVersion: "fixture-prompt-v1",
       candidateId: candidates[index].candidateId,
       reviewerRef: `user:diagnostic-reviewer-${index}`,
       decision: "approve",
@@ -78,6 +82,9 @@ try {
     });
   }
   reviewDescriptionCandidateSqlite(raw, {
+    descriptionPolicyVersion: DESCRIPTION_POLICY_VERSION,
+    currentModelVersion: "fixture-model-v1",
+    currentPromptVersion: "fixture-prompt-v1",
     candidateId: candidates[2].candidateId,
     reviewerRef: "user:diagnostic-reviewer-2",
     decision: "reject",

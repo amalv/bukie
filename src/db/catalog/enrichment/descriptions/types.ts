@@ -4,6 +4,8 @@ export const DESCRIPTION_POLICY_VERSION = "description-gates-2026-07-29.v1";
 
 export const DESCRIPTION_REJECTION_CODES = [
   "claim_unsupported",
+  "claim_text_not_in_candidate",
+  "candidate_claim_coverage_incomplete",
   "parent_evidence_ineligible",
   "identity_mismatch",
   "evidence_conflict_unresolved",

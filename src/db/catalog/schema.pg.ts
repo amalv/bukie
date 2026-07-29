@@ -784,6 +784,8 @@ export const descriptionCandidatesPg = pgTable(
     licenseUrl: text("license_url"),
     attributionText: text("attribution_text"),
     derivativesPermitted: boolean("derivatives_permitted"),
+    licensedSourceTextHash: text("licensed_source_text_hash"),
+    licensedTextTransformed: boolean("licensed_text_transformed"),
     editorRef: text("editor_ref"),
     editorialReason: text("editorial_reason"),
     editorialRevision: text("editorial_revision"),
@@ -826,12 +828,16 @@ export const descriptionCandidatesPg = pgTable(
         and length(trim(${table.licenseName})) > 0
         and length(trim(${table.licenseUrl})) > 0
         and ${table.derivativesPermitted} is not null
+        and length(${table.licensedSourceTextHash}) = 64
+        and ${table.licensedTextTransformed} is not null
       ) or (
         ${table.descriptionClass} <> 'licensed_verbatim'
         and ${table.licenseName} is null
         and ${table.licenseUrl} is null
         and ${table.attributionText} is null
         and ${table.derivativesPermitted} is null
+        and ${table.licensedSourceTextHash} is null
+        and ${table.licensedTextTransformed} is null
       )`,
     ),
     check(

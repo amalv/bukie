@@ -11,6 +11,7 @@ import {
   DESCRIPTION_FIXTURE_ALTERNATE_TEXT,
   DESCRIPTION_FIXTURE_SOURCE_ID,
   DESCRIPTION_FIXTURE_TEXT,
+  descriptionFixtureAlternateText,
   descriptionFixtureIds,
   editorialDescriptionFixture,
   licensedDescriptionFixture,
@@ -32,6 +33,14 @@ import {
 import { DESCRIPTION_POLICY_VERSION } from "./types";
 
 const NOW = Date.UTC(2026, 6, 29, 10, 0, 0);
+const REVIEW_POLICY = {
+  descriptionPolicyVersion: DESCRIPTION_POLICY_VERSION,
+} as const;
+const MODEL_REVIEW_POLICY = {
+  ...REVIEW_POLICY,
+  currentModelVersion: "fixture-model-v1",
+  currentPromptVersion: "fixture-prompt-v1",
+} as const;
 
 const acknowledge = (
   result: ReturnType<typeof createDescriptionCandidateSqlite>,
@@ -88,6 +97,7 @@ describe("SQLite evidence-gated description repository", () => {
     ).toBeUndefined();
     expect(() =>
       reviewDescriptionCandidateSqlite(raw, {
+        ...MODEL_REVIEW_POLICY,
         candidateId: first.candidateId,
         reviewerRef: "user:reviewer-fixture",
         decision: "approve",
@@ -98,6 +108,7 @@ describe("SQLite evidence-gated description repository", () => {
     ).toThrow("warnings not acknowledged");
 
     const reviewed = reviewDescriptionCandidateSqlite(raw, {
+      ...MODEL_REVIEW_POLICY,
       candidateId: first.candidateId,
       reviewerRef: "user:reviewer-fixture",
       decision: "approve",
@@ -106,6 +117,7 @@ describe("SQLite evidence-gated description repository", () => {
       reviewedAt: NOW,
     });
     const repeatedReview = reviewDescriptionCandidateSqlite(raw, {
+      ...MODEL_REVIEW_POLICY,
       candidateId: first.candidateId,
       reviewerRef: "user:reviewer-fixture",
       decision: "approve",
@@ -138,6 +150,7 @@ describe("SQLite evidence-gated description repository", () => {
     });
     if (licensed.state === "review_required") {
       reviewDescriptionCandidateSqlite(raw, {
+        ...REVIEW_POLICY,
         candidateId: licensed.candidateId,
         reviewerRef: "user:licensed-reviewer",
         decision: "approve",
@@ -152,6 +165,7 @@ describe("SQLite evidence-gated description repository", () => {
     });
     expect(() =>
       reviewDescriptionCandidateSqlite(raw, {
+        ...REVIEW_POLICY,
         candidateId: editorial.candidateId,
         reviewerRef: "user:editor-fixture",
         decision: "approve",
@@ -161,6 +175,7 @@ describe("SQLite evidence-gated description repository", () => {
       }),
     ).toThrow("reviewer must differ from editor");
     reviewDescriptionCandidateSqlite(raw, {
+      ...REVIEW_POLICY,
       candidateId: editorial.candidateId,
       reviewerRef: "user:editorial-reviewer",
       decision: "approve",
@@ -175,6 +190,8 @@ describe("SQLite evidence-gated description repository", () => {
            c.description_class as class,
            c.license_name as licenseName,
            c.attribution_text as attribution,
+           c.licensed_source_text_hash as licensedSourceTextHash,
+           c.licensed_text_transformed as licensedTextTransformed,
            c.editor_ref as editorRef,
            c.editorial_reason as editorialReason,
            c.editorial_revision as editorialRevision,
@@ -193,6 +210,8 @@ describe("SQLite evidence-gated description repository", () => {
           class: "licensed_verbatim",
           licenseName: "Recorded fixture license",
           attribution: "Recorded fixture source",
+          licensedSourceTextHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+          licensedTextTransformed: 0,
         }),
         expect.objectContaining({
           class: "bukie_editorial",
@@ -226,6 +245,34 @@ describe("SQLite evidence-gated description repository", () => {
 
     expect(result.state).toBe("rejected");
     expect(result.validation.rejectionCodes).toContain(
+      "licensed_derivative_not_permitted",
+    );
+    const storedPolicy = raw
+      .prepare(
+        "select metadata_policy as policy from metadata_sources where id = ?",
+      )
+      .get(DESCRIPTION_FIXTURE_SOURCE_ID) as { policy: string };
+    const derivativePolicy = JSON.parse(storedPolicy.policy);
+    derivativePolicy.textPermission.transform = true;
+    raw
+      .prepare("update metadata_sources set metadata_policy = ? where id = ?")
+      .run(JSON.stringify(derivativePolicy), DESCRIPTION_FIXTURE_SOURCE_ID);
+    const derivativeWorkId = ENRICHMENT_SAMPLE_MANIFEST.works[3].workId;
+    const permitted = createDescriptionCandidateSqlite(raw, {
+      candidate: licensedDescriptionFixture(derivativeWorkId, {
+        text: descriptionFixtureAlternateText(derivativeWorkId),
+        license: {
+          name: "Recorded derivative fixture license",
+          url: "https://example.invalid/recorded-derivative-license",
+          attributionText: "Recorded derivative fixture source",
+          derivativesPermitted: true,
+          sourceText: DESCRIPTION_FIXTURE_TEXT,
+          transformed: true,
+        },
+      }),
+      queueCapacity: 3,
+    });
+    expect(permitted.validation.rejectionCodes).not.toContain(
       "licensed_derivative_not_permitted",
     );
     const missingAttribution = createDescriptionCandidateSqlite(raw, {
@@ -316,6 +363,41 @@ describe("SQLite evidence-gated description repository", () => {
       "evidence_conflict_unresolved",
     );
     expect(parentId).toBeTruthy();
+    expect(() =>
+      requestDescriptionRereviewSqlite(raw, {
+        candidateId: unsupported.candidateId,
+        policyVersion: "description-gates-v2",
+        currentModelVersion: "fixture-model-v1",
+        currentPromptVersion: "fixture-prompt-v1",
+        queueCapacity: 3,
+        requestedAt: NOW + 13,
+      }),
+    ).toThrow("hard rejection");
+  });
+
+  it("rechecks live evidence before a reviewer can approve", () => {
+    const candidate = modelDescriptionFixture();
+    const created = createDescriptionCandidateSqlite(raw, {
+      candidate,
+      queueCapacity: 3,
+    });
+    raw
+      .prepare(
+        "update metadata_sources set approval_state = 'suspended' where id = ?",
+      )
+      .run(DESCRIPTION_FIXTURE_SOURCE_ID);
+
+    expect(() =>
+      reviewDescriptionCandidateSqlite(raw, {
+        ...MODEL_REVIEW_POLICY,
+        candidateId: created.candidateId,
+        reviewerRef: "user:stale-evidence-reviewer",
+        decision: "approve",
+        reason: "Stale evidence must not pass",
+        acknowledgedWarningCodes: acknowledge(created),
+        reviewedAt: NOW,
+      }),
+    ).toThrow("current evidence or policy is ineligible");
   });
 
   it("pauses queue overflow, deduplicates retries, and resumes only when capacity exists", () => {
@@ -378,6 +460,7 @@ describe("SQLite evidence-gated description repository", () => {
     });
     expect(() =>
       reviewDescriptionCandidateSqlite(raw, {
+        ...MODEL_REVIEW_POLICY,
         candidateId: created.candidateId,
         reviewerRef: "user:reviewer",
         decision: "approve",
@@ -402,6 +485,7 @@ describe("SQLite evidence-gated description repository", () => {
       queueCapacity: 3,
     });
     reviewDescriptionCandidateSqlite(raw, {
+      ...MODEL_REVIEW_POLICY,
       candidateId: created.candidateId,
       reviewerRef: "user:reviewer",
       decision: "approve",
@@ -441,6 +525,8 @@ describe("SQLite evidence-gated description repository", () => {
     const rereview = requestDescriptionRereviewSqlite(raw, {
       candidateId: created.candidateId,
       policyVersion: "description-gates-v2",
+      currentModelVersion: candidate.model.modelVersion,
+      currentPromptVersion: candidate.model.promptVersion,
       queueCapacity: 3,
       requestedAt: NOW + 2,
     });
@@ -459,6 +545,9 @@ describe("SQLite evidence-gated description repository", () => {
       ).warnings,
     );
     reviewDescriptionCandidateSqlite(raw, {
+      descriptionPolicyVersion: "description-gates-v2",
+      currentModelVersion: "fixture-model-v1",
+      currentPromptVersion: "fixture-prompt-v1",
       candidateId: created.candidateId,
       reviewerRef: "user:reviewer-v2",
       decision: "approve",
@@ -510,6 +599,7 @@ describe("SQLite evidence-gated description repository", () => {
       queueCapacity: 3,
     });
     reviewDescriptionCandidateSqlite(raw, {
+      ...REVIEW_POLICY,
       candidateId: first.candidateId,
       reviewerRef: "user:first-reviewer",
       decision: "approve",
@@ -543,6 +633,7 @@ describe("SQLite evidence-gated description repository", () => {
       queueCapacity: 3,
     });
     reviewDescriptionCandidateSqlite(raw, {
+      ...REVIEW_POLICY,
       candidateId: second.candidateId,
       reviewerRef: "user:second-reviewer",
       decision: "approve",
@@ -610,6 +701,7 @@ describe("SQLite evidence-gated description repository", () => {
     );
     for (let index = 0; index < 2; index += 1) {
       reviewDescriptionCandidateSqlite(raw, {
+        ...MODEL_REVIEW_POLICY,
         candidateId: results[index].candidateId,
         reviewerRef: `user:metrics-reviewer-${index}`,
         decision: "approve",
@@ -619,6 +711,7 @@ describe("SQLite evidence-gated description repository", () => {
       });
     }
     reviewDescriptionCandidateSqlite(raw, {
+      ...MODEL_REVIEW_POLICY,
       candidateId: results[2].candidateId,
       reviewerRef: "user:metrics-reviewer-2",
       decision: "reject",
@@ -674,7 +767,22 @@ describe("SQLite evidence-gated description repository", () => {
     });
   });
 
-  it("cannot expose proposed or unreviewed descriptions through detail/API repository reads", async () => {
+  it("does not count a system withdrawal as a human review", () => {
+    const created = createDescriptionCandidateSqlite(raw, {
+      candidate: modelDescriptionFixture(),
+      queueCapacity: 3,
+    });
+    withdrawDescriptionCandidateSqlite(raw, {
+      candidateId: created.candidateId,
+      actorRef: "system:withdrawal-fixture",
+      reason: "Unreviewed withdrawal",
+      withdrawnAt: NOW,
+    });
+
+    expect(descriptionMetricsSqlite(raw, 5).reviewed).toBe(0);
+  });
+
+  it("keeps all diagnostic candidates out of detail/API reads even after approval", async () => {
     const candidate = modelDescriptionFixture();
     const created = createDescriptionCandidateSqlite(raw, {
       candidate,
@@ -746,12 +854,20 @@ describe("SQLite evidence-gated description repository", () => {
 
     expect(detail?.description).toBeUndefined();
     reviewDescriptionCandidateSqlite(raw, {
+      ...MODEL_REVIEW_POLICY,
       candidateId: created.candidateId,
       reviewerRef: "user:public-gate-reviewer",
-      decision: "reject",
-      reason: "Forced public gate rejection",
+      decision: "approve",
+      reason: "Forced public gate approval",
+      acknowledgedWarningCodes: acknowledge(created),
       reviewedAt: NOW + 1,
     });
+    expect(
+      (await repository.getWorkDetail(candidate.workId))?.description,
+    ).toBeUndefined();
+    raw
+      .prepare("update field_observations set state = 'withdrawn' where id = ?")
+      .run(descriptionFixtureIds(candidate.workId).parents[0]);
     expect(
       (await repository.getWorkDetail(candidate.workId))?.description,
     ).toBeUndefined();

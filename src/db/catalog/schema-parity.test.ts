@@ -199,4 +199,23 @@ describe("SQLite/Postgres normalized catalog schema parity", () => {
       );
     }
   });
+
+  it("adds licensed transformation proof with deterministic legacy backfill", () => {
+    const sqliteMigration = readFileSync(
+      path.resolve("drizzle/0007_milky_omega_red.sql"),
+      "utf8",
+    );
+    const postgresMigration = readFileSync(
+      path.resolve("drizzle/pg/0009_moaning_catseye.sql"),
+      "utf8",
+    );
+    for (const migration of [sqliteMigration, postgresMigration]) {
+      expect(migration).toContain("licensed_source_text_hash");
+      expect(migration).toContain("licensed_text_transformed");
+      expect(migration).toContain("text_hash");
+      expect(migration).not.toMatch(
+        /update\s+works|insert\s+into\s+field_resolution_heads/i,
+      );
+    }
+  });
 });

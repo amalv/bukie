@@ -199,6 +199,11 @@ disabled by the source-policy matrix above.
 Automated gates use stable reason codes for parent support, identity,
 unresolved evidence conflicts, length, readability, specificity, neutral tone,
 spoilers, copying similarity, licensing, source revision, and source policy.
+For editorial and model-assisted text, every normalized candidate sentence must
+have an exact claim row with at least one parent observation; omitted or
+out-of-text claims reject with stable coverage codes. Human review judges
+whether those explicit mappings support the prose, while the deterministic
+gate prevents unmapped prose from reaching approval.
 An exact eight-word source match is only
 `copying_exact_eight_word_match`, a review warning. It is not a legal
 determination and cannot approve or reject text on its own. A distinct high
@@ -216,10 +221,17 @@ after capacity becomes available.
 Description decision and internal projection histories are immutable linked
 events. Human decisions, withdrawal, source-policy revocation, policy/model/
 prompt invalidation, re-review, selection, and rollback advance their heads in
-one transaction. Read-time checks still apply current source, record, identity
+one transaction in both SQLite and Postgres. Hard automated rejections cannot
+enter re-review. Approval and rollback reapply current source, record, identity
 link, parent evidence, conflict, model, prompt, and policy state. These
 description heads are diagnostic only: they do not update `works.description`
-or public field-resolution heads.
+or public field-resolution heads, and catalog reads fail closed for every
+description-candidate observation until the separate promotion approval.
+
+Licensed candidates retain a hash of the exact recorded source text and an
+explicit transformed flag. A changed text is accepted only when both the
+license record and current source policy permit derivatives; otherwise it
+receives `licensed_derivative_not_permitted`.
 
 Run the reproducible five-work SQLite proof only against an explicitly
 disposable target:

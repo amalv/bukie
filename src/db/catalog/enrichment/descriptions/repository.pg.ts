@@ -64,11 +64,19 @@ type CandidateRow = {
     | "bukie_editorial"
     | "model_assisted_candidate";
   textContent: string;
+  sourceRevision: string;
+  sourcePolicyVersion: string;
+  descriptionPolicyVersion: string;
+  attributionText: string | null;
+  licensedSourceTextHash: string | null;
+  licensedTextTransformed: boolean | null;
   editorRef: string | null;
   modelVersion: string | null;
   promptVersion: string | null;
   qualityScore: number | null;
 };
+
+type PgSql = Pick<ReturnType<typeof postgres>, "unsafe">;
 
 const uniqueSorted = <T extends string>(values: readonly T[]): T[] =>
   [...new Set(values)].sort();
@@ -130,6 +138,27 @@ const sourceAllowsCandidate = (
   );
 };
 
+const sourceAllowsStoredCandidate = (
+  source: SourceRow | undefined,
+  candidate: CandidateRow,
+): boolean => {
+  if (
+    !source ||
+    source.sourceApproval !== "approved" ||
+    source.sourceRecordState !== "active" ||
+    source.sourceLinkState !== "active"
+  ) {
+    return false;
+  }
+  const policy = policyObject(source.metadataPolicy);
+  return Boolean(
+    policy.sourcePolicyVersion === candidate.sourcePolicyVersion &&
+      policy.textPermission?.fetch === true &&
+      Array.isArray(policy.textPermission.allowedFields) &&
+      policy.textPermission.allowedFields.includes("work.description"),
+  );
+};
+
 const parentEvidence = (
   rows: readonly ParentRow[],
 ): DescriptionParentEvidence[] =>
@@ -170,6 +199,18 @@ const candidateFromRow = (row: Record<string, unknown>): CandidateRow => ({
   observationId: String(row.observationId),
   descriptionClass: row.descriptionClass as CandidateRow["descriptionClass"],
   textContent: String(row.textContent),
+  sourceRevision: String(row.sourceRevision),
+  sourcePolicyVersion: String(row.sourcePolicyVersion),
+  descriptionPolicyVersion: String(row.descriptionPolicyVersion),
+  attributionText: row.attributionText ? String(row.attributionText) : null,
+  licensedSourceTextHash: row.licensedSourceTextHash
+    ? String(row.licensedSourceTextHash)
+    : null,
+  licensedTextTransformed:
+    row.licensedTextTransformed === null ||
+    row.licensedTextTransformed === undefined
+      ? null
+      : Boolean(row.licensedTextTransformed),
   editorRef: row.editorRef ? String(row.editorRef) : null,
   modelVersion: row.modelVersion ? String(row.modelVersion) : null,
   promptVersion: row.promptVersion ? String(row.promptVersion) : null,
@@ -178,6 +219,129 @@ const candidateFromRow = (row: Record<string, unknown>): CandidateRow => ({
       ? null
       : Number(row.qualityScore),
 });
+
+const storedCandidateEvidenceIsUsablePostgres = async (
+  sql: PgSql,
+  candidate: CandidateRow,
+  input: {
+    currentModelVersion?: string;
+    currentPromptVersion?: string;
+  },
+): Promise<boolean> => {
+  const sourceRows = await sql.unsafe(
+    `select
+       sr.source_revision as "sourceRevision",
+       sr.state as "sourceRecordState",
+       s.approval_state as "sourceApproval",
+       s.metadata_policy as "metadataPolicy",
+       sl.state as "sourceLinkState",
+       o.state as "candidateObservationState"
+     from description_candidates c
+     join field_observations o on o.id = c.observation_id
+     join source_records sr on sr.id = o.source_record_id
+     join metadata_sources s on s.id = sr.source_id
+     left join source_record_links sl
+       on sl.source_record_id = sr.id
+      and sl.entity_type = 'work'
+      and sl.entity_id = c.work_id
+     where c.id = $1`,
+    [candidate.id],
+  );
+  const source = sourceRows[0] as unknown as
+    | (SourceRow & { candidateObservationState: string })
+    | undefined;
+  if (
+    source?.candidateObservationState !== "active" ||
+    source.sourceRevision !== candidate.sourceRevision ||
+    !sourceAllowsStoredCandidate(source, candidate)
+  ) {
+    return false;
+  }
+  const policy = policyObject(source.metadataPolicy);
+  if (
+    candidate.descriptionClass === "licensed_verbatim" &&
+    ((candidate.licensedTextTransformed &&
+      policy.textPermission?.transform !== true) ||
+      (policy.attribution?.required === true &&
+        !candidate.attributionText?.trim()))
+  ) {
+    return false;
+  }
+  if (
+    candidate.descriptionClass === "model_assisted_candidate" &&
+    (!input.currentModelVersion ||
+      !input.currentPromptVersion ||
+      candidate.modelVersion !== input.currentModelVersion ||
+      candidate.promptVersion !== input.currentPromptVersion)
+  ) {
+    return false;
+  }
+  if (candidate.descriptionClass !== "licensed_verbatim") {
+    const coverageRows = await sql.unsafe(
+      `select
+         count(*)::int as claims,
+         count(*) filter (where exists (
+           select 1 from description_claim_evidence evidence
+           where evidence.claim_id = claims.id
+         ))::int as covered
+       from description_claims claims
+       where claims.candidate_id = $1`,
+      [candidate.id],
+    );
+    if (
+      Number(coverageRows[0]?.claims ?? 0) === 0 ||
+      Number(coverageRows[0]?.covered ?? 0) !==
+        Number(coverageRows[0]?.claims ?? 0)
+    ) {
+      return false;
+    }
+  }
+  const parentRows = await sql.unsafe(
+    `select distinct
+       o.id as "id",
+       o.entity_type as "entityType",
+       o.entity_id as "entityId",
+       case
+         when o.entity_type = 'work' then o.entity_id
+         when o.entity_type = 'edition' then e.work_id
+         else null
+       end as "workId",
+       o.field_key as "fieldKey",
+       o.value_json as "valueJson",
+       o.state as "observationState",
+       o.provenance_kind as "provenanceKind",
+       sr.state as "sourceRecordState",
+       s.approval_state as "sourceApproval",
+       sl.state as "sourceLinkState",
+       s.metadata_policy as "metadataPolicy",
+       r.state as "resolutionState"
+     from description_claims c
+     join description_claim_evidence ce on ce.claim_id = c.id
+     join field_observations o on o.id = ce.observation_id
+     join source_records sr on sr.id = o.source_record_id
+     join metadata_sources s on s.id = sr.source_id
+     left join editions e
+       on o.entity_type = 'edition' and e.id = o.entity_id
+     left join source_record_links sl
+       on sl.source_record_id = sr.id
+      and sl.entity_type = o.entity_type
+      and sl.entity_id = o.entity_id
+     left join field_resolution_heads h
+       on h.entity_type = o.entity_type
+      and h.entity_id = o.entity_id
+      and h.field_key = o.field_key
+     left join field_resolutions r on r.id = h.resolution_id
+     where c.candidate_id = $1
+     order by o.id`,
+    [candidate.id],
+  );
+  return !parentEvidence(parentRows as unknown as ParentRow[]).some(
+    (parent) =>
+      !parent.eligible ||
+      parent.unresolvedConflict ||
+      parent.workId !== candidate.workId,
+  );
+};
 
 export const createDescriptionCandidatePostgres = async (input: {
   url: string;
@@ -386,7 +550,8 @@ export const createDescriptionCandidatePostgres = async (input: {
            id, work_id, observation_id, description_class, text_content,
            text_hash, source_revision, source_policy_version,
            description_policy_version, license_name, license_url,
-           attribution_text, derivatives_permitted, editor_ref,
+           attribution_text, derivatives_permitted, licensed_source_text_hash,
+           licensed_text_transformed, editor_ref,
            editorial_reason, editorial_revision, model_id, model_version,
            prompt_version, generation_input_hash, generated_at,
            generation_duration_ms, input_tokens, output_tokens, cost_microusd,
@@ -394,7 +559,7 @@ export const createDescriptionCandidatePostgres = async (input: {
          ) values (
            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
            $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26,
-           $27, $28, $29
+           $27, $28, $29, $30, $31
          )`,
         [
           candidateId,
@@ -417,6 +582,12 @@ export const createDescriptionCandidatePostgres = async (input: {
             : null,
           input.candidate.descriptionClass === "licensed_verbatim"
             ? input.candidate.license.derivativesPermitted
+            : null,
+          input.candidate.descriptionClass === "licensed_verbatim"
+            ? hashCanonicalJson(input.candidate.license.sourceText)
+            : null,
+          input.candidate.descriptionClass === "licensed_verbatim"
+            ? input.candidate.license.transformed
             : null,
           input.candidate.descriptionClass === "bukie_editorial"
             ? input.candidate.editorial.editorRef
@@ -625,6 +796,269 @@ export const createDescriptionCandidatePostgres = async (input: {
   }
 };
 
+const loadCurrentCandidatePostgres = async (
+  sql: PgSql,
+  candidateId: string,
+  lock = false,
+): Promise<
+  | {
+      candidate: CandidateRow;
+      decision: DecisionRow;
+    }
+  | undefined
+> => {
+  const rows = await sql.unsafe(
+    `select
+       c.id as "id",
+       c.work_id as "workId",
+       c.observation_id as "observationId",
+       c.description_class as "descriptionClass",
+       c.text_content as "textContent",
+       c.source_revision as "sourceRevision",
+       c.source_policy_version as "sourcePolicyVersion",
+       c.description_policy_version as "descriptionPolicyVersion",
+       c.attribution_text as "attributionText",
+       c.licensed_source_text_hash as "licensedSourceTextHash",
+       c.licensed_text_transformed as "licensedTextTransformed",
+       c.editor_ref as "editorRef",
+       c.model_version as "modelVersion",
+       c.prompt_version as "promptVersion",
+       c.quality_score as "qualityScore",
+       d.id as "decisionId",
+       d.state as "state",
+       d.rejection_codes_json as "rejectionCodes",
+       d.warning_codes_json as "warningCodes",
+       d.reviewer_ref as "reviewerRef",
+       d.review_reason as "reviewReason",
+       d.policy_version as "policyVersion"
+     from description_candidates c
+     join description_decision_heads h on h.candidate_id = c.id
+     join description_decisions d on d.id = h.decision_id
+     where c.id = $1
+     ${lock ? "for update of c, h" : ""}`,
+    [candidateId],
+  );
+  if (!rows[0]) return undefined;
+  const row = rows[0] as Record<string, unknown>;
+  return {
+    candidate: candidateFromRow(row),
+    decision: decisionFromRow({ ...row, id: row.decisionId }),
+  };
+};
+
+const writeDecisionPostgres = async (
+  sql: PgSql,
+  input: {
+    candidateId: string;
+    current: DecisionRow;
+    state: DescriptionDecisionState;
+    rejectionCodes: readonly DescriptionRejectionCode[];
+    warningCodes: readonly DescriptionWarningCode[];
+    reviewerRef?: string | null;
+    reviewReason?: string | null;
+    policyVersion: string;
+    decidedAt: number;
+  },
+): Promise<{ id: string; changed: boolean }> => {
+  const rejectionCodes = uniqueSorted(input.rejectionCodes);
+  const warningCodes = uniqueSorted(input.warningCodes);
+  if (
+    input.current.state === input.state &&
+    input.current.policyVersion === input.policyVersion &&
+    input.current.reviewerRef === (input.reviewerRef ?? null) &&
+    input.current.reviewReason === (input.reviewReason ?? null) &&
+    JSON.stringify(input.current.rejectionCodes) ===
+      JSON.stringify(rejectionCodes) &&
+    JSON.stringify(input.current.warningCodes) === JSON.stringify(warningCodes)
+  ) {
+    return { id: input.current.id, changed: false };
+  }
+  const id = descriptionDecisionIdentity({
+    candidateId: input.candidateId,
+    previousDecisionId: input.current.id,
+    state: input.state,
+    rejectionCodes,
+    warningCodes,
+    reviewerRef: input.reviewerRef ?? null,
+    reviewReason: input.reviewReason ?? null,
+    policyVersion: input.policyVersion,
+  });
+  await sql.unsafe(
+    `insert into description_decisions (
+       id, candidate_id, state, rejection_codes_json, warning_codes_json,
+       reviewer_ref, review_reason, previous_decision_id, policy_version,
+       decided_at
+     ) values ($1, $2, $3, $4::jsonb, $5::jsonb, $6, $7, $8, $9, $10)`,
+    [
+      id,
+      input.candidateId,
+      input.state,
+      JSON.stringify(rejectionCodes),
+      JSON.stringify(warningCodes),
+      input.reviewerRef ?? null,
+      input.reviewReason ?? null,
+      input.current.id,
+      input.policyVersion,
+      input.decidedAt,
+    ],
+  );
+  await sql.unsafe(
+    `update description_decision_heads set decision_id = $1
+     where candidate_id = $2`,
+    [id, input.candidateId],
+  );
+  return { id, changed: true };
+};
+
+const queueCandidatePostgres = async (
+  sql: PgSql,
+  input: {
+    candidateId: string;
+    reasonCodes: readonly DescriptionWarningCode[];
+    capacity: number;
+    now: number;
+  },
+): Promise<DescriptionCandidateResult["queue"]> => {
+  await sql.unsafe("select pg_advisory_xact_lock(133)");
+  const existingRows = await sql.unsafe(
+    "select state from description_review_queue where candidate_id = $1",
+    [input.candidateId],
+  );
+  if (
+    existingRows[0]?.state === "queued" ||
+    existingRows[0]?.state === "claimed"
+  ) {
+    return "deduplicated";
+  }
+  const countRows = await sql.unsafe(
+    `select count(*)::int as count
+     from description_review_queue
+     where state in ('queued', 'claimed')`,
+  );
+  if (
+    Number(countRows[0]?.count ?? 0) >= Math.max(0, Math.trunc(input.capacity))
+  ) {
+    return "overflow_paused";
+  }
+  const reasons = uniqueSorted(input.reasonCodes);
+  const priority = reasons.reduce(
+    (total, code) =>
+      total +
+      (code.includes("sensitive") || code.includes("ambiguous") ? 100 : 10),
+    0,
+  );
+  await sql.unsafe(
+    `insert into description_review_queue (
+       candidate_id, state, priority, reason_codes_json, queued_at,
+       updated_at, reviewer_ref
+     ) values ($1, 'queued', $2, $3::jsonb, $4, $4, null)
+     on conflict(candidate_id) do update set
+       state = 'queued',
+       priority = excluded.priority,
+       reason_codes_json = excluded.reason_codes_json,
+       queued_at = excluded.queued_at,
+       updated_at = excluded.updated_at,
+       reviewer_ref = null`,
+    [input.candidateId, priority, JSON.stringify(reasons), input.now],
+  );
+  return "queued";
+};
+
+const removeProjectionIfSelectedPostgres = async (
+  sql: PgSql,
+  input: {
+    candidate: CandidateRow;
+    state: "withdrawn" | "invalidated";
+    reasonCode: string;
+    actorRef: string;
+    policyVersion: string;
+    at: number;
+  },
+): Promise<void> => {
+  const projectionRows = await sql.unsafe(
+    `select p.id as id, p.candidate_id as "candidateId"
+     from description_projection_heads h
+     join description_projections p on p.id = h.projection_id
+     where h.work_id = $1`,
+    [input.candidate.workId],
+  );
+  if (projectionRows[0]?.candidateId !== input.candidate.id) return;
+  const projectionId = descriptionProjectionIdentity({
+    workId: input.candidate.workId,
+    candidateId: null,
+    previousProjectionId: String(projectionRows[0].id),
+    state: input.state,
+    reasonCode: input.reasonCode,
+    policyVersion: input.policyVersion,
+  });
+  await sql.unsafe(
+    `insert into description_projections (
+       id, work_id, candidate_id, state, previous_projection_id,
+       reason_code, actor_ref, policy_version, projected_at
+     ) values ($1, $2, null, $3, $4, $5, $6, $7, $8)`,
+    [
+      projectionId,
+      input.candidate.workId,
+      input.state,
+      projectionRows[0].id,
+      input.reasonCode,
+      input.actorRef,
+      input.policyVersion,
+      input.at,
+    ],
+  );
+  await sql.unsafe(
+    `update description_projection_heads set projection_id = $1
+     where work_id = $2`,
+    [projectionId, input.candidate.workId],
+  );
+};
+
+export const retryDescriptionQueuePostgres = async (input: {
+  url: string;
+  candidateId: string;
+  queueCapacity: number;
+  now: number;
+}): Promise<DescriptionCandidateResult["queue"]> => {
+  const client = postgres(input.url, { max: 1 });
+  try {
+    return await client.begin(async (sql) => {
+      const current = await loadCurrentCandidatePostgres(
+        sql,
+        input.candidateId,
+        true,
+      );
+      if (!current) throw new Error("Description candidate not found");
+      if (
+        current.decision.state !== "paused" &&
+        current.decision.state !== "review_required"
+      ) {
+        return "not_required";
+      }
+      const queue = await queueCandidatePostgres(sql, {
+        candidateId: input.candidateId,
+        reasonCodes: current.decision.warningCodes,
+        capacity: input.queueCapacity,
+        now: input.now,
+      });
+      if (queue !== "overflow_paused") {
+        await writeDecisionPostgres(sql, {
+          candidateId: input.candidateId,
+          current: current.decision,
+          state: "review_required",
+          rejectionCodes: current.decision.rejectionCodes,
+          warningCodes: current.decision.warningCodes,
+          policyVersion: current.decision.policyVersion,
+          decidedAt: input.now,
+        });
+      }
+      return queue;
+    });
+  } finally {
+    await client.end({ timeout: 5_000 });
+  }
+};
+
 export const reviewDescriptionCandidatePostgres = async (input: {
   url: string;
   candidateId: string;
@@ -632,6 +1066,9 @@ export const reviewDescriptionCandidatePostgres = async (input: {
   decision: "approve" | "reject";
   reason: string;
   acknowledgedWarningCodes?: readonly DescriptionWarningCode[];
+  descriptionPolicyVersion: string;
+  currentModelVersion?: string;
+  currentPromptVersion?: string;
   reviewedAt: number;
   failAfter?: "decision" | "queue" | "projection";
 }): Promise<{
@@ -649,6 +1086,12 @@ export const reviewDescriptionCandidatePostgres = async (input: {
            c.observation_id as "observationId",
            c.description_class as "descriptionClass",
            c.text_content as "textContent",
+           c.source_revision as "sourceRevision",
+           c.source_policy_version as "sourcePolicyVersion",
+           c.description_policy_version as "descriptionPolicyVersion",
+           c.attribution_text as "attributionText",
+           c.licensed_source_text_hash as "licensedSourceTextHash",
+           c.licensed_text_transformed as "licensedTextTransformed",
            c.editor_ref as "editorRef",
            c.model_version as "modelVersion",
            c.prompt_version as "promptVersion",
@@ -675,6 +1118,19 @@ export const reviewDescriptionCandidatePostgres = async (input: {
       });
       const state: "eligible" | "rejected" =
         input.decision === "approve" ? "eligible" : "rejected";
+      if (
+        input.decision === "approve" &&
+        (current.policyVersion !== input.descriptionPolicyVersion ||
+          !(await storedCandidateEvidenceIsUsablePostgres(
+            sql,
+            candidate,
+            input,
+          )))
+      ) {
+        throw new Error(
+          "Description review refused: current evidence or policy is ineligible",
+        );
+      }
       if (
         current.state === state &&
         current.reviewerRef === input.reviewerRef &&
@@ -946,6 +1402,428 @@ export const transitionDescriptionCandidatePostgres = async (input: {
   }
 };
 
+export const requestDescriptionRereviewPostgres = async (input: {
+  url: string;
+  candidateId: string;
+  policyVersion: string;
+  currentModelVersion?: string;
+  currentPromptVersion?: string;
+  queueCapacity: number;
+  requestedAt: number;
+}): Promise<{
+  state: "review_required" | "paused";
+  queue: DescriptionCandidateResult["queue"];
+}> => {
+  const client = postgres(input.url, { max: 1 });
+  try {
+    return await client.begin(async (sql) => {
+      const current = await loadCurrentCandidatePostgres(
+        sql,
+        input.candidateId,
+        true,
+      );
+      if (!current) throw new Error("Description candidate not found");
+      if (
+        current.decision.state === "rejected" ||
+        current.decision.state === "withdrawn" ||
+        current.decision.rejectionCodes.length > 0
+      ) {
+        throw new Error(
+          "Description re-review refused: hard rejection or withdrawal is not reviewable",
+        );
+      }
+      if (
+        !(await storedCandidateEvidenceIsUsablePostgres(
+          sql,
+          current.candidate,
+          input,
+        ))
+      ) {
+        throw new Error(
+          "Description re-review refused: current evidence or model policy is ineligible",
+        );
+      }
+      const warningCodes = uniqueSorted([
+        ...current.decision.warningCodes,
+        "policy_version_review" as const,
+      ]);
+      const queue = await queueCandidatePostgres(sql, {
+        candidateId: input.candidateId,
+        reasonCodes: warningCodes,
+        capacity: input.queueCapacity,
+        now: input.requestedAt,
+      });
+      const state: "review_required" | "paused" =
+        queue === "overflow_paused" ? "paused" : "review_required";
+      await writeDecisionPostgres(sql, {
+        candidateId: input.candidateId,
+        current: current.decision,
+        state,
+        rejectionCodes: current.decision.rejectionCodes,
+        warningCodes,
+        policyVersion: input.policyVersion,
+        decidedAt: input.requestedAt,
+      });
+      await removeProjectionIfSelectedPostgres(sql, {
+        candidate: current.candidate,
+        state: "invalidated",
+        reasonCode: "candidate_rereview_required",
+        actorRef: "system:description-policy",
+        policyVersion: input.policyVersion,
+        at: input.requestedAt,
+      });
+      return { state, queue };
+    });
+  } finally {
+    await client.end({ timeout: 5_000 });
+  }
+};
+
+export const getDescriptionProposalPostgres = async (input: {
+  url: string;
+  workId: string;
+  descriptionPolicyVersion: string;
+  currentModelVersion?: string;
+  currentPromptVersion?: string;
+}): Promise<
+  | {
+      candidateId: string;
+      text: string;
+      descriptionClass: CandidateRow["descriptionClass"];
+      qualityScore: number;
+      publicDisplayEligible: false;
+    }
+  | undefined
+> => {
+  const client = postgres(input.url, { max: 1 });
+  try {
+    const projectionRows = await client.unsafe(
+      `select p.candidate_id as "candidateId", p.state
+       from description_projection_heads h
+       join description_projections p on p.id = h.projection_id
+       where h.work_id = $1`,
+      [input.workId],
+    );
+    const projection = projectionRows[0];
+    if (
+      !projection?.candidateId ||
+      (projection.state !== "selected" && projection.state !== "rolled_back")
+    ) {
+      return undefined;
+    }
+    const current = await loadCurrentCandidatePostgres(
+      client,
+      String(projection.candidateId),
+    );
+    if (
+      !current ||
+      current.decision.state !== "eligible" ||
+      current.decision.policyVersion !== input.descriptionPolicyVersion ||
+      !(await storedCandidateEvidenceIsUsablePostgres(
+        client,
+        current.candidate,
+        input,
+      ))
+    ) {
+      return undefined;
+    }
+    return {
+      candidateId: current.candidate.id,
+      text: current.candidate.textContent,
+      descriptionClass: current.candidate.descriptionClass,
+      qualityScore: current.candidate.qualityScore ?? 0,
+      publicDisplayEligible: false,
+    };
+  } finally {
+    await client.end({ timeout: 5_000 });
+  }
+};
+
+export const rollbackDescriptionProjectionPostgres = async (input: {
+  url: string;
+  workId: string;
+  targetProjectionId: string;
+  actorRef: string;
+  reason: string;
+  policyVersion: string;
+  currentModelVersion?: string;
+  currentPromptVersion?: string;
+  rolledBackAt: number;
+  failAfter?: "event" | "head";
+}): Promise<{ projectionId: string; changed: boolean }> => {
+  const client = postgres(input.url, { max: 1 });
+  try {
+    return await client.begin(async (sql) => {
+      const headRows = await sql.unsafe(
+        `select h.projection_id as "projectionId"
+         from description_projection_heads h
+         where h.work_id = $1
+         for update of h`,
+        [input.workId],
+      );
+      const targetRows = await sql.unsafe(
+        `select id, candidate_id as "candidateId", state
+         from description_projections
+         where id = $1 and work_id = $2`,
+        [input.targetProjectionId, input.workId],
+      );
+      const target = targetRows[0];
+      if (
+        !target?.candidateId ||
+        (target.state !== "selected" && target.state !== "rolled_back")
+      ) {
+        throw new Error(
+          "Description rollback refused: target is not selectable",
+        );
+      }
+      const current = await loadCurrentCandidatePostgres(
+        sql,
+        String(target.candidateId),
+        true,
+      );
+      if (
+        !current ||
+        current.decision.state !== "eligible" ||
+        current.decision.policyVersion !== input.policyVersion ||
+        !(await storedCandidateEvidenceIsUsablePostgres(
+          sql,
+          current.candidate,
+          input,
+        ))
+      ) {
+        throw new Error(
+          "Description rollback refused: target candidate is not currently eligible",
+        );
+      }
+      const previousProjectionId = headRows[0]
+        ? String(headRows[0].projectionId)
+        : null;
+      const projectionId = descriptionProjectionIdentity({
+        workId: input.workId,
+        candidateId: current.candidate.id,
+        previousProjectionId,
+        state: "rolled_back",
+        reasonCode: input.reason,
+        policyVersion: input.policyVersion,
+      });
+      await sql.unsafe(
+        `insert into description_projections (
+           id, work_id, candidate_id, state, previous_projection_id,
+           reason_code, actor_ref, policy_version, projected_at
+         ) values ($1, $2, $3, 'rolled_back', $4, $5, $6, $7, $8)`,
+        [
+          projectionId,
+          input.workId,
+          current.candidate.id,
+          previousProjectionId,
+          input.reason,
+          input.actorRef,
+          input.policyVersion,
+          input.rolledBackAt,
+        ],
+      );
+      if (input.failAfter === "event") {
+        throw new Error(
+          "Forced Postgres description rollback failure after event",
+        );
+      }
+      await sql.unsafe(
+        `insert into description_projection_heads (work_id, projection_id)
+         values ($1, $2)
+         on conflict(work_id)
+         do update set projection_id = excluded.projection_id`,
+        [input.workId, projectionId],
+      );
+      if (input.failAfter === "head") {
+        throw new Error(
+          "Forced Postgres description rollback failure after head",
+        );
+      }
+      return {
+        projectionId,
+        changed: previousProjectionId !== projectionId,
+      };
+    });
+  } finally {
+    await client.end({ timeout: 5_000 });
+  }
+};
+
+export const reconcileDescriptionCandidatePostgres = async (input: {
+  url: string;
+  candidateId: string;
+  descriptionPolicyVersion: string;
+  currentModelVersion?: string;
+  currentPromptVersion?: string;
+  queueCapacity: number;
+  reconciledAt: number;
+}): Promise<
+  | "unchanged"
+  | "withdrawn"
+  | "invalidated_source_policy"
+  | "invalidated_model"
+  | "invalidated_prompt"
+  | "rereview_required"
+  | "rereview_paused"
+> => {
+  const client = postgres(input.url, { max: 1 });
+  try {
+    return await client.begin(async (sql) => {
+      const current = await loadCurrentCandidatePostgres(
+        sql,
+        input.candidateId,
+        true,
+      );
+      if (!current) throw new Error("Description candidate not found");
+      const lifecycleRows = await sql.unsafe(
+        `select o.state as "observationState",
+                sr.state as "sourceRecordState"
+         from field_observations o
+         join source_records sr on sr.id = o.source_record_id
+         where o.id = $1`,
+        [current.candidate.observationId],
+      );
+      const lifecycle = lifecycleRows[0];
+      const transition = async (
+        state: "withdrawn" | "invalidated",
+        reason: string,
+        policyVersion: string,
+      ): Promise<void> => {
+        await writeDecisionPostgres(sql, {
+          candidateId: input.candidateId,
+          current: current.decision,
+          state,
+          rejectionCodes: current.decision.rejectionCodes,
+          warningCodes: current.decision.warningCodes,
+          reviewerRef: "system:description-reconciliation",
+          reviewReason: reason,
+          policyVersion,
+          decidedAt: input.reconciledAt,
+        });
+        if (state === "withdrawn") {
+          await sql.unsafe(
+            "update field_observations set state = 'withdrawn' where id = $1",
+            [current.candidate.observationId],
+          );
+        }
+        await sql.unsafe(
+          `update description_review_queue
+           set state = 'cancelled', updated_at = $1
+           where candidate_id = $2 and state in ('queued', 'claimed')`,
+          [input.reconciledAt, input.candidateId],
+        );
+        await removeProjectionIfSelectedPostgres(sql, {
+          candidate: current.candidate,
+          state,
+          reasonCode: reason,
+          actorRef: "system:description-reconciliation",
+          policyVersion,
+          at: input.reconciledAt,
+        });
+      };
+      if (
+        lifecycle?.observationState === "withdrawn" ||
+        lifecycle?.sourceRecordState === "withdrawn" ||
+        lifecycle?.sourceRecordState === "deleted"
+      ) {
+        await transition(
+          "withdrawn",
+          "source_withdrawn",
+          current.decision.policyVersion,
+        );
+        return "withdrawn";
+      }
+      if (
+        !(await storedCandidateEvidenceIsUsablePostgres(
+          sql,
+          current.candidate,
+          {
+            currentModelVersion:
+              current.candidate.modelVersion ?? input.currentModelVersion,
+            currentPromptVersion:
+              current.candidate.promptVersion ?? input.currentPromptVersion,
+          },
+        ))
+      ) {
+        await transition(
+          "invalidated",
+          "source_or_parent_policy_revoked",
+          input.descriptionPolicyVersion,
+        );
+        return "invalidated_source_policy";
+      }
+      if (
+        current.candidate.descriptionClass === "model_assisted_candidate" &&
+        input.currentModelVersion &&
+        current.candidate.modelVersion !== input.currentModelVersion
+      ) {
+        await transition(
+          "invalidated",
+          "model_version_invalidated",
+          input.descriptionPolicyVersion,
+        );
+        return "invalidated_model";
+      }
+      if (
+        current.candidate.descriptionClass === "model_assisted_candidate" &&
+        input.currentPromptVersion &&
+        current.candidate.promptVersion !== input.currentPromptVersion
+      ) {
+        await transition(
+          "invalidated",
+          "prompt_version_invalidated",
+          input.descriptionPolicyVersion,
+        );
+        return "invalidated_prompt";
+      }
+      if (current.decision.policyVersion !== input.descriptionPolicyVersion) {
+        if (
+          current.decision.state === "rejected" ||
+          current.decision.state === "withdrawn" ||
+          current.decision.rejectionCodes.length > 0
+        ) {
+          throw new Error(
+            "Description re-review refused: hard rejection or withdrawal is not reviewable",
+          );
+        }
+        const warningCodes = uniqueSorted([
+          ...current.decision.warningCodes,
+          "policy_version_review" as const,
+        ]);
+        const queue = await queueCandidatePostgres(sql, {
+          candidateId: input.candidateId,
+          reasonCodes: warningCodes,
+          capacity: input.queueCapacity,
+          now: input.reconciledAt,
+        });
+        const state: "review_required" | "paused" =
+          queue === "overflow_paused" ? "paused" : "review_required";
+        await writeDecisionPostgres(sql, {
+          candidateId: input.candidateId,
+          current: current.decision,
+          state,
+          rejectionCodes: current.decision.rejectionCodes,
+          warningCodes,
+          policyVersion: input.descriptionPolicyVersion,
+          decidedAt: input.reconciledAt,
+        });
+        await removeProjectionIfSelectedPostgres(sql, {
+          candidate: current.candidate,
+          state: "invalidated",
+          reasonCode: "candidate_rereview_required",
+          actorRef: "system:description-policy",
+          policyVersion: input.descriptionPolicyVersion,
+          at: input.reconciledAt,
+        });
+        return state === "paused" ? "rereview_paused" : "rereview_required";
+      }
+      return "unchanged";
+    });
+  } finally {
+    await client.end({ timeout: 5_000 });
+  }
+};
+
 const scaled = (value: number, scopeWorks: number): number =>
   scopeWorks <= 0 ? 0 : Math.round((value * 500) / scopeWorks);
 
@@ -961,7 +1839,12 @@ export const descriptionMetricsPostgres = async (input: {
            count(*)::int as candidates,
            count(distinct c.work_id)::int as "candidateWorks",
            count(*) filter (where d.state = 'rejected')::int as rejected,
-           count(*) filter (where d.reviewer_ref is not null)::int as reviewed,
+           count(*) filter (where exists (
+             select 1 from description_decisions reviewed
+             where reviewed.candidate_id = c.id
+               and reviewed.reviewer_ref is not null
+               and reviewed.state in ('eligible', 'rejected')
+           ))::int as reviewed,
            count(*) filter (where d.state = 'eligible')::int as eligible,
            count(distinct c.work_id) filter (where d.state = 'eligible')::int as "eligibleWorks",
            count(*) filter (where d.state = 'withdrawn')::int as withdrawn,

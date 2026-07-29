@@ -32,6 +32,11 @@ const normalizeText = (value: string): string =>
 const words = (value: string): string[] =>
   normalizeText(value).split(/\s+/).filter(Boolean);
 
+const sentences = (value: string): string[] =>
+  (value.match(/[^.!?]+(?:[.!?]+|$)/gu) ?? [])
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
 const syllables = (word: string): number => {
   const normalized = word
     .toLocaleLowerCase("en")
@@ -124,11 +129,7 @@ const provenanceRejections = (
     ) {
       add(result, "licensed_provenance_incomplete");
     }
-    if (
-      license.transformed &&
-      (!license.derivativesPermitted ||
-        normalizeText(license.sourceText) !== normalizeText(input.text))
-    ) {
+    if (license.transformed && !license.derivativesPermitted) {
       add(result, "licensed_derivative_not_permitted");
     }
     if (
@@ -199,7 +200,23 @@ export const validateDescriptionCandidate = (input: {
   }
 
   const referencedIds = new Set<string>();
+  const candidateSentenceKeys = new Set(
+    sentences(candidate.text).map(normalizeText),
+  );
+  const claimedSentenceKeys = new Set<string>();
   for (const claim of candidate.claims) {
+    const claimKey = normalizeText(claim.text);
+    if (!claimKey) {
+      add(rejectionCodes, "claim_unsupported");
+      continue;
+    }
+    if (candidate.descriptionClass !== "licensed_verbatim") {
+      if (!candidateSentenceKeys.has(claimKey)) {
+        add(rejectionCodes, "claim_text_not_in_candidate");
+      } else {
+        claimedSentenceKeys.add(claimKey);
+      }
+    }
     if (claim.parentObservationIds.length === 0) {
       add(rejectionCodes, "claim_unsupported");
       continue;
@@ -221,6 +238,14 @@ export const validateDescriptionCandidate = (input: {
         add(rejectionCodes, "evidence_conflict_unresolved");
       }
     }
+  }
+  if (
+    candidate.descriptionClass !== "licensed_verbatim" &&
+    [...candidateSentenceKeys].some(
+      (sentenceKey) => !claimedSentenceKeys.has(sentenceKey),
+    )
+  ) {
+    add(rejectionCodes, "candidate_claim_coverage_incomplete");
   }
   if (
     candidate.descriptionClass !== "licensed_verbatim" &&

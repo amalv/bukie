@@ -54,46 +54,55 @@ export const descriptionFixtureIds = (workId: string) => ({
   ] as const,
 });
 
-export const DESCRIPTION_FIXTURE_TEXT = [
-  "This recorded evaluation fixture follows a central figure whose ordinary",
-  "plans change after a difficult responsibility arrives without warning.",
-  "The setting brings together family pressure, public expectations, and",
-  "questions about where loyalty should rest. As the situation develops, the",
-  "character must understand unfamiliar people while deciding which inherited",
-  "assumptions remain useful. The account focuses on choices, relationships,",
-  "and the consequences of entering a larger conflict. Its perspective stays",
-  "close to the character's uncertainty, giving the story a clear human",
-  "center without describing its outcome or making claims about quality.",
-].join(" ");
+const workFixture = (workId: string) => {
+  const index = ENRICHMENT_SAMPLE_MANIFEST.works.findIndex(
+    (work) => work.workId === workId,
+  );
+  const work = ENRICHMENT_SAMPLE_MANIFEST.works[index];
+  if (!work) throw new Error(`Description fixture work not found: ${workId}`);
+  return {
+    category: `fixture-category-${index}`,
+    firstPublication: String(1900 + index),
+    title: work.title,
+  };
+};
 
-export const DESCRIPTION_FIXTURE_ALTERNATE_TEXT = [
-  "This deterministic review fixture begins with a person returning to a",
-  "community shaped by memory, duty, and unresolved questions. A new problem",
-  "forces several relationships into the open and makes earlier choices",
-  "matter again. The narrative observes how trust changes when private",
-  "knowledge becomes difficult to contain. Rather than explaining the final",
-  "result, this summary stays with the opening pressure and the competing",
-  "responsibilities it creates. The setting and the character's history give",
-  "the conflict a specific frame while the language remains factual, measured,",
-  "and suitable for a bounded catalog-enrichment test.",
-].join(" ");
-
-const claimsFor = (workId: string) => {
-  const ids = descriptionFixtureIds(workId).parents;
+export const descriptionFixtureText = (workId: string): string => {
+  const fixture = workFixture(workId);
   return [
-    {
-      text: "The record has a verified work identity.",
-      parentObservationIds: [ids[0]],
-    },
-    {
-      text: "The work has publication context.",
-      parentObservationIds: [ids[1]],
-    },
-    {
-      text: "The work has a reviewed category.",
-      parentObservationIds: [ids[2]],
-    },
-  ] as const;
+    `The catalog identifies this work as ${fixture.title}, using its approved work record as the sole basis for the title and identity stated here.`,
+    `Its recorded first-publication context is ${fixture.firstPublication}; this fixture does not infer a more precise date, edition, publisher, setting, plot, character, or outcome.`,
+    `The approved category record places the work in ${fixture.category}; no review, recommendation, popularity claim, retailer wording, publisher prose, or external synopsis is reused here.`,
+    "These bounded statements are intentionally neutral and preserve the distinction between structured catalog evidence and prose that requires separate rights and editorial review.",
+  ].join(" ");
+};
+
+export const descriptionFixtureAlternateText = (workId: string): string => {
+  const fixture = workFixture(workId);
+  return [
+    `The approved catalog record names this work ${fixture.title}, and the work ID keeps that title separate from the facts of any one edition.`,
+    `The work record gives ${fixture.firstPublication} as its first-publication context, with no added month, day, press, format, language, page count, plot event, or ending.`,
+    `The approved category is ${fixture.category}; this text adds no rating, sales claim, praise, shop copy, source copy, outside plot summary, or claim about quality.`,
+    "It stays within the few facts recorded for this test and does not guess at details that the evidence does not support.",
+  ].join(" ");
+};
+
+const firstFixtureWorkId = ENRICHMENT_SAMPLE_MANIFEST.works[0].workId;
+export const DESCRIPTION_FIXTURE_TEXT =
+  descriptionFixtureText(firstFixtureWorkId);
+export const DESCRIPTION_FIXTURE_ALTERNATE_TEXT =
+  descriptionFixtureAlternateText(firstFixtureWorkId);
+
+const claimsFor = (workId: string, text: string) => {
+  const ids = descriptionFixtureIds(workId).parents;
+  const claimTexts = (text.match(/[^.!?]+(?:[.!?]+|$)/gu) ?? [])
+    .map((claim) => claim.trim())
+    .filter(Boolean);
+  return claimTexts.map((claim, index) => ({
+    text: claim,
+    parentObservationIds:
+      index < ids.length ? [ids[index]] : [ids[0], ids[1], ids[2]],
+  }));
 };
 
 const common = (
@@ -110,7 +119,7 @@ const common = (
   sourceRevision: "description-candidate-fixture-revision-v1",
   sourcePolicyVersion: DESCRIPTION_FIXTURE_SOURCE_POLICY_VERSION,
   descriptionPolicyVersion: DESCRIPTION_POLICY_VERSION,
-  claims: claimsFor(workId),
+  claims: claimsFor(workId, text),
   comparisonTexts: [],
   createdAt,
 });
@@ -119,7 +128,7 @@ export const modelDescriptionFixture = (
   workId: string = ENRICHMENT_SAMPLE_MANIFEST.works[0].workId,
   overrides: Partial<ModelDescriptionInput> = {},
 ): ModelDescriptionInput => ({
-  ...common(workId, DESCRIPTION_FIXTURE_TEXT, CREATED_AT),
+  ...common(workId, descriptionFixtureText(workId), CREATED_AT),
   descriptionClass: "model_assisted_candidate",
   model: {
     modelId: "provider-neutral.recorded-fixture",
@@ -138,7 +147,7 @@ export const editorialDescriptionFixture = (
   workId: string = ENRICHMENT_SAMPLE_MANIFEST.works[1].workId,
   overrides: Partial<EditorialDescriptionInput> = {},
 ): EditorialDescriptionInput => ({
-  ...common(workId, DESCRIPTION_FIXTURE_TEXT, CREATED_AT + 10),
+  ...common(workId, descriptionFixtureText(workId), CREATED_AT + 10),
   descriptionClass: "bukie_editorial",
   editorial: {
     editorRef: "user:editor-fixture",
@@ -152,14 +161,14 @@ export const licensedDescriptionFixture = (
   workId: string = ENRICHMENT_SAMPLE_MANIFEST.works[2].workId,
   overrides: Partial<LicensedDescriptionInput> = {},
 ): LicensedDescriptionInput => ({
-  ...common(workId, DESCRIPTION_FIXTURE_TEXT, CREATED_AT + 20),
+  ...common(workId, descriptionFixtureText(workId), CREATED_AT + 20),
   descriptionClass: "licensed_verbatim",
   license: {
     name: "Recorded fixture license",
     url: "https://example.invalid/recorded-fixture-license",
     attributionText: "Recorded fixture source",
     derivativesPermitted: false,
-    sourceText: DESCRIPTION_FIXTURE_TEXT,
+    sourceText: descriptionFixtureText(workId),
     transformed: false,
   },
   ...overrides,
