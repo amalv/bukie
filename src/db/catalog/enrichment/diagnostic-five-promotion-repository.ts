@@ -980,7 +980,19 @@ const persistAndRevalidateCoversPostgres = async (
        refresh_interval_ms
      ) values ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11)
      on conflict(id) do nothing`,
-    Object.values(rows.metadataSource),
+    [
+      rows.metadataSource.id,
+      rows.metadataSource.key,
+      rows.metadataSource.name,
+      rows.metadataSource.termsUrl,
+      rows.metadataSource.attributionUrl,
+      rows.metadataSource.reviewedAt,
+      rows.metadataSource.approvalState,
+      JSON.parse(rows.metadataSource.metadataPolicy),
+      JSON.parse(rows.metadataSource.assetPolicy),
+      rows.metadataSource.payloadPolicy,
+      rows.metadataSource.refreshIntervalMs,
+    ],
   );
 
   let changed = false;
@@ -993,7 +1005,19 @@ const persistAndRevalidateCoversPostgres = async (
          source_row_hash, state
        ) values ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11)
        on conflict(id) do nothing`,
-      Object.values(entry.sourceRecord),
+      [
+        entry.sourceRecord.id,
+        entry.sourceRecord.sourceId,
+        entry.sourceRecord.recordKey,
+        entry.sourceRecord.sourceRevision,
+        entry.sourceRecord.sourceModifiedAt,
+        entry.sourceRecord.retrievedAt,
+        JSON.parse(entry.sourceRecord.payloadJson),
+        entry.sourceRecord.payloadHash,
+        entry.sourceRecord.importerVersion,
+        entry.sourceRecord.sourceRowHash,
+        entry.sourceRecord.state,
+      ],
     );
     await sql.unsafe(
       `insert into source_record_links (
@@ -1022,7 +1046,25 @@ const persistAndRevalidateCoversPostgres = async (
          $1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,$12,$13,$14,$15,
          $16::jsonb,$17
        ) on conflict(id) do nothing`,
-      Object.values(entry.coverCandidate),
+      [
+        entry.coverCandidate.id,
+        entry.coverCandidate.workId,
+        entry.coverCandidate.editionId,
+        entry.coverCandidate.sourceRecordId,
+        entry.coverCandidate.representationType,
+        entry.coverCandidate.identityMatchKind,
+        JSON.parse(entry.coverCandidate.identityEvidenceJson),
+        entry.coverCandidate.permissionState,
+        entry.coverCandidate.rightsBasis,
+        entry.coverCandidate.attributionText,
+        entry.coverCandidate.attributionUrl,
+        entry.coverCandidate.sourceUrl,
+        entry.coverCandidate.sourceRevision,
+        entry.coverCandidate.sourcePolicyVersion,
+        entry.coverCandidate.objectKey,
+        JSON.parse(entry.coverCandidate.transformationHistoryJson),
+        entry.coverCandidate.createdAt,
+      ],
     );
     await sql.unsafe(
       `insert into cover_inspections (
@@ -1031,7 +1073,22 @@ const persistAndRevalidateCoversPostgres = async (
          duplicate_of_candidate_id, inspection_version, inspected_at
        ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12,$13,$14)
        on conflict(id) do nothing`,
-      Object.values(entry.coverInspection),
+      [
+        entry.coverInspection.id,
+        entry.coverInspection.candidateId,
+        entry.coverInspection.mediaType,
+        entry.coverInspection.byteSize,
+        entry.coverInspection.width,
+        entry.coverInspection.height,
+        entry.coverInspection.aspectRatio,
+        entry.coverInspection.checksum,
+        entry.coverInspection.decodeResult,
+        JSON.parse(entry.coverInspection.flagsJson),
+        entry.coverInspection.qualityScore,
+        entry.coverInspection.duplicateOfCandidateId,
+        entry.coverInspection.inspectionVersion,
+        entry.coverInspection.inspectedAt,
+      ],
     );
     for (const decision of entry.coverDecisions) {
       await sql.unsafe(
@@ -1042,7 +1099,20 @@ const persistAndRevalidateCoversPostgres = async (
          ) values (
            $1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8,$9,$10,$11,$12
          ) on conflict(id) do nothing`,
-        Object.values(decision),
+        [
+          decision.id,
+          decision.candidateId,
+          decision.inspectionId,
+          decision.state,
+          JSON.parse(decision.gateCodesJson),
+          JSON.parse(decision.warningCodesJson),
+          decision.reviewerRef,
+          decision.reviewReason,
+          decision.purgeState,
+          decision.previousDecisionId,
+          decision.policyVersion,
+          decision.decidedAt,
+        ],
       );
     }
     const currentDecisionHeads = await sql.unsafe<Array<{ id: string }>>(
