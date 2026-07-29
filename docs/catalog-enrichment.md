@@ -330,7 +330,7 @@ The immutable, content-addressed manifest records:
 The report uses canonical JSON, stable title/work-ID case ordering, and one LF
 terminator. Rebuilding and rerunning the SQLite proof produced the same
 253,787 bytes and SHA-256
-`11fab659773fd48f0c6627ae191c521a68b278d05b76a162a224ae8ff032a552`.
+`a85538c057e0b65696644e372f09f18a6da0daf0cefec0d42d641ee4ca6a1b0d`.
 The normalized PostgreSQL parity test is gated by the same isolated
 `CATALOG_TEST_POSTGRES_URL` used by the existing catalog database tests.
 

@@ -68,7 +68,7 @@ export const CATALOG_RECORDED_PROVIDER_RECORDS: readonly ProviderRecord[] =
               {
                 fieldClass: "metadata" as const,
                 fieldKey: "work.first_publication_date" as const,
-                value: firstPublication,
+                value: { date: firstPublication, precision: "year" },
                 sourcePath: "claims.P577.recordedValue",
                 provenanceKind: "imported" as const,
               },
