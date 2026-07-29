@@ -1181,40 +1181,90 @@ const persistAndRevalidateCoversPostgres = async (
       entry.proposal.representationType === "selected_edition"
         ? "edition.covers"
         : "work.covers";
-    if (
-      !audit ||
-      auditRows.length !== 1 ||
-      audit.projectionState !== "selected" ||
-      audit.projectedCandidateId !== entry.coverCandidate.id ||
-      audit.previousProjectionId !== entry.coverProjections[0].id ||
-      audit.projectionPolicyVersion !== COVER_POLICY_VERSION ||
-      audit.decisionState !== "eligible" ||
-      audit.reviewerRef !== entry.coverDecisions[1].reviewerRef ||
-      audit.previousDecisionId !== entry.coverDecisions[0].id ||
-      canonicalJson(audit.gateCodes) !== canonicalJson([]) ||
-      audit.decisionPolicyVersion !== COVER_POLICY_VERSION ||
-      audit.checksum !== entry.coverInspection.checksum ||
-      audit.decodeResult !== "decoded" ||
-      Number(audit.qualityScore) < 60 ||
-      audit.candidateWorkId !== entry.proposal.workId ||
-      audit.candidateEditionId !== entry.coverCandidate.editionId ||
-      audit.representationType !== entry.proposal.representationType ||
-      audit.permissionState !== "pending" ||
-      audit.rightsBasis !== null ||
-      audit.candidateSourceRevision !== entry.sourceRecord.sourceRevision ||
-      audit.sourcePolicyVersion !== POC_COVER_SOURCE_POLICY_VERSION ||
-      audit.sourceRevision !== entry.sourceRecord.sourceRevision ||
-      audit.sourceState !== "active" ||
-      audit.linkState !== "active" ||
-      Number(audit.mappingConfidence) !== 1 ||
-      audit.sourceApproval !== "approved" ||
-      canonicalJson(persistedAssetPolicy) !== rows.metadataSource.assetPolicy ||
-      !sourcePolicyAllowsFieldDisplay(persistedAssetPolicy, requiredField) ||
-      audit.assetState !== "available" ||
-      audit.assetChecksum !== entry.coverAsset.checksum
-    ) {
+    const driftedChecks = !audit
+      ? ["joined_evidence"]
+      : [
+          [auditRows.length !== 1, "unique_evidence"],
+          [audit.projectionState !== "selected", "projection_state"],
+          [
+            audit.projectedCandidateId !== entry.coverCandidate.id,
+            "projection_candidate",
+          ],
+          [
+            audit.previousProjectionId !== entry.coverProjections[0].id,
+            "projection_predecessor",
+          ],
+          [
+            audit.projectionPolicyVersion !== COVER_POLICY_VERSION,
+            "projection_policy",
+          ],
+          [audit.decisionState !== "eligible", "review_state"],
+          [
+            audit.reviewerRef !== entry.coverDecisions[1].reviewerRef,
+            "reviewer",
+          ],
+          [
+            audit.previousDecisionId !== entry.coverDecisions[0].id,
+            "decision_predecessor",
+          ],
+          [canonicalJson(audit.gateCodes) !== canonicalJson([]), "hard_gates"],
+          [
+            audit.decisionPolicyVersion !== COVER_POLICY_VERSION,
+            "decision_policy",
+          ],
+          [
+            audit.checksum !== entry.coverInspection.checksum,
+            "inspection_hash",
+          ],
+          [audit.decodeResult !== "decoded", "decode"],
+          [Number(audit.qualityScore) < 60, "quality"],
+          [audit.candidateWorkId !== entry.proposal.workId, "work_identity"],
+          [
+            audit.candidateEditionId !== entry.coverCandidate.editionId,
+            "edition_identity",
+          ],
+          [
+            audit.representationType !== entry.proposal.representationType,
+            "identity_scope",
+          ],
+          [audit.permissionState !== "pending", "rights_state"],
+          [audit.rightsBasis !== null, "rights_basis"],
+          [
+            audit.candidateSourceRevision !== entry.sourceRecord.sourceRevision,
+            "candidate_revision",
+          ],
+          [
+            audit.sourcePolicyVersion !== POC_COVER_SOURCE_POLICY_VERSION,
+            "candidate_source_policy",
+          ],
+          [
+            audit.sourceRevision !== entry.sourceRecord.sourceRevision,
+            "source_revision",
+          ],
+          [audit.sourceState !== "active", "source_withdrawal"],
+          [audit.linkState !== "active", "identity_link"],
+          [Number(audit.mappingConfidence) !== 1, "identity_confidence"],
+          [audit.sourceApproval !== "approved", "source_approval"],
+          [
+            canonicalJson(persistedAssetPolicy) !==
+              rows.metadataSource.assetPolicy,
+            "source_policy",
+          ],
+          [
+            !sourcePolicyAllowsFieldDisplay(
+              persistedAssetPolicy,
+              requiredField,
+            ),
+            "source_field_policy",
+          ],
+          [audit.assetState !== "available", "asset_withdrawal"],
+          [audit.assetChecksum !== entry.coverAsset.checksum, "asset_hash"],
+        ]
+          .filter(([drifted]) => drifted)
+          .map(([, code]) => String(code));
+    if (driftedChecks.length > 0) {
       throw new Error(
-        `Catalog cover promotion refused: source, identity, rights, withdrawal, quality, or review eligibility drifted for ${entry.proposal.title}`,
+        `Catalog cover promotion refused: source, identity, rights, withdrawal, quality, or review eligibility drifted for ${entry.proposal.title} (${driftedChecks.join(", ")})`,
       );
     }
   }
