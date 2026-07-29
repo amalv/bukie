@@ -622,7 +622,7 @@ export const promoteDiagnosticFivePostgres = async (
            id, key, name, terms_url, attribution_url, reviewed_at,
            approval_state, metadata_policy, asset_policy, payload_policy,
            refresh_interval_ms
-         ) values ($1,$2,$3,$4,$5,to_timestamp($6 / 1000.0),$7,$8::jsonb,$9::jsonb,$10,$11)
+         ) values ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11)
          on conflict(id) do nothing`,
         Object.values(rows.metadataSource),
       );
@@ -632,7 +632,7 @@ export const promoteDiagnosticFivePostgres = async (
              id, source_id, record_key, source_revision, source_modified_at,
              retrieved_at, payload_json, payload_hash, importer_version,
              source_row_hash, state
-           ) values ($1,$2,$3,$4,null,to_timestamp($6 / 1000.0),$7::jsonb,$8,$9,$10,$11)
+           ) values ($1,$2,$3,$4,null,$6,$7::jsonb,$8,$9,$10,$11)
            on conflict(id) do nothing`,
           Object.values(entry.sourceRecord),
         );
@@ -640,7 +640,7 @@ export const promoteDiagnosticFivePostgres = async (
           `insert into source_record_links (
              source_record_id, entity_type, entity_id, match_kind,
              mapping_confidence, state, actor_ref, reason, created_at
-           ) values ($1,$2,$3,$4,$5,$6,$7,$8,to_timestamp($9 / 1000.0))
+           ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
            on conflict(source_record_id, entity_type, entity_id) do nothing`,
           Object.values(entry.sourceRecordLink),
         );
@@ -654,7 +654,7 @@ export const promoteDiagnosticFivePostgres = async (
              parent_ids_json
            ) values (
              $1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,null,
-             to_timestamp($11 / 1000.0),$12,$13,$14,$15,$16,$17,$18::jsonb
+             $11,$12,$13,$14,$15,$16,$17,$18::jsonb
            ) on conflict(id) do nothing`,
           observation,
         );
@@ -774,7 +774,7 @@ export const promoteDiagnosticFivePostgres = async (
                resolved_at
              ) values (
                $1,'work',$2,$3,null,'missing',$4,null,$5,$6,
-               to_timestamp($7 / 1000.0)
+               $7
              )`,
             [
               baselineId,
@@ -822,7 +822,7 @@ export const promoteDiagnosticFivePostgres = async (
              id, entity_type, entity_id, field_key, selected_observation_id,
              state, reason, previous_resolution_id, actor_ref,
              resolver_version, resolved_at
-           ) values ($1,'work',$2,$3,$4,'present',$5,$6,$7,$8,to_timestamp($9 / 1000.0))`,
+           ) values ($1,'work',$2,$3,$4,'present',$5,$6,$7,$8,$9)`,
           [
             resolutionId,
             entry.proposal.workId,
@@ -844,7 +844,7 @@ export const promoteDiagnosticFivePostgres = async (
           `update works set first_publication_date = $1,
                             first_publication_precision = 'year',
                             first_publication_sort_date = $2,
-                            updated_at = to_timestamp($3 / 1000.0)
+                            updated_at = $3
            where id = $4`,
           [
             entry.proposal.value.date,
@@ -981,7 +981,7 @@ export const rollbackDiagnosticFivePostgres = async (
              resolved_at
            ) values (
              $1,'work',$2,$3,null,'missing',$4,$5,$6,$7,
-             to_timestamp($8 / 1000.0)
+             $8
            )`,
           [
             resolutionId,
@@ -1003,7 +1003,7 @@ export const rollbackDiagnosticFivePostgres = async (
           `update works set first_publication_date = null,
                             first_publication_precision = null,
                             first_publication_sort_date = null,
-                            updated_at = to_timestamp($1 / 1000.0)
+                            updated_at = $1
            where id = $2`,
           [input.rolledBackAt ?? Date.now(), proposal.workId],
         );
