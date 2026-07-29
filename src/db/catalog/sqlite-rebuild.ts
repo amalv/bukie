@@ -34,6 +34,12 @@ export const CATALOG_TARGET_TABLE_NAMES = [
   "catalog_change_events",
   "categories",
   "cover_assets",
+  "cover_candidates",
+  "cover_decision_heads",
+  "cover_decisions",
+  "cover_inspections",
+  "cover_projection_heads",
+  "cover_projections",
   "description_candidates",
   "description_claim_evidence",
   "description_claims",
@@ -62,6 +68,12 @@ export const CATALOG_TARGET_TABLE_NAMES = [
 ] as const;
 
 const CLEAR_SQL = `
+  delete from cover_projection_heads;
+  delete from cover_projections;
+  delete from cover_decision_heads;
+  delete from cover_decisions;
+  delete from cover_inspections;
+  delete from cover_candidates;
   delete from description_projection_heads;
   delete from description_projections;
   delete from description_review_queue;

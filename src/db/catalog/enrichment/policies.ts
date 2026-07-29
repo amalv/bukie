@@ -337,10 +337,14 @@ export function metadataSourceRow(
     withdrawal: adapter.withdrawal,
   });
   const assetPolicy = canonicalJson({
+    attribution: adapter.attribution,
     cache: adapter.permissions.asset.cache,
     display: adapter.permissions.asset.display,
     fieldPermission: adapter.permissions.asset,
+    policySources: adapter.policySources,
+    proposedEvidenceOnly: adapter.proposedEvidenceOnly,
     purgeOnWithdrawal: adapter.withdrawal.purgeCachedAssets,
+    sourcePolicyVersion: adapter.sourcePolicyVersion,
     transform: adapter.permissions.asset.transform,
     withdrawal: adapter.withdrawal,
   });

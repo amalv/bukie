@@ -13,12 +13,15 @@ import { spawn } from "node:child_process";
 import { mkdir, stat, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import {
-  findOpenLibraryCandidates,
+  findEditionMatchedOpenLibraryCandidates,
   getOpenLibraryHeaders,
 } from "./helpers";
+import { assertOpenLibraryCoverPublishingAllowed } from "./policy";
 import { runCoverJobs } from "./run-cover-jobs";
 import baseCatalog from "../../artifacts/catalog";
 import type { LegacyCatalogArtifactRecord } from "../../artifacts/catalog/types";
+import { inspectCoverBytes } from "../../src/db/catalog/enrichment/covers/inspection";
+import type { CoverInspection } from "../../src/db/catalog/enrichment/covers/types";
 
 type Flags = {
   dryRun: boolean;
@@ -101,7 +104,11 @@ async function getSharpOnce(): Promise<any> {
   return sharpSingleton;
 }
 
-async function downloadCover(url: string, baseName: string, optimize: boolean): Promise<string> {
+async function downloadCover(
+  url: string,
+  baseName: string,
+  optimize: boolean,
+): Promise<{ localPath: string; inspection: CoverInspection }> {
   const res = await fetch(url, {
     redirect: "follow",
     headers: getOpenLibraryHeaders(),
@@ -109,23 +116,39 @@ async function downloadCover(url: string, baseName: string, optimize: boolean): 
   if (!res.ok) throw new Error(`download failed: ${res.status} ${res.statusText}`);
   const buf = Buffer.from(await res.arrayBuffer());
   let rel = "";
+  let output = buf;
   if (optimize) {
     const sharp = await getSharpOnce();
-    const webp = await sharp(buf).webp({ quality: 80 }).toBuffer();
+    output = await sharp(buf).webp({ quality: 80 }).toBuffer();
     const outPath = `public/covers/${baseName}.webp`;
+    const inspection = await inspectCoverBytes({
+      bytes: output,
+      inspectedAt: Date.now(),
+    });
+    if (inspection.decodeResult !== "decoded") {
+      throw new Error(`cover inspection failed: ${inspection.decodeResult}`);
+    }
     await mkdir(outPath.substring(0, outPath.lastIndexOf("/")), { recursive: true });
-    await writeFile(outPath, webp);
+    await writeFile(outPath, output);
     rel = `/covers/${basename(outPath)}`;
+    return { localPath: rel, inspection };
   } else {
     // Write original bytes with an inferred extension
     const ct = (res.headers.get("content-type") || "").toLowerCase();
     const ext = ct.includes("png") ? "png" : ct.includes("webp") ? "webp" : "jpg";
     const outPath = `public/covers/${baseName}.${ext}`;
+    const inspection = await inspectCoverBytes({
+      bytes: output,
+      inspectedAt: Date.now(),
+    });
+    if (inspection.decodeResult !== "decoded") {
+      throw new Error(`cover inspection failed: ${inspection.decodeResult}`);
+    }
     await mkdir(outPath.substring(0, outPath.lastIndexOf("/")), { recursive: true });
-    await writeFile(outPath, buf);
+    await writeFile(outPath, output);
     rel = `/covers/${basename(outPath)}`;
+    return { localPath: rel, inspection };
   }
-  return rel;
 }
 
 function isPlaceholder(cover: string | undefined): boolean {
@@ -153,6 +176,9 @@ async function main() {
   }
 
   const flags = parseFlags(process.argv.slice(2));
+  if (flags.uploadR2) {
+    assertOpenLibraryCoverPublishingAllowed();
+  }
   const all = baseCatalog;
   let candidates = all.filter((b) => (flags.onlyId ? b.id === flags.onlyId : true));
   if (!flags.force) {
@@ -194,16 +220,19 @@ async function main() {
     limited,
     flags.concurrency,
     async (book) => {
-      const candidates = await findOpenLibraryCandidates(book);
+      const candidates = findEditionMatchedOpenLibraryCandidates(book);
       let usedUrl: string | undefined;
       let localPath: string | undefined;
+      let inspection: CoverInspection | undefined;
       for (const candidate of candidates) {
         try {
-          localPath = await downloadCover(
+          const downloaded = await downloadCover(
             candidate,
             book.id,
             !flags.noOptimize,
           );
+          localPath = downloaded.localPath;
+          inspection = downloaded.inspection;
           usedUrl = candidate;
           break;
         } catch {
@@ -225,10 +254,13 @@ async function main() {
       }
       // eslint-disable-next-line no-console
       console.info(
-        "[covers] %s -> %s%s",
+        "[covers] %s -> %s%s%s",
         book.id,
         localPath,
         flags.uploadR2 && !flags.dryRun ? " [uploaded to R2]" : "",
+        inspection?.flags.length
+          ? ` [review:${inspection.flags.join(",")}]`
+          : " [inspection:clean]",
       );
     },
     (book, error) => {
