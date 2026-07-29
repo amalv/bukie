@@ -185,7 +185,6 @@ describe.skipIf(!isolatedUrl)(
       const overflow = await createDescriptionCandidatePostgres({
         url: target.url,
         candidate: licensedDescriptionFixture(undefined, {
-          text: DESCRIPTION_FIXTURE_TEXT,
           createdAt: NOW + 4,
           sensitiveContent: true,
         }),
@@ -445,7 +444,13 @@ describe.skipIf(!isolatedUrl)(
         await derivativeClient.unsafe(
           `update metadata_sources
            set metadata_policy = jsonb_set(
-             metadata_policy, '{textPermission,transform}', 'true'::jsonb
+             case
+               when jsonb_typeof(metadata_policy) = 'string'
+                 then (metadata_policy #>> '{}')::jsonb
+               else metadata_policy
+             end,
+             '{textPermission,transform}',
+             'true'::jsonb
            )
            where id = $1`,
           [DESCRIPTION_FIXTURE_SOURCE_ID],
