@@ -22,6 +22,7 @@ import {
   DIAGNOSTIC_FIVE_PROMOTION_APPROVAL_ID,
 } from "./diagnostic-five-promotion";
 import {
+  assertPostgresExecutionTarget,
   promoteDiagnosticFivePostgres,
   promoteDiagnosticFiveSqlite,
   rollbackDiagnosticFiveSqlite,
@@ -360,4 +361,53 @@ describe("diagnostic-five SQLite promotion transaction", () => {
       raw.close();
     }
   }, 30_000);
+});
+
+describe("assertPostgresExecutionTarget preview proof", () => {
+  const validProof = {
+    vercelEnv: "preview",
+    vercelDeploymentId: "dpl_test123",
+    gitBranch: "feat/catalog-enrichment-promotion",
+    pullRequest: 144,
+    databaseHost: "ep-example.us-east-2.aws.neon.tech",
+  } as const;
+  const url = `postgresql://user:pass@${validProof.databaseHost}/bukie`;
+
+  it("accepts a shared-database preview target without a distinct Neon branch", () => {
+    expect(() =>
+      assertPostgresExecutionTarget(url, {
+        executionTarget: "preview",
+        previewTarget: validProof,
+      }),
+    ).not.toThrow();
+  });
+
+  it("still refuses a wrong branch, PR number, or environment", () => {
+    for (const override of [
+      { gitBranch: "main" as never },
+      { pullRequest: 1 as never },
+      { vercelEnv: "production" as never },
+      { vercelDeploymentId: "" },
+      { databaseHost: "other.neon.tech" },
+    ]) {
+      expect(() =>
+        assertPostgresExecutionTarget(url, {
+          executionTarget: "preview",
+          previewTarget: { ...validProof, ...override },
+        }),
+      ).toThrow("exact PR #144 Vercel/Neon preview proof is required");
+    }
+  });
+
+  it("still refuses a non-Neon hostname", () => {
+    expect(() =>
+      assertPostgresExecutionTarget(
+        "postgresql://user:pass@example.com/bukie",
+        {
+          executionTarget: "preview",
+          previewTarget: { ...validProof, databaseHost: "example.com" },
+        },
+      ),
+    ).toThrow("exact PR #144 Vercel/Neon preview proof is required");
+  });
 });

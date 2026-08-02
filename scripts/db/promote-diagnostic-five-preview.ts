@@ -49,7 +49,8 @@ const result = await promoteDiagnosticFivePostgres(url, {
     vercelDeploymentId: required("VERCEL_DEPLOYMENT_ID"),
     gitBranch: "feat/catalog-enrichment-promotion",
     pullRequest: 144,
-    neonBranchId: required("NEON_BRANCH_ID"),
+    // Preview and Production share one Neon database; no distinct branch is required.
+    neonBranchId: process.env.NEON_BRANCH_ID?.trim() || undefined,
     databaseHost: new URL(url).hostname,
   },
   promotedAt: Date.UTC(2026, 6, 29, 19, 0, 0),

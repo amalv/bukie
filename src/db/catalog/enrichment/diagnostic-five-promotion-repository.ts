@@ -36,7 +36,7 @@ export type DiagnosticFivePromotionInput = {
     vercelDeploymentId: string;
     gitBranch: "feat/catalog-enrichment-promotion";
     pullRequest: 144;
-    neonBranchId: string;
+    neonBranchId?: string;
     databaseHost: string;
   };
   promotedAt?: number;
@@ -59,7 +59,8 @@ type CurrentResolution = {
 
 const FIELD_KEY = "work.first_publication_date";
 
-const assertPostgresExecutionTarget = (
+// Distinct Neon branching is not required; neonBranchId is optional metadata.
+export const assertPostgresExecutionTarget = (
   url: string,
   input: Pick<
     DiagnosticFivePromotionInput,
@@ -89,7 +90,6 @@ const assertPostgresExecutionTarget = (
     proof.pullRequest !== 144 ||
     proof.gitBranch !== "feat/catalog-enrichment-promotion" ||
     !proof.vercelDeploymentId.trim() ||
-    !proof.neonBranchId.trim() ||
     proof.databaseHost !== parsed.hostname ||
     !parsed.hostname.endsWith(".neon.tech")
   ) {

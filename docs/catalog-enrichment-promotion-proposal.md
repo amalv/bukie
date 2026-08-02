@@ -3,7 +3,7 @@
 - Status: issue #143 repository-input and PoC cover slice implemented
 - Dry-run input: `bukie-catalog-enrichment-dry-run@2026-07-29.v1`
 - Related issues: #135 and #143
-- Production database execution: not approved
+- Shared-database execution: owner-authorized against the existing Preview/Production Neon database (see "Preview and production authorization" below); a distinct Neon branch per deployment is no longer required
 
 Issue #143 contains exactly four reviewed
 `work.first_publication_date` proposals:
@@ -105,13 +105,21 @@ purge callback without rewriting history.
 The five reviewed WebP objects were uploaded explicitly to private R2 after
 confirming their keys did not already exist. Builds remain read-only.
 
-Existing-database promotion is permitted only when Vercel reports PR #144,
+Existing-database promotion originally required Vercel to report PR #144,
 `VERCEL_ENV=preview`, the exact feature branch and deployment ID, and a
 distinct matching Neon branch/host. The 2026-07-29 operational check found
 that the branch-specific Preview variables and existing production
 configuration used the same Neon endpoint and that the deployment exposed no
 `NEON_BRANCH_ID`. The write therefore failed closed and was not executed.
 
-No production database execution is authorized. Passing CI, merging code,
-deploying Vercel, or uploading R2 assets must not be interpreted as database
-promotion approval.
+Since Preview and Production intentionally share one Neon database (Neon
+branch-per-preview is not configured, largely for cost reasons), the repo
+owner authorized dropping only the distinct-Neon-branch requirement so
+promotion can run against that shared database. Every other check remains in
+force: Vercel must report `VERCEL_ENV=preview`, PR #144, the exact
+`feat/catalog-enrichment-promotion` branch, a non-empty deployment ID, a
+matching database host, and a `.neon.tech` hostname. `neonBranchId` is now
+optional, unenforced metadata rather than a gate. Passing CI, merging code, or
+uploading R2 assets alone still must not be interpreted as database promotion
+approval — only the exact preview proof above authorizes a write, and that
+write now also updates Production immediately because they share a database.

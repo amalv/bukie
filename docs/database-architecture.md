@@ -122,9 +122,15 @@ PostgreSQL use the same logical rows and deterministic IDs.
 Clean rebuilds contain the same reviewed evidence, cover asset metadata,
 candidate/inspection decisions, and resolution/projection chains.
 The historical #135 dry-run explicitly requests the pre-promotion import graph
-to retain its exact byte-stable report. Existing production databases are not
-updated automatically; the recorded issue #143 approval explicitly leaves
-production database execution unauthorized.
+to retain its exact byte-stable report. Preview and Production share one Neon
+database rather than using branch-per-deployment isolation, so the repo owner
+authorized relaxing the promotion gate's distinct-Neon-branch requirement
+(`neonBranchId` is now optional, unenforced metadata) while keeping every
+other preview-proof check — exact PR number, branch, `VERCEL_ENV=preview`,
+deployment ID, database host, and `.neon.tech` hostname — in force. Because
+the database is shared, an authorized preview promotion now updates
+Production directly; see `docs/catalog-enrichment-promotion-proposal.md` for
+the full authorization record.
 
 Issue #133 adds a description-specific evidence and review layer without
 changing that public boundary. Immutable description candidates identify one
