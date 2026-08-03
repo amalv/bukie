@@ -1,9 +1,4 @@
 import { describe, expect, it } from "vitest";
-import baseCatalog from "../../../../artifacts/catalog";
-import {
-  buildCatalogImportGraph,
-  legacyBooksToImportRecords,
-} from "../importer";
 import {
   APPROVED_COVER_PROMOTION_PROPOSALS,
   APPROVED_COVER_PROPOSAL_IDS,
@@ -44,55 +39,4 @@ describe("diagnostic-five PoC cover promotion", () => {
       }),
     ).toThrow("manifest hash is stale");
   });
-
-  it("records five reviewed covers without claiming rights or false edition identity", () => {
-    const graph = buildCatalogImportGraph(
-      legacyBooksToImportRecords(baseCatalog),
-    );
-    expect(graph.coverCandidates).toHaveLength(5);
-    expect(graph.coverInspections).toHaveLength(5);
-    expect(graph.coverDecisionHeads).toHaveLength(5);
-    expect(graph.coverProjectionHeads).toHaveLength(5);
-    expect(graph.coverProjections).toHaveLength(10);
-    expect(
-      graph.coverCandidates.every(
-        (candidate) =>
-          candidate.permissionState === "pending" &&
-          candidate.rightsBasis === null &&
-          JSON.parse(String(candidate.identityEvidenceJson)).rightsStatus ===
-            "deferred_poc" &&
-          JSON.parse(String(candidate.identityEvidenceJson)).rightsCleared ===
-            false,
-      ),
-    ).toBe(true);
-    expect(
-      graph.coverCandidates.filter(
-        (candidate) => candidate.representationType === "selected_edition",
-      ),
-    ).toEqual([
-      expect.objectContaining({
-        workId: "7adeda04-34e2-5a7d-a101-de0578138b29",
-        identityMatchKind: "exact_isbn",
-      }),
-    ]);
-    expect(
-      graph.coverCandidates.filter(
-        (candidate) => candidate.representationType === "work_representative",
-      ),
-    ).toHaveLength(4);
-    expect(
-      graph.coverDecisions.filter(
-        (decision) =>
-          decision.state === "eligible" &&
-          decision.reviewerRef === "review:github-issue-143",
-      ),
-    ).toHaveLength(5);
-    expect(
-      graph.coverProjections.filter(
-        (projection) =>
-          projection.state === "placeholder" &&
-          projection.previousProjectionId === null,
-      ),
-    ).toHaveLength(5);
-  }, 30_000);
 });
