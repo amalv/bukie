@@ -9,6 +9,12 @@ import {
   catalogChangeEventsPg,
   categoriesPg,
   coverAssetsPg,
+  coverCandidatesPg,
+  coverDecisionHeadsPg,
+  coverDecisionsPg,
+  coverInspectionsPg,
+  coverProjectionHeadsPg,
+  coverProjectionsPg,
   editionCoversPg,
   editionIdentifiersPg,
   editionLanguagesPg,
@@ -242,6 +248,59 @@ export async function rebuildCatalogPostgres(input: {
           .onConflictDoNothing();
       }
       maybeFail("sourceRecordLinks");
+      for (const batch of chunks(
+        graph.coverCandidates.map((row) => ({
+          ...(row as typeof coverCandidatesPg.$inferInsert),
+          identityEvidenceJson: parseJson(row.identityEvidenceJson),
+          transformationHistoryJson: parseJson(row.transformationHistoryJson),
+        })),
+      )) {
+        await tx.insert(coverCandidatesPg).values(batch).onConflictDoNothing();
+      }
+      maybeFail("coverCandidates");
+      for (const batch of chunks(
+        graph.coverInspections.map((row) => ({
+          ...(row as typeof coverInspectionsPg.$inferInsert),
+          flagsJson: parseJson(row.flagsJson),
+        })),
+      )) {
+        await tx.insert(coverInspectionsPg).values(batch).onConflictDoNothing();
+      }
+      maybeFail("coverInspections");
+      for (const batch of chunks(
+        graph.coverDecisions.map((row) => ({
+          ...(row as typeof coverDecisionsPg.$inferInsert),
+          gateCodesJson: parseJson(row.gateCodesJson),
+          warningCodesJson: parseJson(row.warningCodesJson),
+        })),
+      )) {
+        await tx.insert(coverDecisionsPg).values(batch).onConflictDoNothing();
+      }
+      maybeFail("coverDecisions");
+      for (const batch of chunks(
+        graph.coverDecisionHeads as (typeof coverDecisionHeadsPg.$inferInsert)[],
+      )) {
+        await tx
+          .insert(coverDecisionHeadsPg)
+          .values(batch)
+          .onConflictDoNothing();
+      }
+      maybeFail("coverDecisionHeads");
+      for (const batch of chunks(
+        graph.coverProjections as (typeof coverProjectionsPg.$inferInsert)[],
+      )) {
+        await tx.insert(coverProjectionsPg).values(batch).onConflictDoNothing();
+      }
+      maybeFail("coverProjections");
+      for (const batch of chunks(
+        graph.coverProjectionHeads as (typeof coverProjectionHeadsPg.$inferInsert)[],
+      )) {
+        await tx
+          .insert(coverProjectionHeadsPg)
+          .values(batch)
+          .onConflictDoNothing();
+      }
+      maybeFail("coverProjectionHeads");
 
       for (const batch of chunks(
         graph.fieldObservations.map((row) => ({

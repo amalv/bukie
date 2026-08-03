@@ -636,7 +636,12 @@ const recompute = async (
       objectKey: winner?.candidate.objectKey ?? PLACEHOLDER_COVER,
       representationType: winner?.candidate.representationType ?? null,
       editionId: winner?.candidate.editionId ?? null,
-      publicDisplayEligible: false,
+      rightsStatus:
+        winner?.candidate.permissionState === "approved"
+          ? "cleared"
+          : "deferred_poc",
+      rightsCleared: winner?.candidate.permissionState === "approved",
+      publicDisplayEligible: Boolean(winner),
       state: projection.row.state,
     },
     changed: projection.changed,
@@ -873,6 +878,8 @@ export const getCoverSelectionPostgres = async (input: {
         objectKey: PLACEHOLDER_COVER,
         representationType: null,
         editionId: null,
+        rightsStatus: "deferred_poc",
+        rightsCleared: false,
         publicDisplayEligible: false,
         state: projection?.state ?? "placeholder",
       };
@@ -896,6 +903,8 @@ export const getCoverSelectionPostgres = async (input: {
         objectKey: PLACEHOLDER_COVER,
         representationType: null,
         editionId: null,
+        rightsStatus: "deferred_poc",
+        rightsCleared: false,
         publicDisplayEligible: false,
         state: "placeholder",
       };
@@ -906,7 +915,10 @@ export const getCoverSelectionPostgres = async (input: {
       objectKey: candidate.objectKey,
       representationType: candidate.representationType,
       editionId: candidate.editionId,
-      publicDisplayEligible: false,
+      rightsStatus:
+        candidate.permissionState === "approved" ? "cleared" : "deferred_poc",
+      rightsCleared: candidate.permissionState === "approved",
+      publicDisplayEligible: true,
       state: projection.state,
     };
   } finally {
@@ -1069,7 +1081,12 @@ export const rollbackCoverProjectionPostgres = async (input: {
             objectKey: candidate.objectKey,
             representationType: candidate.representationType,
             editionId: candidate.editionId,
-            publicDisplayEligible: false,
+            rightsStatus:
+              candidate.permissionState === "approved"
+                ? "cleared"
+                : "deferred_poc",
+            rightsCleared: candidate.permissionState === "approved",
+            publicDisplayEligible: true,
             state: current.state,
           },
           changed: false,
@@ -1092,7 +1109,12 @@ export const rollbackCoverProjectionPostgres = async (input: {
           objectKey: candidate.objectKey,
           representationType: candidate.representationType,
           editionId: candidate.editionId,
-          publicDisplayEligible: false,
+          rightsStatus:
+            candidate.permissionState === "approved"
+              ? "cleared"
+              : "deferred_poc",
+          rightsCleared: candidate.permissionState === "approved",
+          publicDisplayEligible: true,
           state: projection.row.state,
         },
         changed: projection.changed,

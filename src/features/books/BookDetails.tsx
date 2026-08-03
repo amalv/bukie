@@ -117,7 +117,7 @@ function editionFacts(edition: EditionSummary): EditionFact[] {
 export function BookDetails({ work }: BookDetailsProps) {
   const edition = work.preferredEdition;
   const authors = joinValues(work.authors.map(creatorLabel));
-  const cover = edition?.cover;
+  const cover = work.cover ?? edition?.cover;
   const coverSrc = resolveBookCoverSrc(cover?.objectKey);
   const coverAlt = cover
     ? authors

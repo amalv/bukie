@@ -10,6 +10,12 @@ import {
   catalogChangeEvents,
   categories,
   coverAssets,
+  coverCandidates,
+  coverDecisionHeads,
+  coverDecisions,
+  coverInspections,
+  coverProjectionHeads,
+  coverProjections,
   editionCovers,
   editionIdentifiers,
   editionLanguages,
@@ -242,6 +248,42 @@ export function importCatalogGraphSqlite(
     (batch) =>
       db.insert(sourceRecordLinks).values(batch).onConflictDoNothing().run(),
     "sourceRecordLinks",
+  );
+  insert(
+    graph.coverCandidates as (typeof coverCandidates.$inferInsert)[],
+    (batch) =>
+      db.insert(coverCandidates).values(batch).onConflictDoNothing().run(),
+    "coverCandidates",
+  );
+  insert(
+    graph.coverInspections as (typeof coverInspections.$inferInsert)[],
+    (batch) =>
+      db.insert(coverInspections).values(batch).onConflictDoNothing().run(),
+    "coverInspections",
+  );
+  insert(
+    graph.coverDecisions as (typeof coverDecisions.$inferInsert)[],
+    (batch) =>
+      db.insert(coverDecisions).values(batch).onConflictDoNothing().run(),
+    "coverDecisions",
+  );
+  insert(
+    graph.coverDecisionHeads as (typeof coverDecisionHeads.$inferInsert)[],
+    (batch) =>
+      db.insert(coverDecisionHeads).values(batch).onConflictDoNothing().run(),
+    "coverDecisionHeads",
+  );
+  insert(
+    graph.coverProjections as (typeof coverProjections.$inferInsert)[],
+    (batch) =>
+      db.insert(coverProjections).values(batch).onConflictDoNothing().run(),
+    "coverProjections",
+  );
+  insert(
+    graph.coverProjectionHeads as (typeof coverProjectionHeads.$inferInsert)[],
+    (batch) =>
+      db.insert(coverProjectionHeads).values(batch).onConflictDoNothing().run(),
+    "coverProjectionHeads",
   );
   insert(
     graph.fieldObservations as (typeof fieldObservations.$inferInsert)[],

@@ -52,6 +52,7 @@ jobs:
         run: >-
           bun run test --
           src/db/catalog/enrichment/catalog-dry-run.pg.test.ts
+          src/db/catalog/enrichment/diagnostic-five-promotion.pg.test.ts
           src/db/catalog/enrichment/persistence.pg.test.ts
           src/db/catalog/enrichment/covers/repository.pg.test.ts
           src/db/catalog/enrichment/descriptions/repository.pg.test.ts

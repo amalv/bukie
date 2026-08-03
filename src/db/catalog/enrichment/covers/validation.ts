@@ -102,12 +102,9 @@ export const validateCoverCandidate = (input: {
   if (!sourceEligible || candidate.permissionState === "denied") {
     gateCodes.push("source_policy_ineligible");
   }
-  if (
-    candidate.permissionState !== "approved" ||
-    !candidate.rightsBasis?.trim()
-  ) {
-    gateCodes.push("rights_evidence_incomplete");
-  }
+  // Display-rights clearance is deliberately recorded but deferred for PoC
+  // covers. An explicit denial remains source-policy ineligible; pending
+  // evidence is not represented as cleared and is re-reviewed before launch.
   if (
     assetPolicy.attribution?.required === true &&
     !candidate.attributionText?.trim() &&

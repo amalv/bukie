@@ -56,9 +56,11 @@ and `2020-present`. Their boundaries use ISO sort dates, so year-, month-, and
 day-precision metadata behave consistently in SQLite and Postgres.
 
 The repository first selects the page of works and then loads preferred
-editions, authors, categories, publishers, languages, identifiers, and covers
-with bounded follow-up queries. This avoids a Cartesian product and preserves
-relationship order.
+editions, authors, categories, publishers, languages, identifiers,
+edition covers, and current reviewed work-cover projections with bounded
+follow-up queries. This avoids a Cartesian product and preserves relationship
+order. A work cover retains its identity scope; it is a reader fallback and is
+not silently written into `edition_covers`.
 
 Detail reads also load current work and edition resolution heads in two bounded
 queries. The internal `WorkDetail.provenance` projection exposes the resolution
@@ -96,6 +98,39 @@ All other enrichment continues through source records, immutable observations,
 resolution heads, and the existing display-eligibility checks. Dry runs write
 to an isolated disposable target and cannot update current heads, projections,
 or cover pointers.
+
+Issue #143 adds one narrow exception to the dry-run-only boundary: four
+explicitly reviewed first-publication observations from the pinned #135 report
+and five separately reviewed PoC cover proposals. Their exact report,
+manifests, approval IDs, and proposal allow-lists are fixed in repository
+input. Dune's date, description candidates, and redundant title observations
+remain unresolved.
+
+Cover rights clearance is deferred for the PoC only. The source payload and
+candidate identity record `deferred_poc`, `rightsCleared: false`, issue #143,
+and mandatory launch re-review. Strong identity, source approval,
+attribution, technical quality, withdrawal, and review stay blocking. Dune is
+edition-scoped through exact ISBN evidence; the other four projections remain
+work-scoped.
+
+The batch transaction locks affected work/head pairs, revalidates current
+source, identity, withdrawal, quality, and review eligibility, and appends
+resolution plus cover decision/projection history atomically. Rollback appends
+new missing/placeholder heads and retains prior immutable rows. SQLite and
+PostgreSQL use the same logical rows and deterministic IDs.
+
+Clean rebuilds contain the same reviewed evidence, cover asset metadata,
+candidate/inspection decisions, and resolution/projection chains.
+The historical #135 dry-run explicitly requests the pre-promotion import graph
+to retain its exact byte-stable report. Preview and Production share one Neon
+database rather than using branch-per-deployment isolation, so the repo owner
+authorized relaxing the promotion gate's distinct-Neon-branch requirement
+(`neonBranchId` is now optional, unenforced metadata) while keeping every
+other preview-proof check — exact PR number, branch, `VERCEL_ENV=preview`,
+deployment ID, database host, and `.neon.tech` hostname — in force. Because
+the database is shared, an authorized preview promotion now updates
+Production directly; see `docs/catalog-enrichment-promotion-proposal.md` for
+the full authorization record.
 
 Issue #133 adds a description-specific evidence and review layer without
 changing that public boundary. Immutable description candidates identify one

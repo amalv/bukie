@@ -93,10 +93,7 @@ describe("SQLite edition-matched cover lifecycle", () => {
     ]) {
       expect(results.find((row) => row.title === title)?.result).toMatchObject({
         state: "review_required",
-        gateCodes: expect.arrayContaining([
-          "identity_evidence_ineligible",
-          "rights_evidence_incomplete",
-        ]),
+        gateCodes: ["identity_evidence_ineligible"],
         warningCodes: ["upscaling_risk"],
       });
     }
@@ -194,7 +191,9 @@ describe("SQLite edition-matched cover lifecycle", () => {
       candidateId: created.candidateId,
       representationType: "selected_edition",
       editionId: editionIds[work.workId],
-      publicDisplayEligible: false,
+      rightsStatus: "cleared",
+      rightsCleared: true,
+      publicDisplayEligible: true,
     });
     const rejected = reviewCoverCandidateSqlite(raw, {
       candidateId: created.candidateId,

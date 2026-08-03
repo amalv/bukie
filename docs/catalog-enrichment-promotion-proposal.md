@@ -1,93 +1,125 @@
 # Catalog enrichment promotion proposal
 
-- Status: proposal only; not approved or executable
+- Status: issue #143 repository-input and PoC cover slice implemented
 - Dry-run input: `bukie-catalog-enrichment-dry-run@2026-07-29.v1`
-- Related issue: #135
+- Related issues: #135 and #143
+- Shared-database execution: owner-authorized against the existing Preview/Production Neon database (see "Preview and production authorization" below); a distinct Neon branch per deployment is no longer required
 
-This document describes a possible future promotion boundary for maintainers
-to review. Issue #135 does not implement, expose, or execute this operation.
-The recorded #135 run is not promotion-ready: it intentionally has 495 works
-without approved retained snapshots, two paused queue-overflow cases, one
-ambiguous identity case, and no eligible cover or description candidates.
+Issue #143 contains exactly four reviewed
+`work.first_publication_date` proposals:
 
-## Required review and approval
+- Moby-Dick: 1851
+- The City and the Stars: 1956
+- Born a Crime: 2016
+- Faithful Place: 2010
 
-Promotion must remain unavailable until all of the following are true:
+Dune's first-publication evidence remains unresolved because the recorded
+Wikidata identity is ambiguous. No preferred-title or description proposal is
+included, and description queue overflow remains paused.
 
-1. A byte-stable report and its immutable manifest are retained and the input,
-   source-snapshot, policy, adapter, importer, matcher, resolver, gate, and
-   inspection hashes still match.
-2. Every selected source policy is currently approved for the exact retained
-   metadata, text, or asset field. Adapter availability alone is not approval.
-3. Identity conflicts, rights blocks, withdrawals, policy failures, and queue
-   overflow are unresolved rather than selected.
-4. Human-review staffing and a queue cap are approved. Every candidate class
-   that requires review has a completed, independent decision.
-5. Proposed coverage, direct cost, runtime, and review volume have been
-   accepted despite any material variance from the #130 planning envelope.
-6. SQLite/PostgreSQL logical parity, schema no-diff, deterministic reruns,
-   isolation checks, and rollback rehearsal pass for the exact manifest.
-7. A catalog data steward and a repository maintainer give explicit recorded
-   approval for the exact manifest content hash and proposed-resolution set.
-   Neither approval may be inferred from a merged adapter, passing CI, or the
-   existence of this document.
+The date approval `github-issue-143-reviewed-slice-v1` pins report SHA-256
+`a85538c057e0b65696644e372f09f18a6da0daf0cefec0d42d641ee4ca6a1b0d`,
+manifest content hash
+`7b7cc856a2c8e8a9aff35098491df49d8cce85c6a7f7639a0c4cecd25fcfa615`,
+run content hash
+`9b8e04b5cb005181b40e61b0185ed5a5d6b5d9eed902527b891e4d058baad5bd`,
+and the exact four proposal IDs in
+`src/db/catalog/enrichment/diagnostic-five-promotion.ts`.
 
-## Proposed transaction boundary
+## PoC cover decision
 
-A future implementation should accept only an explicitly approved manifest and
-an exact allow-list of reviewed proposal IDs. In one database transaction it
-would:
+The owner explicitly accepted deferred cover display rights for the PoC.
+Rights are not represented as cleared and become mandatory before definitive
+production launch. This exception applies only to covers.
 
-1. lock the affected resolution heads and relevant work/edition projection
-   rows;
-2. re-evaluate current source, record, link, observation, identity, rights,
-   withdrawal, model/prompt, policy, and review eligibility;
-3. refuse the complete transaction if any approved input drifted, any selected
-   observation became ineligible, or any proposal is outside the manifest;
-4. append immutable resolution events whose `previous_resolution_id` retains
-   every prior head;
-5. update only the explicitly approved current heads and their matching
-   projections;
-6. update an asset pointer only after the exact approved asset checksum is
-   durably available and its display policy still permits it; and
-7. append a catalog change event containing the manifest hash, approval
-   references, prior-head set, new-head set, and deployment correlation ID.
+The cover approval `github-issue-143-poc-cover-slice-v1` pins manifest hash
+`9a8befefb07fe9b112c46cbacedab3d279bc0aa117019e4e63e3cef5b20cadd1`
+and an exact five-proposal allow-list. Each proposal records:
 
-No observation, prior resolution, review decision, or projection-history event
-would be deleted. Description and cover changes would remain field-specific;
-one approved field would not authorize another.
+- strong work- or edition-level identity without conflating the scopes;
+- an allow-listed provider and stable provider-native page/asset identifier;
+- retrieval time plus original and normalized content hashes;
+- media type, dimensions, bytes, aspect ratio, inspection flags, and score;
+- reviewer, decision reason, and acknowledged warnings;
+- `rightsStatus: deferred_poc`, `rightsCleared: false`, issue #143, and
+  mandatory launch re-review; and
+- immutable predecessor history plus deterministic withdrawal, purge, and
+  rollback data.
 
-Application deployment is a separate boundary. The matching reader deployment
-would occur only after the database transaction commits and its post-commit
-public-output hashes are reviewed. The previous application deployment and
-database head set must remain retained until the observation window closes.
+Dune is edition-scoped to ISBN-13 `9780441172719` through Open Library edition
+`OL7525230M`. Moby-Dick, The City and the Stars, Born a Crime, and Faithful
+Place are work-scoped using reviewed Standard Ebooks or official publisher
+relations. They are not attached to Bukie's selected editions.
 
-## Rollback proposal
+The PoC source allow-list is limited to the exact recorded Open Library,
+Standard Ebooks/GitHub, Hachette, and Penguin Random House hosts. Image search
+results, retailer pages, runtime provider fetching, unversioned overwrites,
+and live scraping are not permitted.
 
-Rollback would require an explicit approval referencing the promotion event.
-In one transaction it would:
+## Transaction boundary
 
-1. lock the same affected heads and projections;
-2. verify each retained prior observation is still policy- and
-   withdrawal-eligible;
-3. append rollback resolution events pointing to the retained prior
-   observations;
-4. move current heads and field projections to those appended rollback events;
-5. restore only eligible prior asset pointers, otherwise select the safe
-   placeholder;
-6. append a rollback catalog event linked to the promotion event; and
-7. verify the expected public-output hashes before restoring the retained
-   application deployment.
+The transaction accepts only the byte-stable #135 report, the exact date and
+cover approval IDs, and both complete proposal allow-lists. In one transaction
+it:
 
-If a prior observation or asset is no longer eligible, rollback must fail
-closed for that field and use an explicit missing/placeholder resolution. It
-must never resurrect withdrawn evidence, bypass a purge requirement, rewrite
-history, or copy a prior value directly into a public projection.
+1. locks affected work and current-head rows;
+2. revalidates source policy, retained record revision, work/edition identity,
+   attribution, withdrawal, decode/quality inspection, review decision, and
+   current projection eligibility;
+3. refuses all writes if any approved input or current eligibility drifts;
+4. appends immutable date resolutions and cover decision/projection histories;
+5. advances only the approved date and cover heads;
+6. confirms unrelated descriptions, preferred editions, legacy cover
+   relations, and resolution heads are unchanged; and
+7. returns a deterministic public-output hash.
 
-## Explicit non-authorization
+Retry is idempotent. SQLite and PostgreSQL use the same logical rows and IDs.
+Clean rebuilds include the same reviewed evidence and histories, while #135
+explicitly requests the pre-promotion graph to keep its report byte-stable.
 
-This proposal does not authorize a production, preview, reader-facing, or
-public-output change. A future tracked issue and separately reviewed PR are
-required to implement any promotion command. The #135 report must not be used
-as its approval because its purpose is to prove isolation and expose omissions,
-not to maximize or publish coverage.
+## Public projection
+
+Reader queries load a selected cover from the work-level projection head and
+reapply current source approval, asset-display policy, decision state, asset
+availability, and withdrawal state. The projection exposes identity scope and
+deferred-rights status. A work-scoped cover is a work fallback and is never
+silently inserted into `edition_covers`.
+
+The four approved dates remain work-level first-publication facts, separate
+from preferred-edition publication dates. Dune's date remains missing.
+
+## Rollback
+
+Rollback appends new missing date resolutions and placeholder cover
+projections whose predecessors are the promoted heads. It never deletes
+observations, candidates, inspections, reviews, assets, or prior projections.
+Withdrawn or ineligible evidence is never resurrected. A repeated rollback is
+idempotent, and an injected failure rolls back the complete transaction.
+
+The five R2 objects use immutable issue-namespaced keys. Withdrawal can advance
+the public head to the placeholder and execute the existing policy-required
+purge callback without rewriting history.
+
+## Preview and production authorization
+
+The five reviewed WebP objects were uploaded explicitly to private R2 after
+confirming their keys did not already exist. Builds remain read-only.
+
+Existing-database promotion originally required Vercel to report PR #144,
+`VERCEL_ENV=preview`, the exact feature branch and deployment ID, and a
+distinct matching Neon branch/host. The 2026-07-29 operational check found
+that the branch-specific Preview variables and existing production
+configuration used the same Neon endpoint and that the deployment exposed no
+`NEON_BRANCH_ID`. The write therefore failed closed and was not executed.
+
+Since Preview and Production intentionally share one Neon database (Neon
+branch-per-preview is not configured, largely for cost reasons), the repo
+owner authorized dropping only the distinct-Neon-branch requirement so
+promotion can run against that shared database. Every other check remains in
+force: Vercel must report `VERCEL_ENV=preview`, PR #144, the exact
+`feat/catalog-enrichment-promotion` branch, a non-empty deployment ID, a
+matching database host, and a `.neon.tech` hostname. `neonBranchId` is now
+optional, unenforced metadata rather than a gate. Passing CI, merging code, or
+uploading R2 assets alone still must not be interpreted as database promotion
+approval — only the exact preview proof above authorizes a write, and that
+write now also updates Production immediately because they share a database.

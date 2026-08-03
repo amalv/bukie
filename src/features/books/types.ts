@@ -42,6 +42,13 @@ export type EditionCover = {
   height?: number;
 };
 
+export type WorkCover = EditionCover & {
+  identityScope: "work" | "edition";
+  editionId?: string;
+  rightsStatus: "cleared" | "deferred_poc";
+  rightsCleared: boolean;
+};
+
 export type EditionSummary = {
   id: string;
   title?: string;
@@ -99,6 +106,7 @@ export type WorkSummary = {
   authors: WorkAuthor[];
   primaryCategory?: WorkCategory;
   preferredEdition?: EditionSummary;
+  cover?: WorkCover;
 };
 
 export type WorkDetail = WorkSummary & {

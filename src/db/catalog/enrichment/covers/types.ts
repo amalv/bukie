@@ -6,7 +6,7 @@ import type {
   CoverRepresentationType,
 } from "../../values";
 
-export const COVER_POLICY_VERSION = "cover-gates-2026-07-29.v1";
+export const COVER_POLICY_VERSION = "poc-cover-policy-2026-07.v1";
 export const COVER_INSPECTION_VERSION = "cover-inspection-2026-07-29.v1";
 
 export const COVER_FLAG_CODES = [
@@ -25,7 +25,6 @@ export const COVER_FLAG_CODES = [
 
 export const COVER_GATE_CODES = [
   "source_policy_ineligible",
-  "rights_evidence_incomplete",
   "attribution_incomplete",
   "identity_evidence_ineligible",
   "identity_conflict",
@@ -101,6 +100,8 @@ export type CoverSelection = {
   objectKey: string;
   representationType: CoverRepresentationType | null;
   editionId: string | null;
-  publicDisplayEligible: false;
+  rightsStatus: "cleared" | "deferred_poc";
+  rightsCleared: boolean;
+  publicDisplayEligible: boolean;
   state: "selected" | "placeholder" | "withdrawn" | "rolled_back";
 };

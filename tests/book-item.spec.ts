@@ -275,12 +275,28 @@ test.describe("Book item page", () => {
         }
       | undefined;
     expect(previous).toBeTruthy();
+    const previousWorkCover = database
+      .prepare(
+        `select
+           h.projection_id as projectionId,
+           p.policy_version as policyVersion
+         from cover_projection_heads h
+         join cover_projections p on p.id = h.projection_id
+         where h.work_id = ?`,
+      )
+      .get(DUNE_ID) as
+      | {
+          projectionId: string;
+          policyVersion: string;
+        }
+      | undefined;
     if (!previous) {
       database.close();
       return;
     }
 
     const withdrawnResolutionId = `playwright-withdrawn-cover-${Date.now()}`;
+    const withdrawnProjectionId = `playwright-withdrawn-work-cover-${Date.now()}`;
     database.transaction(() => {
       database
         .prepare(
@@ -301,6 +317,24 @@ test.describe("Book item page", () => {
           previous.resolverVersion,
           Date.now(),
         );
+      if (previousWorkCover) {
+        database
+          .prepare(
+            `insert into cover_projections (
+               id, work_id, candidate_id, state, previous_projection_id,
+               reason_code, actor_ref, policy_version, projected_at
+             ) values (?, ?, null, 'withdrawn', ?, ?, ?, ?, ?)`,
+          )
+          .run(
+            withdrawnProjectionId,
+            DUNE_ID,
+            previousWorkCover.projectionId,
+            "playwright_isolated_withdrawal",
+            "system:playwright",
+            previousWorkCover.policyVersion,
+            Date.now(),
+          );
+      }
       database
         .prepare(
           `update field_resolution_heads
@@ -313,6 +347,19 @@ test.describe("Book item page", () => {
           previous.entityId,
           previous.fieldKey,
         );
+      if (previousWorkCover) {
+        database
+          .prepare(
+            `update cover_projection_heads
+             set projection_id = ?
+             where work_id = ? and projection_id = ?`,
+          )
+          .run(
+            withdrawnProjectionId,
+            DUNE_ID,
+            previousWorkCover.projectionId,
+          );
+      }
     })();
 
     try {
@@ -340,9 +387,27 @@ test.describe("Book item page", () => {
             previous.entityId,
             previous.fieldKey,
           );
+        if (previousWorkCover) {
+          database
+            .prepare(
+              `update cover_projection_heads
+               set projection_id = ?
+               where work_id = ? and projection_id = ?`,
+            )
+            .run(
+              previousWorkCover.projectionId,
+              DUNE_ID,
+              withdrawnProjectionId,
+            );
+        }
         database
           .prepare("delete from field_resolutions where id = ?")
           .run(withdrawnResolutionId);
+        if (previousWorkCover) {
+          database
+            .prepare("delete from cover_projections where id = ?")
+            .run(withdrawnProjectionId);
+        }
       })();
       database.close();
     }
