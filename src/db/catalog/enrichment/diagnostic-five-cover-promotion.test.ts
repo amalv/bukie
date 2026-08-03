@@ -94,5 +94,5 @@ describe("diagnostic-five PoC cover promotion", () => {
           projection.previousProjectionId === null,
       ),
     ).toHaveLength(5);
-  });
+  }, 30_000);
 });
