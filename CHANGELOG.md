@@ -1,3 +1,21 @@
+# [0.43.0](https://github.com/amalv/bukie/compare/v0.42.0...v0.43.0) (2026-08-03)
+
+
+### Bug Fixes
+
+* **catalog:** allow promotion against the shared Neon database ([3c6fadd](https://github.com/amalv/bukie/commit/3c6fadd01e411b439d8d91bc61de3ae24a650428))
+* **catalog:** audit PostgreSQL cover promotion ([0a5ffdf](https://github.com/amalv/bukie/commit/0a5ffdfa39d3c78bb61571efc173a25cd1cbeb53))
+* **catalog:** bind postgres promotion rows explicitly ([28d1ed5](https://github.com/amalv/bukie/commit/28d1ed599330528d12adf4046079d55f2925ff7b))
+* **catalog:** compare postgres policies in database ([70b5f6a](https://github.com/amalv/bukie/commit/70b5f6a9b75c0003b8e1150dd1d6d7504b8c2d43))
+* **catalog:** persist promotion JSON consistently ([5717c20](https://github.com/amalv/bukie/commit/5717c207e8f2e83dcc7c925b9b1c3b8f5d35ea1a))
+* **catalog:** preserve postgres epoch parity ([f0fcb31](https://github.com/amalv/bukie/commit/f0fcb31294d38d4518301ecebd90ff4188cdf7ac))
+
+
+### Features
+
+* **catalog:** promote diagnostic PoC covers ([638255c](https://github.com/amalv/bukie/commit/638255c38d4bff8d67d262a91c110671da5bd7af))
+* **catalog:** promote reviewed diagnostic enrichment ([91d8492](https://github.com/amalv/bukie/commit/91d8492db6ac1993456fcb88348bc5f8c9324c36))
+
 # [0.42.0](https://github.com/amalv/bukie/compare/v0.41.0...v0.42.0) (2026-07-29)
 
 
